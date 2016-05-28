@@ -1,0 +1,9 @@
+
+REM URL to cygwin-setup
+set "cygwin_setup_url=https://cygwin.com/setup-x86.exe"
+
+REM Download cygwin-setup
+PowerShell -Command "Invoke-WebRequest $env:cygwin_setup_url -OutFile 'C:\\cygwin_setup.exe'"
+
+REM Perform install
+C:\cygwin_setup.exe -s http://ftp.acc.umu.se/mirror/cygwin/ -P python -P make -q -B

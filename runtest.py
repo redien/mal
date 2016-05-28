@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-import os, sys, re
+import os, sys, re, platform
 import argparse, time
 import signal, atexit
 
@@ -127,6 +127,13 @@ class Runner():
                     self.buf += new_data.replace("\n", "\r\n")
                 else:
                     self.buf += new_data
+
+                if "CYGWIN" in platform.system():
+                    # Hack to fix Cygwin echoing returning two carriage returns.
+                    # This is an invalid sequence anyways so should
+                    # not be a problem.
+                    self.buf = self.buf.replace("\r\r\n", "\r\n")
+
                 for prompt in prompts:
                     regexp = re.compile(prompt)
                     match = regexp.search(self.buf)

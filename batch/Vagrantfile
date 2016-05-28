@@ -1,0 +1,9 @@
+
+Vagrant.configure(2) do |config|
+  config.vm.box = "mrh1997/vanilla-win7-32bit"
+
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+  config.vm.synced_folder "..", "/vagrant"
+
+  config.vm.provision "shell", :path => 'vagrant_install.bat'
+end

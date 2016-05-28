@@ -103,3 +103,4 @@ tcl/mal.tcl
 vb/*.exe
 vb/*.dll
 vimscript/mal.vim
+batch/.vagrant
