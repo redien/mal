@@ -64,7 +64,7 @@ parser.add_argument('--no-optional', dest='optional', action='store_false',
         help="Disable optional tests that follow a ';>>> optional=True'")
 parser.set_defaults(optional=True)
 
-parser.add_argument('test_file', type=argparse.FileType('r'),
+parser.add_argument('test_file', type=argparse.FileType('rb'),
         help="a test file formatted as with mal test data")
 parser.add_argument('mal_cmd', nargs="*",
         help="Mal implementation command line. Use '--' to "
@@ -163,7 +163,7 @@ class Runner():
 class TestReader:
     def __init__(self, test_file):
         self.line_num = 0
-        self.data = test_file.read().split('\n')
+        self.data = test_file.read().replace("\r\n", "\n").split('\n')
         self.soft = False
         self.deferrable = False
         self.optional = False
