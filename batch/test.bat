@@ -1,6 +1,14 @@
 @echo off
 setlocal enabledelayedexpansion
 
+:TEST
+    set "str=%~1"
+    set "str="
+    echo !str!
+EXIT /B 0
+
+call :TEST abcdef
+
 set LF=^
 
 
@@ -16,3 +24,15 @@ set "abcdef=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 echo !abcdef! | (set /p "test=")
 
 echo !test!
+
+:STRLEN
+    set "s=!%~2!#"
+    set "len=0"
+    for %%P in (131072 65536 32768 16384 8192 4096 2048 1024 512 256 128 64 32 16 8 4 2 1) do (
+        if "!s:~%%P,1!" NEQ "" (
+            set /a "len+=%%P"
+            set "s=!s:~%%P!"
+        )
+    )
+    set "%~1=%len%"
+EXIT /B 0

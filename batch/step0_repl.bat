@@ -9,8 +9,10 @@ SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
 GOTO :REPL
 
 :READ
+    :: prompt the user and assign the user's input to _input.
     set /p "_input=user> "
-    if errorlevel 1 set "_input=" & verify>nul & echo.
+    :: If nothing is written, empty the input and reset the error level
+    if errorlevel 1 set "_input=" & verify>nul
 EXIT /B 0
 
 :EVAL
