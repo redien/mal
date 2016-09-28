@@ -22,6 +22,8 @@ EXIT /B 0
 :EVAL
     set "_result="
     call :TOKENIZER tokens _input
+
+    :: Prints the tokens in reverse order
 :PRINT_TOKENS
     IF NOT "!tokens!"=="!NIL!" (
         call :FIRST token tokens

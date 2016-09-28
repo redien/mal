@@ -14,6 +14,9 @@ set "NIL="
 set "TRUE=t"
 set "FALSE=f"
 
+set _doublequote=^"
+set _backslash=^\
+
 GOTO :START
 
 :ECHO

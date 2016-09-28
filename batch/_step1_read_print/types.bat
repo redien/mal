@@ -15,12 +15,12 @@ EXIT /B 0
 EXIT /B 0
 
 :FIRST
-    set "ref=_list_first_!%~2:~1,2147483647!"
+    set "ref=_list_first_!%~2:~1,8191!"
     set "%1=!%ref%!"
 EXIT /B 0
 
 :REST
-    set "ref=_list_rest_!%~2:~1,2147483647!"
+    set "ref=_list_rest_!%~2:~1,8191!"
     set "%1=!%ref%!"
 EXIT /B 0
 

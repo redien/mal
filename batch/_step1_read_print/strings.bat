@@ -22,7 +22,19 @@ EXIT /B 0
     IF "!STRING_CONTAINS_CHAR_string:~0,1!"=="!STRING_CONTAINS_CHAR_char!" (
         set "%~1=!TRUE!"
     ) ELSE (
-        set "STRING_CONTAINS_CHAR_string=!STRING_CONTAINS_CHAR_string:~1,2147483647!"
+        set "STRING_CONTAINS_CHAR_string=!STRING_CONTAINS_CHAR_string:~1,8191!"
         GOTO :STRING_CONTAINS_CHAR_LOOP
     )
+EXIT /B 0
+
+:STRING_LENGTH
+    set "STRING_LENGTH_buffer=#!%2!"
+    set "STRING_LENGTH_length=0"
+    FOR %%N IN (8192 4096 2048 1024 512 256 128 64 32 16 8 4 2 1) DO (
+        IF NOT "!STRING_LENGTH_buffer:~%%N,1!"=="" (
+            set /a "STRING_LENGTH_length+=%%N"
+            set "STRING_LENGTH_buffer=!STRING_LENGTH_buffer:~%%N!"
+        )
+    )
+    set "%1=%STRING_LENGTH_length%"
 EXIT /B 0
