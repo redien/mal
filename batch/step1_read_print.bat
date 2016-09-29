@@ -57,6 +57,38 @@ EXIT /B 0
     )
 EXIT /B 0
 
+:VECTOR_NEW
+    set /a "_vector_counter+=1"
+    set "_vector_length_!_vector_counter!=0"
+    set "%1=V!_vector_counter!"
+EXIT /B 0
+
+:VECTOR_LENGTH
+    set "length=_vector_length_!%2:~1,8191!"
+    set "%1=!%length%!"
+EXIT /B 0
+
+:VECTOR_GET
+    set "ref=_vector_!%2:~1,8191!_!%3!"
+    set "%1=!%ref%!"
+EXIT /B 0
+
+:VECTOR_PUSH
+    set "id=!%1:~1,8191!"
+    set "length=_vector_length_!id!"
+    set "ref=_vector_!id!_!%length%!"
+    set "%ref%=!%2!"
+    set /a "%length%+=1"
+EXIT /B 0
+
+:VECTOR?
+    IF "!%2:~0,1!"=="V" (
+        set "%1=!TRUE!"
+    ) ELSE (
+        set "%1=!FALSE!"
+    )
+EXIT /B 0
+
 :SUBSTRING
     set "SUBSTRING_start=!%~3!"
     set "SUBSTRING_length=!%~4!"
@@ -116,6 +148,25 @@ EXIT /B 0
     GOTO :READ_WHILE_LOOP
 EXIT /B 0
 
+:READ_CHARACTER
+    set "%1="
+
+    IF "!%2!"=="" (
+        EXIT /B 0
+    )
+
+    set "READ_CHARACTER_char=!%2:~0,1!"
+
+    call %3 READ_CHARACTER_did_match READ_CHARACTER_char
+
+    IF "!READ_CHARACTER_did_match!"=="!FALSE!" (
+        EXIT /B 0
+    )
+
+    set "%1=!READ_CHARACTER_char!"
+    set "%2=!%2:~1,8191!"
+EXIT /B 0
+
 :IS_COMMA_OR_SPACE
     set "%1=!FALSE!"
     IF "!%2!"=="," (set "%1=!TRUE!" & EXIT /B 0)
@@ -143,13 +194,23 @@ EXIT /B 0
     IF "!%2!"=="!_backslash!" (set "%1=!FALSE!" & EXIT /B 0)
 EXIT /B 0
 
-:IS_NOT_SPECIAL_CHARACTER
-    call :IS_SPECIAL_CHARACTER %1 %2
-    IF "!%1!"=="!FALSE!" (
-        set "%1=!TRUE!"
-    ) ELSE (
-        set "%1=!FALSE!"
-    )
+:IS_ATOM_CHARACTER
+    set "%1=!TRUE!"
+    IF "!%2!"=="[" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"=="]" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"=="{" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"=="}" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"=="(" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"==")" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"=="'" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"=="`" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"=="~" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"=="^" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"=="@" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"=="," (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"==" " (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"==";" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"=="!_doublequote!" (set "%1=!FALSE!" & EXIT /B 0)
 EXIT /B 0
 
 :READ_STRING
@@ -208,7 +269,7 @@ EXIT /B 0
 :TOKENIZER
     :: We put the input string into a buffer for reading
     set "TOKENIZER_buffer=!%2!"
-    set "TOKENIZER_list=!NIL!"
+    call :VECTOR_NEW TOKENIZER_list
     set "TOKENIZER_@=~@"
 
 :TOKENIZER_LOOP
@@ -220,27 +281,27 @@ EXIT /B 0
 
     call :READ_STRING TOKENIZER_token TOKENIZER_buffer TOKENIZER_@
     IF NOT "!TOKENIZER_token!"=="" (
-        call :CONS TOKENIZER_list TOKENIZER_token TOKENIZER_list
+        call :VECTOR_PUSH TOKENIZER_list TOKENIZER_token
         GOTO :TOKENIZER_LOOP
     )
 
-    call :READ_WHILE TOKENIZER_token TOKENIZER_buffer :IS_SPECIAL_CHARACTER
+    call :READ_CHARACTER TOKENIZER_token TOKENIZER_buffer :IS_SPECIAL_CHARACTER
     IF NOT "!TOKENIZER_token!"=="" (
-        call :CONS TOKENIZER_list TOKENIZER_token TOKENIZER_list
+        call :VECTOR_PUSH TOKENIZER_list TOKENIZER_token
         GOTO :TOKENIZER_LOOP
     )
 
     call :READ_DOUBLEQUOTED_STRING TOKENIZER_token TOKENIZER_buffer
     IF NOT "!TOKENIZER_token!"=="" (
-        call :CONS TOKENIZER_list TOKENIZER_token TOKENIZER_list
+        call :VECTOR_PUSH TOKENIZER_list TOKENIZER_token
         GOTO :TOKENIZER_LOOP
     )
 
     call :SKIP_COMMENT TOKENIZER_buffer
 
-    call :READ_WHILE TOKENIZER_token TOKENIZER_buffer :IS_NOT_SPECIAL_CHARACTER
+    call :READ_WHILE TOKENIZER_token TOKENIZER_buffer :IS_ATOM_CHARACTER
     IF NOT "!TOKENIZER_token!"=="" (
-        call :CONS TOKENIZER_list TOKENIZER_token TOKENIZER_list
+        call :VECTOR_PUSH TOKENIZER_list TOKENIZER_token
         GOTO :TOKENIZER_LOOP
     )
 
@@ -274,14 +335,12 @@ EXIT /B 0
 :EVAL
     set "_result="
     call :TOKENIZER tokens _input
+    call :VECTOR_LENGTH tokens_length tokens
 
-    :: Prints the tokens in reverse order
-:PRINT_TOKENS
-    IF NOT "!tokens!"=="!NIL!" (
-        call :FIRST token tokens
+    FOR /L %%G IN (0, 1, !tokens_length!) DO (
+        set "index=%%G"
+        call :VECTOR_GET token tokens index
         call :ECHO token
-        call :REST tokens tokens
-        GOTO :PRINT_TOKENS
     )
 EXIT /B 0
 

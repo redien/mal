@@ -22,14 +22,12 @@ EXIT /B 0
 :EVAL
     set "_result="
     call :TOKENIZER tokens _input
+    call :VECTOR_LENGTH tokens_length tokens
 
-    :: Prints the tokens in reverse order
-:PRINT_TOKENS
-    IF NOT "!tokens!"=="!NIL!" (
-        call :FIRST token tokens
+    FOR /L %%G IN (0, 1, !tokens_length!) DO (
+        set "index=%%G"
+        call :VECTOR_GET token tokens index
         call :ECHO token
-        call :REST tokens tokens
-        GOTO :PRINT_TOKENS
     )
 EXIT /B 0
 

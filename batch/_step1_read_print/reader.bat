@@ -18,6 +18,25 @@
     GOTO :READ_WHILE_LOOP
 EXIT /B 0
 
+:READ_CHARACTER
+    set "%1="
+
+    IF "!%2!"=="" (
+        EXIT /B 0
+    )
+
+    set "READ_CHARACTER_char=!%2:~0,1!"
+
+    call %3 READ_CHARACTER_did_match READ_CHARACTER_char
+
+    IF "!READ_CHARACTER_did_match!"=="!FALSE!" (
+        EXIT /B 0
+    )
+
+    set "%1=!READ_CHARACTER_char!"
+    set "%2=!%2:~1,8191!"
+EXIT /B 0
+
 :IS_COMMA_OR_SPACE
     set "%1=!FALSE!"
     IF "!%2!"=="," (set "%1=!TRUE!" & EXIT /B 0)
@@ -45,13 +64,23 @@ EXIT /B 0
     IF "!%2!"=="!_backslash!" (set "%1=!FALSE!" & EXIT /B 0)
 EXIT /B 0
 
-:IS_NOT_SPECIAL_CHARACTER
-    call :IS_SPECIAL_CHARACTER %1 %2
-    IF "!%1!"=="!FALSE!" (
-        set "%1=!TRUE!"
-    ) ELSE (
-        set "%1=!FALSE!"
-    )
+:IS_ATOM_CHARACTER
+    set "%1=!TRUE!"
+    IF "!%2!"=="[" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"=="]" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"=="{" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"=="}" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"=="(" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"==")" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"=="'" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"=="`" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"=="~" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"=="^" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"=="@" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"=="," (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"==" " (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"==";" (set "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"=="!_doublequote!" (set "%1=!FALSE!" & EXIT /B 0)
 EXIT /B 0
 
 :READ_STRING
@@ -110,7 +139,7 @@ EXIT /B 0
 :TOKENIZER
     :: We put the input string into a buffer for reading
     set "TOKENIZER_buffer=!%2!"
-    set "TOKENIZER_list=!NIL!"
+    call :VECTOR_NEW TOKENIZER_list
     set "TOKENIZER_@=~@"
 
 :TOKENIZER_LOOP
@@ -122,27 +151,27 @@ EXIT /B 0
 
     call :READ_STRING TOKENIZER_token TOKENIZER_buffer TOKENIZER_@
     IF NOT "!TOKENIZER_token!"=="" (
-        call :CONS TOKENIZER_list TOKENIZER_token TOKENIZER_list
+        call :VECTOR_PUSH TOKENIZER_list TOKENIZER_token
         GOTO :TOKENIZER_LOOP
     )
 
-    call :READ_WHILE TOKENIZER_token TOKENIZER_buffer :IS_SPECIAL_CHARACTER
+    call :READ_CHARACTER TOKENIZER_token TOKENIZER_buffer :IS_SPECIAL_CHARACTER
     IF NOT "!TOKENIZER_token!"=="" (
-        call :CONS TOKENIZER_list TOKENIZER_token TOKENIZER_list
+        call :VECTOR_PUSH TOKENIZER_list TOKENIZER_token
         GOTO :TOKENIZER_LOOP
     )
 
     call :READ_DOUBLEQUOTED_STRING TOKENIZER_token TOKENIZER_buffer
     IF NOT "!TOKENIZER_token!"=="" (
-        call :CONS TOKENIZER_list TOKENIZER_token TOKENIZER_list
+        call :VECTOR_PUSH TOKENIZER_list TOKENIZER_token
         GOTO :TOKENIZER_LOOP
     )
 
     call :SKIP_COMMENT TOKENIZER_buffer
 
-    call :READ_WHILE TOKENIZER_token TOKENIZER_buffer :IS_NOT_SPECIAL_CHARACTER
+    call :READ_WHILE TOKENIZER_token TOKENIZER_buffer :IS_ATOM_CHARACTER
     IF NOT "!TOKENIZER_token!"=="" (
-        call :CONS TOKENIZER_list TOKENIZER_token TOKENIZER_list
+        call :VECTOR_PUSH TOKENIZER_list TOKENIZER_token
         GOTO :TOKENIZER_LOOP
     )
 
