@@ -63,3 +63,79 @@ EXIT /B 0
         set "%1=!FALSE!"
     )
 EXIT /B 0
+
+:STRING_NEW
+    set /a "_string_counter+=1"
+    set "length=_string_length_!_string_counter!"
+    call :STRLEN %length% %2
+    set "_string_contents_!_string_counter!=!%2!"
+    set "%1=S!_string_counter!"
+EXIT /B 0
+
+:STRING_LENGTH
+    set "length=_string_length_!%2:~1,8191!"
+    set "%1=!%length%!"
+EXIT /B 0
+
+:STRING_TO_STR
+    set "ref=_string_contents_!%2:~1,8191!"
+    set "%1=!%ref%!"
+EXIT /B 0
+
+:STRING?
+    IF "!%2:~0,1!"=="S" (
+        set "%1=!TRUE!"
+    ) ELSE (
+        set "%1=!FALSE!"
+    )
+EXIT /B 0
+
+:ATOM_NEW
+    set /a "_atom_counter+=1"
+    set "length=_atom_length_!_atom_counter!"
+    call :STRLEN %length% %2
+    set "_atom_contents_!_atom_counter!=!%2!"
+    set "%1=A!_atom_counter!"
+EXIT /B 0
+
+:ATOM_LENGTH
+    set "length=_atom_length_!%2:~1,8191!"
+    set "%1=!%length%!"
+EXIT /B 0
+
+:ATOM_TO_STR
+    set "ref=_atom_contents_!%2:~1,8191!"
+    set "%1=!%ref%!"
+EXIT /B 0
+
+:ATOM?
+    IF "!%2:~0,1!"=="A" (
+        set "%1=!TRUE!"
+    ) ELSE (
+        set "%1=!FALSE!"
+    )
+EXIT /B 0
+
+:NUMBER_NEW
+    set /a "_number_counter+=1"
+    set "_number_value!_number_counter!=!%2!"
+    set "%1=N!_number_counter!"
+EXIT /B 0
+
+:NUMBER_TO_STR
+    set "ref=_number_value!%2:~1,8191!"
+    set "%1=!%ref%!"
+EXIT /B 0
+
+:NUMBER_TO_STRING
+    set "NUMBER_TO_STRING_str=_number_value!%2:~1,8191!"
+    call :STRING_NEW %1 NUMBER_TO_STRING_str
+EXIT /B 0
+
+:NUMBER?
+    IF "!%2:~0,1!"=="N" (
+        set "%1=!TRUE!"
+    ) ELSE (
+        set "%1=!FALSE!"
+    )
+EXIT /B 0

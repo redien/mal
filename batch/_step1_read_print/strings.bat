@@ -27,14 +27,14 @@ EXIT /B 0
     )
 EXIT /B 0
 
-:STRING_LENGTH
-    set "STRING_LENGTH_buffer=#!%2!"
-    set "STRING_LENGTH_length=0"
+:STRLEN
+    set "STRLEN_buffer=#!%2!"
+    set "STRLEN_length=0"
     FOR %%N IN (8192 4096 2048 1024 512 256 128 64 32 16 8 4 2 1) DO (
-        IF NOT "!STRING_LENGTH_buffer:~%%N,1!"=="" (
-            set /a "STRING_LENGTH_length+=%%N"
-            set "STRING_LENGTH_buffer=!STRING_LENGTH_buffer:~%%N!"
+        IF NOT "!STRLEN_buffer:~%%N,1!"=="" (
+            set /a "STRLEN_length+=%%N"
+            set "STRLEN_buffer=!STRLEN_buffer:~%%N!"
         )
     )
-    set "%1=%STRING_LENGTH_length%"
+    set "%1=%STRLEN_length%"
 EXIT /B 0

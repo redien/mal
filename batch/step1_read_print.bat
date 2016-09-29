@@ -24,6 +24,10 @@ GOTO :START
     IF NOT "!%1!"=="" echo !%1!
 EXIT /B 0
 
+:ABORT
+    ECHO %~1
+EXIT
+
 :NIL?
     IF "!%~2!"=="" (
         set "%~1=!TRUE!"
@@ -89,6 +93,82 @@ EXIT /B 0
     )
 EXIT /B 0
 
+:STRING_NEW
+    set /a "_string_counter+=1"
+    set "length=_string_length_!_string_counter!"
+    call :STRLEN %length% %2
+    set "_string_contents_!_string_counter!=!%2!"
+    set "%1=S!_string_counter!"
+EXIT /B 0
+
+:STRING_LENGTH
+    set "length=_string_length_!%2:~1,8191!"
+    set "%1=!%length%!"
+EXIT /B 0
+
+:STRING_TO_STR
+    set "ref=_string_contents_!%2:~1,8191!"
+    set "%1=!%ref%!"
+EXIT /B 0
+
+:STRING?
+    IF "!%2:~0,1!"=="S" (
+        set "%1=!TRUE!"
+    ) ELSE (
+        set "%1=!FALSE!"
+    )
+EXIT /B 0
+
+:ATOM_NEW
+    set /a "_atom_counter+=1"
+    set "length=_atom_length_!_atom_counter!"
+    call :STRLEN %length% %2
+    set "_atom_contents_!_atom_counter!=!%2!"
+    set "%1=A!_atom_counter!"
+EXIT /B 0
+
+:ATOM_LENGTH
+    set "length=_atom_length_!%2:~1,8191!"
+    set "%1=!%length%!"
+EXIT /B 0
+
+:ATOM_TO_STR
+    set "ref=_atom_contents_!%2:~1,8191!"
+    set "%1=!%ref%!"
+EXIT /B 0
+
+:ATOM?
+    IF "!%2:~0,1!"=="A" (
+        set "%1=!TRUE!"
+    ) ELSE (
+        set "%1=!FALSE!"
+    )
+EXIT /B 0
+
+:NUMBER_NEW
+    set /a "_number_counter+=1"
+    set "_number_value!_number_counter!=!%2!"
+    set "%1=N!_number_counter!"
+EXIT /B 0
+
+:NUMBER_TO_STR
+    set "ref=_number_value!%2:~1,8191!"
+    set "%1=!%ref%!"
+EXIT /B 0
+
+:NUMBER_TO_STRING
+    set "NUMBER_TO_STRING_str=_number_value!%2:~1,8191!"
+    call :STRING_NEW %1 NUMBER_TO_STRING_str
+EXIT /B 0
+
+:NUMBER?
+    IF "!%2:~0,1!"=="N" (
+        set "%1=!TRUE!"
+    ) ELSE (
+        set "%1=!FALSE!"
+    )
+EXIT /B 0
+
 :SUBSTRING
     set "SUBSTRING_start=!%~3!"
     set "SUBSTRING_length=!%~4!"
@@ -117,16 +197,16 @@ EXIT /B 0
     )
 EXIT /B 0
 
-:STRING_LENGTH
-    set "STRING_LENGTH_buffer=#!%2!"
-    set "STRING_LENGTH_length=0"
+:STRLEN
+    set "STRLEN_buffer=#!%2!"
+    set "STRLEN_length=0"
     FOR %%N IN (8192 4096 2048 1024 512 256 128 64 32 16 8 4 2 1) DO (
-        IF NOT "!STRING_LENGTH_buffer:~%%N,1!"=="" (
-            set /a "STRING_LENGTH_length+=%%N"
-            set "STRING_LENGTH_buffer=!STRING_LENGTH_buffer:~%%N!"
+        IF NOT "!STRLEN_buffer:~%%N,1!"=="" (
+            set /a "STRLEN_length+=%%N"
+            set "STRLEN_buffer=!STRLEN_buffer:~%%N!"
         )
     )
-    set "%1=%STRING_LENGTH_length%"
+    set "%1=%STRLEN_length%"
 EXIT /B 0
 
 :READ_WHILE
@@ -218,7 +298,7 @@ EXIT /B 0
         set "%1="
         EXIT /B 0
     )
-    call :STRING_LENGTH READ_STRING_length %3
+    call :STRLEN READ_STRING_length %3
     set "READ_STRING_match=!%2:~0,%READ_STRING_length%!"
     IF "!READ_STRING_match!"=="!%3!" (
         set "%1=!READ_STRING_match!"
@@ -308,12 +388,84 @@ EXIT /B 0
     set "%1=!TOKENIZER_list!"
 EXIT /B 0
 
-:READ_STR
+:READ_LIST
+    set /a "%3+=1"
+    call :VECTOR_NEW %1
+    call :VECTOR_LENGTH READ_LIST_length %2
+:READ_LIST_LOOP
+    IF !%3! GEQ !READ_LIST_length! (
+        call :ABORT "Expected ) at EOF"
+    )
+
+    call :VECTOR_GET READ_LIST_token %2 %3
+    IF "!READ_LIST_token!"==")" (
+        set /a "%3+=1"
+        EXIT /B 0
+    )
+
+    call :READ_FORM READ_LIST_form %2 %3
+    call :VECTOR_PUSH %1 READ_LIST_form
+
+    GOTO :READ_LIST_LOOP
+EXIT /B 0
+
+:IS_NUMERIC
 
 EXIT /B 0
 
-:FUNC
-    EXIT /B 1
+:READ_ATOM
+    call :VECTOR_GET READ_ATOM_token %2 %3
+    call :ATOM_NEW %1 READ_ATOM_token
+    set /a "%3+=1"
+EXIT /B 0
+
+:READ_FORM
+    call :VECTOR_LENGTH READ_FORM_length %2
+    IF !%3! GEQ !READ_FORM_length! (
+        call :ABORT "Unexpected EOF"
+    )
+
+    call :VECTOR_GET READ_FORM_token %2 %3
+    IF "!READ_FORM_token!"=="(" (
+        call :READ_LIST %1 %2 %3
+    ) ELSE (
+        call :READ_ATOM %1 %2 %3
+    )
+EXIT /B 0
+
+:READ_STR
+    call :TOKENIZER READ_STR_tokens %2
+    set "READ_STR_index=0"
+    call :READ_FORM %1 READ_STR_tokens READ_STR_index
+EXIT /B 0
+
+:PR_STR
+    call :ATOM? PR_STR_is_atom %2
+    IF "!PR_STR_is_atom!"=="!TRUE!" (
+        call :ATOM_TO_STR PR_STR_tmp %2
+        set "%1=!PR_STR_tmp!"
+        EXIT /B 0
+    )
+
+    call :VECTOR? PR_STR_is_vector %2
+    IF "!PR_STR_is_vector!"=="!TRUE!" (
+        call :VECTOR_LENGTH PR_STR_length %2
+        set /a "PR_STR_length-=1"
+        set "%1=("
+        FOR /L %%G IN (0, 1, !PR_STR_length!) DO (
+            set "PR_STR_index=%%G"
+            call :VECTOR_GET PR_STR_item %2 PR_STR_index
+            call :PR_STR PR_STR_tmp PR_STR_item
+            IF %%G NEQ 0 (
+                set "%1=!%1! "
+            )
+            set "%1=!%1!!PR_STR_tmp!"
+        )
+        set "%1=!%1!)"
+        EXIT /B 0
+    )
+
+    call :ABORT "Unexpected type !%2:~0,1!"
 EXIT /B 0
 
 :START
@@ -330,20 +482,16 @@ GOTO :REPL
     set /p "_input=user> "
     :: If nothing is written, empty the input and reset the error level
     if errorlevel 1 set "_input=" & verify>nul
+
+    call :READ_STR form _input
+
 EXIT /B 0
 
 :EVAL
     set "_result="
-    call :TOKENIZER tokens _input
-    call :VECTOR_LENGTH tokens_length tokens
-
-    FOR /L %%G IN (0, 1, !tokens_length!) DO (
-        set "index=%%G"
-        call :VECTOR_GET token tokens index
-        call :ECHO token
-    )
 EXIT /B 0
 
 :PRINT
-    call :ECHO _result
+    call :PR_STR output form
+    call :ECHO output
 EXIT /B 0

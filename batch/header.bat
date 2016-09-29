@@ -22,3 +22,7 @@ GOTO :START
 :ECHO
     IF NOT "!%1!"=="" echo !%1!
 EXIT /B 0
+
+:ABORT
+    ECHO %~1
+EXIT

@@ -88,7 +88,7 @@ EXIT /B 0
         set "%1="
         EXIT /B 0
     )
-    call :STRING_LENGTH READ_STRING_length %3
+    call :STRLEN READ_STRING_length %3
     set "READ_STRING_match=!%2:~0,%READ_STRING_length%!"
     IF "!READ_STRING_match!"=="!%3!" (
         set "%1=!READ_STRING_match!"
@@ -178,6 +178,53 @@ EXIT /B 0
     set "%1=!TOKENIZER_list!"
 EXIT /B 0
 
-:READ_STR
+:READ_LIST
+    set /a "%3+=1"
+    call :VECTOR_NEW %1
+    call :VECTOR_LENGTH READ_LIST_length %2
+:READ_LIST_LOOP
+    IF !%3! GEQ !READ_LIST_length! (
+        call :ABORT "Expected ) at EOF"
+    )
 
+    call :VECTOR_GET READ_LIST_token %2 %3
+    IF "!READ_LIST_token!"==")" (
+        set /a "%3+=1"
+        EXIT /B 0
+    )
+
+    call :READ_FORM READ_LIST_form %2 %3
+    call :VECTOR_PUSH %1 READ_LIST_form
+
+    GOTO :READ_LIST_LOOP
+EXIT /B 0
+
+:IS_NUMERIC
+
+EXIT /B 0
+
+:READ_ATOM
+    call :VECTOR_GET READ_ATOM_token %2 %3
+    call :ATOM_NEW %1 READ_ATOM_token
+    set /a "%3+=1"
+EXIT /B 0
+
+:READ_FORM
+    call :VECTOR_LENGTH READ_FORM_length %2
+    IF !%3! GEQ !READ_FORM_length! (
+        call :ABORT "Unexpected EOF"
+    )
+
+    call :VECTOR_GET READ_FORM_token %2 %3
+    IF "!READ_FORM_token!"=="(" (
+        call :READ_LIST %1 %2 %3
+    ) ELSE (
+        call :READ_ATOM %1 %2 %3
+    )
+EXIT /B 0
+
+:READ_STR
+    call :TOKENIZER READ_STR_tokens %2
+    set "READ_STR_index=0"
+    call :READ_FORM %1 READ_STR_tokens READ_STR_index
 EXIT /B 0
