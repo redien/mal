@@ -68,21 +68,21 @@ EXIT /B 0
 EXIT /B 0
 
 :VECTOR_LENGTH
-    set "length=_vector_length_!%2:~1,8191!"
-    set "%1=!%length%!"
+    set "_length=_vector_length_!%2:~1,8191!"
+    set "%1=!%_length%!"
 EXIT /B 0
 
 :VECTOR_GET
-    set "ref=_vector_!%2:~1,8191!_!%3!"
-    set "%1=!%ref%!"
+    set "_ref=_vector_!%2:~1,8191!_!%3!"
+    set "%1=!%_ref%!"
 EXIT /B 0
 
 :VECTOR_PUSH
-    set "id=!%1:~1,8191!"
-    set "length=_vector_length_!id!"
-    set "ref=_vector_!id!_!%length%!"
-    set "%ref%=!%2!"
-    set /a "%length%+=1"
+    set "_id=!%1:~1,8191!"
+    set "_length=_vector_length_!_id!"
+    set "_ref=_vector_!_id!_!%_length%!"
+    set "%_ref%=!%2!"
+    set /a "%_length%+=1"
 EXIT /B 0
 
 :VECTOR?
@@ -95,20 +95,20 @@ EXIT /B 0
 
 :STRING_NEW
     set /a "_string_counter+=1"
-    set "length=_string_length_!_string_counter!"
-    call :STRLEN %length% %2
+    set "_length=_string_length_!_string_counter!"
+    call :STRLEN %_length% %2
     set "_string_contents_!_string_counter!=!%2!"
     set "%1=S!_string_counter!"
 EXIT /B 0
 
 :STRING_LENGTH
-    set "length=_string_length_!%2:~1,8191!"
-    set "%1=!%length%!"
+    set "_length=_string_length_!%2:~1,8191!"
+    set "%1=!%_length%!"
 EXIT /B 0
 
 :STRING_TO_STR
-    set "ref=_string_contents_!%2:~1,8191!"
-    set "%1=!%ref%!"
+    set "_ref=_string_contents_!%2:~1,8191!"
+    set "%1=!%_ref%!"
 EXIT /B 0
 
 :STRING?
@@ -121,20 +121,20 @@ EXIT /B 0
 
 :ATOM_NEW
     set /a "_atom_counter+=1"
-    set "length=_atom_length_!_atom_counter!"
-    call :STRLEN %length% %2
+    set "_length=_atom_length_!_atom_counter!"
+    call :STRLEN %_length% %2
     set "_atom_contents_!_atom_counter!=!%2!"
     set "%1=A!_atom_counter!"
 EXIT /B 0
 
 :ATOM_LENGTH
-    set "length=_atom_length_!%2:~1,8191!"
-    set "%1=!%length%!"
+    set "_length=_atom_length_!%2:~1,8191!"
+    set "%1=!%_length%!"
 EXIT /B 0
 
 :ATOM_TO_STR
-    set "ref=_atom_contents_!%2:~1,8191!"
-    set "%1=!%ref%!"
+    set "_ref=_atom_contents_!%2:~1,8191!"
+    set "%1=!%_ref%!"
 EXIT /B 0
 
 :ATOM?
@@ -152,8 +152,8 @@ EXIT /B 0
 EXIT /B 0
 
 :NUMBER_TO_STR
-    set "ref=_number_value!%2:~1,8191!"
-    set "%1=!%ref%!"
+    set "_ref=_number_value!%2:~1,8191!"
+    set "%1=!%_ref%!"
 EXIT /B 0
 
 :NUMBER_TO_STRING
@@ -403,8 +403,8 @@ EXIT /B 0
         EXIT /B 0
     )
 
-    call :READ_FORM READ_LIST_form %2 %3
-    call :VECTOR_PUSH %1 READ_LIST_form
+    call :READ_FORM form%_recursive_count% %2 %3
+    call :VECTOR_PUSH %1 form%_recursive_count%
 
     GOTO :READ_LIST_LOOP
 EXIT /B 0
@@ -420,6 +420,10 @@ EXIT /B 0
 EXIT /B 0
 
 :READ_FORM
+:: To get around the limitation of no local variables,
+:: we keep a recursion count to diffirentiate return variables
+:: for each recursion level.
+    set /a "_recursive_count+=1"
     call :VECTOR_LENGTH READ_FORM_length %2
     IF !%3! GEQ !READ_FORM_length! (
         call :ABORT "Unexpected EOF"
@@ -427,23 +431,35 @@ EXIT /B 0
 
     call :VECTOR_GET READ_FORM_token %2 %3
     IF "!READ_FORM_token!"=="(" (
-        call :READ_LIST %1 %2 %3
+        call :READ_LIST READ_FORM_form%_recursive_count% %2 %3
     ) ELSE (
-        call :READ_ATOM %1 %2 %3
+        call :READ_ATOM READ_FORM_form%_recursive_count% %2 %3
     )
+
+    set "%1=!READ_FORM_form%_recursive_count%!"
+    set /a "_recursive_count-=1"
 EXIT /B 0
 
 :READ_STR
     call :TOKENIZER READ_STR_tokens %2
+    set "_recursive_count=0"
     set "READ_STR_index=0"
     call :READ_FORM %1 READ_STR_tokens READ_STR_index
 EXIT /B 0
 
 :PR_STR
+    set "_recursive_count=0"
+    call :_PR_STR %1 %2
+EXIT /B 0
+
+:_PR_STR
+    set /a "_recursive_count+=1"
+
     call :ATOM? PR_STR_is_atom %2
     IF "!PR_STR_is_atom!"=="!TRUE!" (
         call :ATOM_TO_STR PR_STR_tmp %2
         set "%1=!PR_STR_tmp!"
+        set /a "_recursive_count-=1"
         EXIT /B 0
     )
 
@@ -454,14 +470,16 @@ EXIT /B 0
         set "%1=("
         FOR /L %%G IN (0, 1, !PR_STR_length!) DO (
             set "PR_STR_index=%%G"
-            call :VECTOR_GET PR_STR_item %2 PR_STR_index
-            call :PR_STR PR_STR_tmp PR_STR_item
+            call :VECTOR_GET PR_STR_item%_recursive_count% %2 PR_STR_index
+            call :_PR_STR PR_STR_str%_recursive_count% PR_STR_item%_recursive_count%
             IF %%G NEQ 0 (
                 set "%1=!%1! "
             )
-            set "%1=!%1!!PR_STR_tmp!"
+            set "%1=!%1!!PR_STR_str%_recursive_count%!"
         )
         set "%1=!%1!)"
+
+        set /a "_recursive_count-=1"
         EXIT /B 0
     )
 

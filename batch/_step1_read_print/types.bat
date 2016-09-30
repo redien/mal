@@ -39,21 +39,21 @@ EXIT /B 0
 EXIT /B 0
 
 :VECTOR_LENGTH
-    set "length=_vector_length_!%2:~1,8191!"
-    set "%1=!%length%!"
+    set "_length=_vector_length_!%2:~1,8191!"
+    set "%1=!%_length%!"
 EXIT /B 0
 
 :VECTOR_GET
-    set "ref=_vector_!%2:~1,8191!_!%3!"
-    set "%1=!%ref%!"
+    set "_ref=_vector_!%2:~1,8191!_!%3!"
+    set "%1=!%_ref%!"
 EXIT /B 0
 
 :VECTOR_PUSH
-    set "id=!%1:~1,8191!"
-    set "length=_vector_length_!id!"
-    set "ref=_vector_!id!_!%length%!"
-    set "%ref%=!%2!"
-    set /a "%length%+=1"
+    set "_id=!%1:~1,8191!"
+    set "_length=_vector_length_!_id!"
+    set "_ref=_vector_!_id!_!%_length%!"
+    set "%_ref%=!%2!"
+    set /a "%_length%+=1"
 EXIT /B 0
 
 :VECTOR?
@@ -66,20 +66,20 @@ EXIT /B 0
 
 :STRING_NEW
     set /a "_string_counter+=1"
-    set "length=_string_length_!_string_counter!"
-    call :STRLEN %length% %2
+    set "_length=_string_length_!_string_counter!"
+    call :STRLEN %_length% %2
     set "_string_contents_!_string_counter!=!%2!"
     set "%1=S!_string_counter!"
 EXIT /B 0
 
 :STRING_LENGTH
-    set "length=_string_length_!%2:~1,8191!"
-    set "%1=!%length%!"
+    set "_length=_string_length_!%2:~1,8191!"
+    set "%1=!%_length%!"
 EXIT /B 0
 
 :STRING_TO_STR
-    set "ref=_string_contents_!%2:~1,8191!"
-    set "%1=!%ref%!"
+    set "_ref=_string_contents_!%2:~1,8191!"
+    set "%1=!%_ref%!"
 EXIT /B 0
 
 :STRING?
@@ -92,20 +92,20 @@ EXIT /B 0
 
 :ATOM_NEW
     set /a "_atom_counter+=1"
-    set "length=_atom_length_!_atom_counter!"
-    call :STRLEN %length% %2
+    set "_length=_atom_length_!_atom_counter!"
+    call :STRLEN %_length% %2
     set "_atom_contents_!_atom_counter!=!%2!"
     set "%1=A!_atom_counter!"
 EXIT /B 0
 
 :ATOM_LENGTH
-    set "length=_atom_length_!%2:~1,8191!"
-    set "%1=!%length%!"
+    set "_length=_atom_length_!%2:~1,8191!"
+    set "%1=!%_length%!"
 EXIT /B 0
 
 :ATOM_TO_STR
-    set "ref=_atom_contents_!%2:~1,8191!"
-    set "%1=!%ref%!"
+    set "_ref=_atom_contents_!%2:~1,8191!"
+    set "%1=!%_ref%!"
 EXIT /B 0
 
 :ATOM?
@@ -123,8 +123,8 @@ EXIT /B 0
 EXIT /B 0
 
 :NUMBER_TO_STR
-    set "ref=_number_value!%2:~1,8191!"
-    set "%1=!%ref%!"
+    set "_ref=_number_value!%2:~1,8191!"
+    set "%1=!%_ref%!"
 EXIT /B 0
 
 :NUMBER_TO_STRING
