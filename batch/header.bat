@@ -25,4 +25,5 @@ EXIT /B 0
 
 :ABORT
     ECHO %~1
+    GOTO :START
 EXIT

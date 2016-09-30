@@ -26,6 +26,7 @@ EXIT /B 0
 
 :ABORT
     ECHO %~1
+    GOTO :START
 EXIT
 
 :NIL?
@@ -499,7 +500,6 @@ EXIT /B 0
 :REPL
     set "_input="
     call :READ
-    IF "!_input!"=="exit" EXIT /B 0 :: Exit command used for testing purposes
     call :EVAL
     call :PRINT
 GOTO :REPL
@@ -510,8 +510,9 @@ GOTO :REPL
     :: If nothing is written, empty the input and reset the error level
     if errorlevel 1 set "_input=" & verify>nul
 
-    call :READ_STR form _input
+    IF "!_input!"=="exit" EXIT :: Exit command used for testing purposes
 
+    call :READ_STR form _input
 EXIT /B 0
 
 :EVAL
