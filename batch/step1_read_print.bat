@@ -394,7 +394,7 @@ EXIT /B 0
     call :VECTOR_LENGTH READ_LIST_length %2
 :READ_LIST_LOOP
     IF !%3! GEQ !READ_LIST_length! (
-        call :ABORT "Expected ) at EOF"
+        call :ABORT "expected ')', got EOF"
     )
 
     call :VECTOR_GET READ_LIST_token %2 %3
