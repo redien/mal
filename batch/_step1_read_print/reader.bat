@@ -211,8 +211,11 @@ EXIT /B 0
 
 :READ_FORM
 :: To get around the limitation of no local variables,
-:: we keep a recursion count to diffirentiate return variables
+:: we keep a recursion count to diffirentiate variables
 :: for each recursion level.
+
+:: This can be solved better in the future by implementing stack-based
+:: algorithms instead.
     set /a "_recursive_count+=1"
     call :VECTOR_LENGTH READ_FORM_length %2
     IF !%3! GEQ !READ_FORM_length! (

@@ -1,5 +1,11 @@
 
 :PR_STR
+:: To get around the limitation of no local variables,
+:: we keep a recursion count to diffirentiate variables
+:: for each recursion level.
+
+:: This can be solved better in the future by implementing stack-based
+:: algorithms instead.
     set "_recursive_count=0"
     call :_PR_STR %1 %2
 EXIT /B 0
