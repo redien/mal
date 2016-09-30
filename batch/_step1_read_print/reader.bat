@@ -209,6 +209,50 @@ EXIT /B 0
     set /a "%3+=1"
 EXIT /B 0
 
+:READ_QUOTE
+    set /a "%3+=1"
+
+    call :VECTOR_NEW %1
+    set "READ_QUOTE_quote=quote"
+    call :ATOM_NEW READ_QUOTE_atom READ_QUOTE_quote
+    call :VECTOR_PUSH %1 READ_QUOTE_atom
+    call :READ_FORM READ_QUOTE_form%_recursive_count% %2 %3
+    call :VECTOR_PUSH %1 READ_QUOTE_form%_recursive_count%
+EXIT /B 0
+
+:READ_QUASIQUOTE
+    set /a "%3+=1"
+
+    call :VECTOR_NEW %1
+    set "READ_QUOTE_quote=quasiquote"
+    call :ATOM_NEW READ_QUOTE_atom READ_QUOTE_quote
+    call :VECTOR_PUSH %1 READ_QUOTE_atom
+    call :READ_FORM READ_QUOTE_form%_recursive_count% %2 %3
+    call :VECTOR_PUSH %1 READ_QUOTE_form%_recursive_count%
+EXIT /B 0
+
+:READ_UNQUOTE
+    set /a "%3+=1"
+
+    call :VECTOR_NEW %1
+    set "READ_QUOTE_quote=unquote"
+    call :ATOM_NEW READ_QUOTE_atom READ_QUOTE_quote
+    call :VECTOR_PUSH %1 READ_QUOTE_atom
+    call :READ_FORM READ_QUOTE_form%_recursive_count% %2 %3
+    call :VECTOR_PUSH %1 READ_QUOTE_form%_recursive_count%
+EXIT /B 0
+
+:READ_SPLICE_UNQUOTE
+    set /a "%3+=1"
+
+    call :VECTOR_NEW %1
+    set "READ_QUOTE_quote=splice-unquote"
+    call :ATOM_NEW READ_QUOTE_atom READ_QUOTE_quote
+    call :VECTOR_PUSH %1 READ_QUOTE_atom
+    call :READ_FORM READ_QUOTE_form%_recursive_count% %2 %3
+    call :VECTOR_PUSH %1 READ_QUOTE_form%_recursive_count%
+EXIT /B 0
+
 :READ_FORM
 :: To get around the limitation of no local variables,
 :: we keep a recursion count to diffirentiate variables
@@ -222,11 +266,29 @@ EXIT /B 0
         call :ABORT "Unexpected EOF"
     )
 
+    :: These nested IF statements slow down the reader significantly, can we
+    :: branch some other way to make it faster?
     call :VECTOR_GET READ_FORM_token %2 %3
     IF "!READ_FORM_token!"=="(" (
         call :READ_LIST READ_FORM_form%_recursive_count% %2 %3
     ) ELSE (
-        call :READ_ATOM READ_FORM_form%_recursive_count% %2 %3
+        IF "!READ_FORM_token!"=="!_singlequote!" (
+            call :READ_QUOTE READ_FORM_form%_recursive_count% %2 %3
+        ) ELSE (
+            IF "!READ_FORM_token!"=="!_backtick!" (
+                call :READ_QUASIQUOTE READ_FORM_form%_recursive_count% %2 %3
+            ) ELSE (
+                IF "!READ_FORM_token!"=="!_tilde!" (
+                    call :READ_UNQUOTE READ_FORM_form%_recursive_count% %2 %3
+                ) ELSE (
+                    IF "!READ_FORM_token!"=="!_splice_unquote!" (
+                        call :READ_SPLICE_UNQUOTE READ_FORM_form%_recursive_count% %2 %3
+                    ) ELSE (
+                        call :READ_ATOM READ_FORM_form%_recursive_count% %2 %3
+                    )
+                )
+            )
+        )
     )
 
     set "%1=!READ_FORM_form%_recursive_count%!"
