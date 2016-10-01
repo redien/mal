@@ -25,12 +25,35 @@ EXIT /B 0
 EXIT /B 0
 
 :LIST?
-    IF "!%~2:~0,1!"=="L" (
+    IF "!%2!"=="!NIL!" (
         set "%~1=!TRUE!"
     ) ELSE (
-        set "%~1=!FALSE!"
+        IF "!%~2:~0,1!"=="L" (
+            set "%~1=!TRUE!"
+        ) ELSE (
+            set "%~1=!FALSE!"
+        )
     )
 EXIT /B 0
+
+:LIST_REVERSE
+    set "%1=!NIL!"
+    call :_LIST_REVERSE %1 %2
+EXIT /B 0
+
+:_LIST_REVERSE
+    IF "!%2!"=="!NIL!" (
+        EXIT /B 0
+    )
+
+    call :FIRST LIST_REVERSE_first %2
+    call :REST LIST_REVERSE_rest %2
+
+    call :CONS %1 LIST_REVERSE_first %1
+
+    call :_LIST_REVERSE %1 LIST_REVERSE_rest
+EXIT /B 0
+
 
 :VECTOR_NEW
     set /a "_vector_counter+=1"

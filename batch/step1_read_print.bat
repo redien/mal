@@ -59,12 +59,35 @@ EXIT /B 0
 EXIT /B 0
 
 :LIST?
-    IF "!%~2:~0,1!"=="L" (
+    IF "!%2!"=="!NIL!" (
         set "%~1=!TRUE!"
     ) ELSE (
-        set "%~1=!FALSE!"
+        IF "!%~2:~0,1!"=="L" (
+            set "%~1=!TRUE!"
+        ) ELSE (
+            set "%~1=!FALSE!"
+        )
     )
 EXIT /B 0
+
+:LIST_REVERSE
+    set "%1=!NIL!"
+    call :_LIST_REVERSE %1 %2
+EXIT /B 0
+
+:_LIST_REVERSE
+    IF "!%2!"=="!NIL!" (
+        EXIT /B 0
+    )
+
+    call :FIRST LIST_REVERSE_first %2
+    call :REST LIST_REVERSE_rest %2
+
+    call :CONS %1 LIST_REVERSE_first %1
+
+    call :_LIST_REVERSE %1 LIST_REVERSE_rest
+EXIT /B 0
+
 
 :VECTOR_NEW
     set /a "_vector_counter+=1"
@@ -395,7 +418,7 @@ EXIT /B 0
 
 :READ_LIST
     set /a "%3+=1"
-    call :VECTOR_NEW %1
+    set "%1=!NIL!"
     call :VECTOR_LENGTH READ_LIST_length %2
 :READ_LIST_LOOP
     IF !%3! GEQ !READ_LIST_length! (
@@ -405,13 +428,36 @@ EXIT /B 0
     call :VECTOR_GET READ_LIST_token %2 %3
     IF "!READ_LIST_token!"==")" (
         set /a "%3+=1"
+        call :LIST_REVERSE tmp %1
+        set "%1=!tmp!"
+        EXIT /B 0
+    )
+
+    call :READ_FORM form%_recursive_count% %2 %3
+    call :CONS %1 form%_recursive_count% %1
+
+    GOTO :READ_LIST_LOOP
+EXIT /B 0
+
+:READ_VECTOR
+    set /a "%3+=1"
+    call :VECTOR_NEW %1
+    call :VECTOR_LENGTH READ_LIST_length %2
+:READ_VECTOR_LOOP
+    IF !%3! GEQ !READ_LIST_length! (
+        call :ABORT "expected ']', got EOF"
+    )
+
+    call :VECTOR_GET READ_LIST_token %2 %3
+    IF "!READ_LIST_token!"=="]" (
+        set /a "%3+=1"
         EXIT /B 0
     )
 
     call :READ_FORM form%_recursive_count% %2 %3
     call :VECTOR_PUSH %1 form%_recursive_count%
 
-    GOTO :READ_LIST_LOOP
+    GOTO :READ_VECTOR_LOOP
 EXIT /B 0
 
 :IS_NUMERIC
@@ -424,48 +470,14 @@ EXIT /B 0
     set /a "%3+=1"
 EXIT /B 0
 
-:READ_QUOTE
+:READ_PREFIX
     set /a "%3+=1"
 
-    call :VECTOR_NEW %1
-    set "READ_QUOTE_quote=quote"
-    call :ATOM_NEW READ_QUOTE_atom READ_QUOTE_quote
-    call :VECTOR_PUSH %1 READ_QUOTE_atom
-    call :READ_FORM READ_QUOTE_form%_recursive_count% %2 %3
-    call :VECTOR_PUSH %1 READ_QUOTE_form%_recursive_count%
-EXIT /B 0
-
-:READ_QUASIQUOTE
-    set /a "%3+=1"
-
-    call :VECTOR_NEW %1
-    set "READ_QUOTE_quote=quasiquote"
-    call :ATOM_NEW READ_QUOTE_atom READ_QUOTE_quote
-    call :VECTOR_PUSH %1 READ_QUOTE_atom
-    call :READ_FORM READ_QUOTE_form%_recursive_count% %2 %3
-    call :VECTOR_PUSH %1 READ_QUOTE_form%_recursive_count%
-EXIT /B 0
-
-:READ_UNQUOTE
-    set /a "%3+=1"
-
-    call :VECTOR_NEW %1
-    set "READ_QUOTE_quote=unquote"
-    call :ATOM_NEW READ_QUOTE_atom READ_QUOTE_quote
-    call :VECTOR_PUSH %1 READ_QUOTE_atom
-    call :READ_FORM READ_QUOTE_form%_recursive_count% %2 %3
-    call :VECTOR_PUSH %1 READ_QUOTE_form%_recursive_count%
-EXIT /B 0
-
-:READ_SPLICE_UNQUOTE
-    set /a "%3+=1"
-
-    call :VECTOR_NEW %1
-    set "READ_QUOTE_quote=splice-unquote"
-    call :ATOM_NEW READ_QUOTE_atom READ_QUOTE_quote
-    call :VECTOR_PUSH %1 READ_QUOTE_atom
-    call :READ_FORM READ_QUOTE_form%_recursive_count% %2 %3
-    call :VECTOR_PUSH %1 READ_QUOTE_form%_recursive_count%
+    set "%1=!NIL!"
+    call :ATOM_NEW READ_PREFIX_atom%_recursive_count% %4
+    call :READ_FORM READ_PREFIX_form%_recursive_count% %2 %3
+    call :CONS %1 READ_PREFIX_form%_recursive_count% %1
+    call :CONS %1 READ_PREFIX_atom%_recursive_count% %1
 EXIT /B 0
 
 :READ_FORM
@@ -473,8 +485,7 @@ EXIT /B 0
 :: we keep a recursion count to diffirentiate variables
 :: for each recursion level.
 
-:: This can be solved better in the future by implementing stack-based
-:: algorithms instead.
+:: This can be solved better in the future by making them tail-recursive
     set /a "_recursive_count+=1"
     call :VECTOR_LENGTH READ_FORM_length %2
     IF !%3! GEQ !READ_FORM_length! (
@@ -487,19 +498,32 @@ EXIT /B 0
     IF "!READ_FORM_token!"=="(" (
         call :READ_LIST READ_FORM_form%_recursive_count% %2 %3
     ) ELSE (
-        IF "!READ_FORM_token!"=="!_singlequote!" (
-            call :READ_QUOTE READ_FORM_form%_recursive_count% %2 %3
+        IF "!READ_FORM_token!"=="[" (
+            call :READ_VECTOR READ_FORM_form%_recursive_count% %2 %3
         ) ELSE (
-            IF "!READ_FORM_token!"=="!_backtick!" (
-                call :READ_QUASIQUOTE READ_FORM_form%_recursive_count% %2 %3
+            IF "!READ_FORM_token!"=="!_singlequote!" (
+                set "READ_FORM_quote=quote"
+                call :READ_PREFIX READ_FORM_form%_recursive_count% %2 %3 READ_FORM_quote
             ) ELSE (
-                IF "!READ_FORM_token!"=="!_tilde!" (
-                    call :READ_UNQUOTE READ_FORM_form%_recursive_count% %2 %3
+                IF "!READ_FORM_token!"=="!_backtick!" (
+                    set "READ_FORM_quote=quasiquote"
+                    call :READ_PREFIX READ_FORM_form%_recursive_count% %2 %3 READ_FORM_quote
                 ) ELSE (
-                    IF "!READ_FORM_token!"=="!_splice_unquote!" (
-                        call :READ_SPLICE_UNQUOTE READ_FORM_form%_recursive_count% %2 %3
+                    IF "!READ_FORM_token!"=="!_tilde!" (
+                        set "READ_FORM_quote=unquote"
+                        call :READ_PREFIX READ_FORM_form%_recursive_count% %2 %3 READ_FORM_quote
                     ) ELSE (
-                        call :READ_ATOM READ_FORM_form%_recursive_count% %2 %3
+                        IF "!READ_FORM_token!"=="!_splice_unquote!" (
+                            set "READ_FORM_quote=splice-unquote"
+                            call :READ_PREFIX READ_FORM_form%_recursive_count% %2 %3 READ_FORM_quote
+                        ) ELSE (
+                            IF "!READ_FORM_token!"=="@" (
+                                set "READ_FORM_quote=deref"
+                                call :READ_PREFIX READ_FORM_form%_recursive_count% %2 %3 READ_FORM_quote
+                            ) ELSE (
+                                call :READ_ATOM READ_FORM_form%_recursive_count% %2 %3
+                            )
+                        )
                     )
                 )
             )
@@ -522,8 +546,7 @@ EXIT /B 0
 :: we keep a recursion count to diffirentiate variables
 :: for each recursion level.
 
-:: This can be solved better in the future by implementing stack-based
-:: algorithms instead.
+:: This can be solved better in the future by making them tail-recursive
     set "_recursive_count=0"
     call :_PR_STR %1 %2
 EXIT /B 0
@@ -539,11 +562,36 @@ EXIT /B 0
         EXIT /B 0
     )
 
+    call :LIST? PR_STR_is_list %2
+    IF "!PR_STR_is_list!"=="!TRUE!" (
+        set "%1=("
+        set "_PR_STR_tail%_recursive_count%=!%2!"
+:_PR_STR_LIST_LOOP
+        call :NIL? _PR_STR_is_nil _PR_STR_tail%_recursive_count%
+        IF "!_PR_STR_is_nil!"=="!FALSE!" (
+            call :FIRST _PR_STR_form _PR_STR_tail%_recursive_count%
+            call :REST _PR_STR_tail%_recursive_count% _PR_STR_tail%_recursive_count%
+
+            call :_PR_STR PR_STR_str%_recursive_count% _PR_STR_form
+
+            set "%1=!%1!!PR_STR_str%_recursive_count%!"
+            call :NIL? _PR_STR_is_nil _PR_STR_tail%_recursive_count%
+            IF "!_PR_STR_is_nil!"=="!FALSE!" (
+                set "%1=!%1! "
+            )
+            GOTO :_PR_STR_LIST_LOOP
+        )
+
+        set "%1=!%1!)"
+        set /a "_recursive_count-=1"
+        EXIT /B 0
+    )
+
     call :VECTOR? PR_STR_is_vector %2
     IF "!PR_STR_is_vector!"=="!TRUE!" (
         call :VECTOR_LENGTH PR_STR_length %2
         set /a "PR_STR_length-=1"
-        set "%1=("
+        set "%1=["
         FOR /L %%G IN (0, 1, !PR_STR_length!) DO (
             set "PR_STR_index=%%G"
             call :VECTOR_GET PR_STR_item%_recursive_count% %2 PR_STR_index
@@ -553,7 +601,7 @@ EXIT /B 0
             )
             set "%1=!%1!!PR_STR_str%_recursive_count%!"
         )
-        set "%1=!%1!)"
+        set "%1=!%1!]"
 
         set /a "_recursive_count-=1"
         EXIT /B 0
