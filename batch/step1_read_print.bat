@@ -576,7 +576,7 @@ EXIT /B 0
         call :ABORT "Unexpected EOF"
     )
 
-    :: These nested IF statements slow down the reader significantly, can we
+    :: These IF statements slow down the reader significantly, can we
     :: branch some other way to make it faster?
     call :VECTOR_GET READ_FORM_token %2 %3
     IF "!READ_FORM_token!"=="(" (
