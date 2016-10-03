@@ -2,6 +2,7 @@
 @echo off
 
 CALL :BUILD_STEP step1_read_print
+CALL :BUILD_STEP step2_eval
 EXIT /B 0
 
 :BUILD_STEP

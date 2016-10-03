@@ -223,12 +223,38 @@ EXIT /B 0
 EXIT /B 0
 
 :IS_NUMERIC
-
+    set "%1=!FALSE!"
+    IF "!%2:~0,1!"=="1" (set "%1=!TRUE!" & EXIT /B 0)
+    IF "!%2:~0,1!"=="2" (set "%1=!TRUE!" & EXIT /B 0)
+    IF "!%2:~0,1!"=="3" (set "%1=!TRUE!" & EXIT /B 0)
+    IF "!%2:~0,1!"=="4" (set "%1=!TRUE!" & EXIT /B 0)
+    IF "!%2:~0,1!"=="5" (set "%1=!TRUE!" & EXIT /B 0)
+    IF "!%2:~0,1!"=="6" (set "%1=!TRUE!" & EXIT /B 0)
+    IF "!%2:~0,1!"=="7" (set "%1=!TRUE!" & EXIT /B 0)
+    IF "!%2:~0,1!"=="8" (set "%1=!TRUE!" & EXIT /B 0)
+    IF "!%2:~0,1!"=="9" (set "%1=!TRUE!" & EXIT /B 0)
+    IF "!%2:~0,1!"=="0" (set "%1=!TRUE!" & EXIT /B 0)
+    IF "!%2:~0,2!"=="-1" (set "%1=!TRUE!" & EXIT /B 0)
+    IF "!%2:~0,2!"=="-2" (set "%1=!TRUE!" & EXIT /B 0)
+    IF "!%2:~0,2!"=="-3" (set "%1=!TRUE!" & EXIT /B 0)
+    IF "!%2:~0,2!"=="-4" (set "%1=!TRUE!" & EXIT /B 0)
+    IF "!%2:~0,2!"=="-5" (set "%1=!TRUE!" & EXIT /B 0)
+    IF "!%2:~0,2!"=="-6" (set "%1=!TRUE!" & EXIT /B 0)
+    IF "!%2:~0,2!"=="-7" (set "%1=!TRUE!" & EXIT /B 0)
+    IF "!%2:~0,2!"=="-8" (set "%1=!TRUE!" & EXIT /B 0)
+    IF "!%2:~0,2!"=="-9" (set "%1=!TRUE!" & EXIT /B 0)
+    IF "!%2:~0,2!"=="-0" (set "%1=!TRUE!" & EXIT /B 0)
 EXIT /B 0
 
 :READ_ATOM
     call :VECTOR_GET READ_ATOM_token %2 %3
     call :ATOM_NEW %1 READ_ATOM_token
+    set /a "%3+=1"
+EXIT /B 0
+
+:READ_NUMBER
+    call :VECTOR_GET READ_ATOM_token %2 %3
+    call :NUMBER_NEW %1 READ_ATOM_token
     set /a "%3+=1"
 EXIT /B 0
 
@@ -335,6 +361,12 @@ EXIT /B 0
     IF "!READ_FORM_token!"=="!_with_meta!" (
         set "READ_FORM_quote=with-meta"
         call :READ_PREFIX2 READ_FORM_form%_recursive_count% %2 %3 READ_FORM_quote
+        GOTO :READ_FORM_EXIT
+    )
+
+    call :IS_NUMERIC READ_FORM_is_numeric READ_FORM_token
+    IF "!READ_FORM_is_numeric!"=="!TRUE!" (
+        call :READ_NUMBER READ_FORM_form%_recursive_count% %2 %3
         GOTO :READ_FORM_EXIT
     )
 

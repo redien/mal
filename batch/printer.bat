@@ -20,6 +20,21 @@ EXIT /B 0
         EXIT /B 0
     )
 
+    call :NUMBER? PR_STR_is_number %2
+    IF "!PR_STR_is_number!"=="!TRUE!" (
+        call :NUMBER_TO_STR PR_STR_tmp %2
+        set "%1=!PR_STR_tmp!"
+        set /a "_recursive_count-=1"
+        EXIT /B 0
+    )
+
+    call :FUNCTION? PR_STR_is_function %2
+    IF "!PR_STR_is_function!"=="!TRUE!" (
+        set "%1=#<function>"
+        set /a "_recursive_count-=1"
+        EXIT /B 0
+    )
+
     call :LIST? PR_STR_is_list %2
     IF "!PR_STR_is_list!"=="!TRUE!" (
         set "%1=("
@@ -87,5 +102,6 @@ EXIT /B 0
         EXIT /B 0
     )
 
+    echo !%2!
     call :ABORT "Unexpected type !%2:~0,1!"
 EXIT /B 0

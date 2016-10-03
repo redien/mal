@@ -54,6 +54,27 @@ EXIT /B 0
     call :_LIST_REVERSE %1 LIST_REVERSE_rest
 EXIT /B 0
 
+:LIST_MAP
+    set "LIST_MAP_list%_recursive_count%=!NIL!"
+    call :_LIST_MAP LIST_MAP_list%_recursive_count% %2 %3 %4
+    call :LIST_REVERSE %1 LIST_MAP_list%_recursive_count%
+EXIT /B 0
+
+:_LIST_MAP
+    IF "!%2!"=="!NIL!" (
+        EXIT /B 0
+    )
+
+    call :FIRST LIST_MAP_first%_recursive_count% %2
+    call :REST LIST_MAP_rest%_recursive_count% %2
+
+    call %3 LIST_MAP_mapped%_recursive_count% LIST_MAP_first%_recursive_count% %4
+
+    call :CONS %1 LIST_MAP_mapped%_recursive_count% %1
+
+    call :_LIST_MAP %1 LIST_MAP_rest%_recursive_count% %3 %4
+EXIT /B 0
+
 
 :VECTOR_NEW
     set /a "_vector_counter+=1"
@@ -133,6 +154,25 @@ EXIT /B 0
 
 :ATOM?
     IF "!%2:~0,1!"=="A" (
+        set "%1=!TRUE!"
+    ) ELSE (
+        set "%1=!FALSE!"
+    )
+EXIT /B 0
+
+:FUNCTION_NEW
+    set /a "_function_counter+=1"
+    set "_function_name_!_function_counter!=!%2!"
+    set "%1=F!_function_counter!"
+EXIT /B 0
+
+:FUNCTION_TO_STR
+    set "_ref=_function_name_!%2:~1,8191!"
+    set "%1=!%_ref%!"
+EXIT /B 0
+
+:FUNCTION?
+    IF "!%2:~0,1!"=="F" (
         set "%1=!TRUE!"
     ) ELSE (
         set "%1=!FALSE!"
