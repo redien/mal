@@ -65,5 +65,27 @@ EXIT /B 0
         EXIT /B 0
     )
 
+    call :HASHMAP? PR_STR_is_hashmap %2
+    IF "!PR_STR_is_hashmap!"=="!TRUE!" (
+        call :HASHMAP_KEYS PR_STR_keys%_recursive_count% %2
+        call :VECTOR_LENGTH PR_STR_length PR_STR_keys%_recursive_count%
+        set /a "PR_STR_length-=1"
+        set "%1={"
+        FOR /L %%G IN (0, 1, !PR_STR_length!) DO (
+            set "PR_STR_index=%%G"
+            call :VECTOR_GET PR_STR_key%_recursive_count% PR_STR_keys%_recursive_count% PR_STR_index
+            call :HASHMAP_GET PR_STR_value%_recursive_count% %2 PR_STR_key%_recursive_count%
+            call :_PR_STR PR_STR_str%_recursive_count% PR_STR_value%_recursive_count%
+            IF %%G NEQ 0 (
+                set "%1=!%1! "
+            )
+            set "%1=!%1!!PR_STR_key%_recursive_count%! !PR_STR_str%_recursive_count%!"
+        )
+        set "%1=!%1!}"
+
+        set /a "_recursive_count-=1"
+        EXIT /B 0
+    )
+
     call :ABORT "Unexpected type !%2:~0,1!"
 EXIT /B 0

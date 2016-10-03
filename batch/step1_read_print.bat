@@ -197,6 +197,59 @@ EXIT /B 0
     )
 EXIT /B 0
 
+
+:HASHMAP_NEW
+    set /a "_hashmap_counter+=1"
+    call :VECTOR_NEW _hashmap_keys!_hashmap_counter!
+    call :VECTOR_NEW _hashmap_values!_hashmap_counter!
+    set "%1=H!_hashmap_counter!"
+EXIT /B 0
+
+:HASHMAP_INSERT
+    set "HASHMAP_INSERT_id=!%1:~1,8191!"
+    call :VECTOR_PUSH _hashmap_keys!HASHMAP_INSERT_id! %2
+    call :VECTOR_PUSH _hashmap_values!HASHMAP_INSERT_id! %3
+EXIT /B 0
+
+:_HASHMAP_INDEX_OF_KEY
+    set "_HASHMAP_INDEX_OF_KEY_id=!%2:~1,8191!"
+    set "%1=!NIL!"
+    call :VECTOR_LENGTH _HASHMAP_INDEX_OF_KEY_length _hashmap_keys!_HASHMAP_INDEX_OF_KEY_id!
+    set /a "_HASHMAP_INDEX_OF_KEY_length-=1"
+    FOR /L %%G IN (0, 1, !_HASHMAP_INDEX_OF_KEY_length!) DO (
+        set "_HASHMAP_INDEX_OF_KEY_index=%%G"
+        call :VECTOR_GET _HASHMAP_INDEX_OF_KEY_key _hashmap_keys!_HASHMAP_INDEX_OF_KEY_id! _HASHMAP_INDEX_OF_KEY_index
+        IF "!_HASHMAP_INDEX_OF_KEY_key!"=="!%3!" (
+            set "%1=%%G"
+        )
+    )
+EXIT /B 0
+
+:HASHMAP_GET
+    set "HASHMAP_GET_id=!%2:~1,8191!"
+    call :_HASHMAP_INDEX_OF_KEY HASHMAP_GET_key_index %2 %3
+    IF "!HASHMAP_GET_key_index!"=="!NIL!" (
+        set "%1=!NIL!"
+        EXIT /B 0
+    )
+
+    call :VECTOR_GET %1 _hashmap_values!HASHMAP_GET_id! HASHMAP_GET_key_index
+EXIT /B 0
+
+:HASHMAP_KEYS
+    set "_id=!%2:~1,8191!"
+    set "_ref=_hashmap_keys!_id!"
+    set "%1=!%_ref%!"
+EXIT /B 0
+
+:HASHMAP?
+    IF "!%2:~0,1!"=="H" (
+        set "%1=!TRUE!"
+    ) ELSE (
+        set "%1=!FALSE!"
+    )
+EXIT /B 0
+
 :SUBSTRING
     set "SUBSTRING_start=!%~3!"
     set "SUBSTRING_length=!%~4!"
@@ -470,6 +523,24 @@ EXIT /B 0
     set /a "%3+=1"
 EXIT /B 0
 
+:READ_HASHMAP
+    call :HASHMAP_NEW %1
+    set /a "%3+=1"
+
+:READ_HASHMAP_LOOP
+    call :VECTOR_GET READ_HASHMAP_key%_recursive_count% %2 %3
+    set /a "%3+=1"
+    IF "!READ_HASHMAP_key%_recursive_count%!"=="}" (
+        EXIT /B 0
+    )
+
+    call :READ_FORM READ_HASHMAP_value%_recursive_count% %2 %3
+
+    call :HASHMAP_INSERT %1 READ_HASHMAP_key%_recursive_count% READ_HASHMAP_value%_recursive_count%
+
+    GOTO :READ_HASHMAP_LOOP
+EXIT /B 0
+
 :READ_PREFIX
     set /a "%3+=1"
 
@@ -498,30 +569,34 @@ EXIT /B 0
     IF "!READ_FORM_token!"=="(" (
         call :READ_LIST READ_FORM_form%_recursive_count% %2 %3
     ) ELSE (
-        IF "!READ_FORM_token!"=="[" (
-            call :READ_VECTOR READ_FORM_form%_recursive_count% %2 %3
+        IF "!READ_FORM_token!"=="{" (
+            call :READ_HASHMAP READ_FORM_form%_recursive_count% %2 %3
         ) ELSE (
-            IF "!READ_FORM_token!"=="!_singlequote!" (
-                set "READ_FORM_quote=quote"
-                call :READ_PREFIX READ_FORM_form%_recursive_count% %2 %3 READ_FORM_quote
+            IF "!READ_FORM_token!"=="[" (
+                call :READ_VECTOR READ_FORM_form%_recursive_count% %2 %3
             ) ELSE (
-                IF "!READ_FORM_token!"=="!_backtick!" (
-                    set "READ_FORM_quote=quasiquote"
+                IF "!READ_FORM_token!"=="!_singlequote!" (
+                    set "READ_FORM_quote=quote"
                     call :READ_PREFIX READ_FORM_form%_recursive_count% %2 %3 READ_FORM_quote
                 ) ELSE (
-                    IF "!READ_FORM_token!"=="!_tilde!" (
-                        set "READ_FORM_quote=unquote"
+                    IF "!READ_FORM_token!"=="!_backtick!" (
+                        set "READ_FORM_quote=quasiquote"
                         call :READ_PREFIX READ_FORM_form%_recursive_count% %2 %3 READ_FORM_quote
                     ) ELSE (
-                        IF "!READ_FORM_token!"=="!_splice_unquote!" (
-                            set "READ_FORM_quote=splice-unquote"
+                        IF "!READ_FORM_token!"=="!_tilde!" (
+                            set "READ_FORM_quote=unquote"
                             call :READ_PREFIX READ_FORM_form%_recursive_count% %2 %3 READ_FORM_quote
                         ) ELSE (
-                            IF "!READ_FORM_token!"=="@" (
-                                set "READ_FORM_quote=deref"
+                            IF "!READ_FORM_token!"=="!_splice_unquote!" (
+                                set "READ_FORM_quote=splice-unquote"
                                 call :READ_PREFIX READ_FORM_form%_recursive_count% %2 %3 READ_FORM_quote
                             ) ELSE (
-                                call :READ_ATOM READ_FORM_form%_recursive_count% %2 %3
+                                IF "!READ_FORM_token!"=="@" (
+                                    set "READ_FORM_quote=deref"
+                                    call :READ_PREFIX READ_FORM_form%_recursive_count% %2 %3 READ_FORM_quote
+                                ) ELSE (
+                                    call :READ_ATOM READ_FORM_form%_recursive_count% %2 %3
+                                )
                             )
                         )
                     )
@@ -602,6 +677,28 @@ EXIT /B 0
             set "%1=!%1!!PR_STR_str%_recursive_count%!"
         )
         set "%1=!%1!]"
+
+        set /a "_recursive_count-=1"
+        EXIT /B 0
+    )
+
+    call :HASHMAP? PR_STR_is_hashmap %2
+    IF "!PR_STR_is_hashmap!"=="!TRUE!" (
+        call :HASHMAP_KEYS PR_STR_keys%_recursive_count% %2
+        call :VECTOR_LENGTH PR_STR_length PR_STR_keys%_recursive_count%
+        set /a "PR_STR_length-=1"
+        set "%1={"
+        FOR /L %%G IN (0, 1, !PR_STR_length!) DO (
+            set "PR_STR_index=%%G"
+            call :VECTOR_GET PR_STR_key%_recursive_count% PR_STR_keys%_recursive_count% PR_STR_index
+            call :HASHMAP_GET PR_STR_value%_recursive_count% %2 PR_STR_key%_recursive_count%
+            call :_PR_STR PR_STR_str%_recursive_count% PR_STR_value%_recursive_count%
+            IF %%G NEQ 0 (
+                set "%1=!%1! "
+            )
+            set "%1=!%1!!PR_STR_key%_recursive_count%! !PR_STR_str%_recursive_count%!"
+        )
+        set "%1=!%1!}"
 
         set /a "_recursive_count-=1"
         EXIT /B 0

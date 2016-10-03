@@ -162,3 +162,56 @@ EXIT /B 0
         set "%1=!FALSE!"
     )
 EXIT /B 0
+
+
+:HASHMAP_NEW
+    set /a "_hashmap_counter+=1"
+    call :VECTOR_NEW _hashmap_keys!_hashmap_counter!
+    call :VECTOR_NEW _hashmap_values!_hashmap_counter!
+    set "%1=H!_hashmap_counter!"
+EXIT /B 0
+
+:HASHMAP_INSERT
+    set "HASHMAP_INSERT_id=!%1:~1,8191!"
+    call :VECTOR_PUSH _hashmap_keys!HASHMAP_INSERT_id! %2
+    call :VECTOR_PUSH _hashmap_values!HASHMAP_INSERT_id! %3
+EXIT /B 0
+
+:_HASHMAP_INDEX_OF_KEY
+    set "_HASHMAP_INDEX_OF_KEY_id=!%2:~1,8191!"
+    set "%1=!NIL!"
+    call :VECTOR_LENGTH _HASHMAP_INDEX_OF_KEY_length _hashmap_keys!_HASHMAP_INDEX_OF_KEY_id!
+    set /a "_HASHMAP_INDEX_OF_KEY_length-=1"
+    FOR /L %%G IN (0, 1, !_HASHMAP_INDEX_OF_KEY_length!) DO (
+        set "_HASHMAP_INDEX_OF_KEY_index=%%G"
+        call :VECTOR_GET _HASHMAP_INDEX_OF_KEY_key _hashmap_keys!_HASHMAP_INDEX_OF_KEY_id! _HASHMAP_INDEX_OF_KEY_index
+        IF "!_HASHMAP_INDEX_OF_KEY_key!"=="!%3!" (
+            set "%1=%%G"
+        )
+    )
+EXIT /B 0
+
+:HASHMAP_GET
+    set "HASHMAP_GET_id=!%2:~1,8191!"
+    call :_HASHMAP_INDEX_OF_KEY HASHMAP_GET_key_index %2 %3
+    IF "!HASHMAP_GET_key_index!"=="!NIL!" (
+        set "%1=!NIL!"
+        EXIT /B 0
+    )
+
+    call :VECTOR_GET %1 _hashmap_values!HASHMAP_GET_id! HASHMAP_GET_key_index
+EXIT /B 0
+
+:HASHMAP_KEYS
+    set "_id=!%2:~1,8191!"
+    set "_ref=_hashmap_keys!_id!"
+    set "%1=!%_ref%!"
+EXIT /B 0
+
+:HASHMAP?
+    IF "!%2:~0,1!"=="H" (
+        set "%1=!TRUE!"
+    ) ELSE (
+        set "%1=!FALSE!"
+    )
+EXIT /B 0

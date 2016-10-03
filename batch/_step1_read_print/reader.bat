@@ -232,6 +232,24 @@ EXIT /B 0
     set /a "%3+=1"
 EXIT /B 0
 
+:READ_HASHMAP
+    call :HASHMAP_NEW %1
+    set /a "%3+=1"
+
+:READ_HASHMAP_LOOP
+    call :VECTOR_GET READ_HASHMAP_key%_recursive_count% %2 %3
+    set /a "%3+=1"
+    IF "!READ_HASHMAP_key%_recursive_count%!"=="}" (
+        EXIT /B 0
+    )
+
+    call :READ_FORM READ_HASHMAP_value%_recursive_count% %2 %3
+
+    call :HASHMAP_INSERT %1 READ_HASHMAP_key%_recursive_count% READ_HASHMAP_value%_recursive_count%
+
+    GOTO :READ_HASHMAP_LOOP
+EXIT /B 0
+
 :READ_PREFIX
     set /a "%3+=1"
 
@@ -260,30 +278,34 @@ EXIT /B 0
     IF "!READ_FORM_token!"=="(" (
         call :READ_LIST READ_FORM_form%_recursive_count% %2 %3
     ) ELSE (
-        IF "!READ_FORM_token!"=="[" (
-            call :READ_VECTOR READ_FORM_form%_recursive_count% %2 %3
+        IF "!READ_FORM_token!"=="{" (
+            call :READ_HASHMAP READ_FORM_form%_recursive_count% %2 %3
         ) ELSE (
-            IF "!READ_FORM_token!"=="!_singlequote!" (
-                set "READ_FORM_quote=quote"
-                call :READ_PREFIX READ_FORM_form%_recursive_count% %2 %3 READ_FORM_quote
+            IF "!READ_FORM_token!"=="[" (
+                call :READ_VECTOR READ_FORM_form%_recursive_count% %2 %3
             ) ELSE (
-                IF "!READ_FORM_token!"=="!_backtick!" (
-                    set "READ_FORM_quote=quasiquote"
+                IF "!READ_FORM_token!"=="!_singlequote!" (
+                    set "READ_FORM_quote=quote"
                     call :READ_PREFIX READ_FORM_form%_recursive_count% %2 %3 READ_FORM_quote
                 ) ELSE (
-                    IF "!READ_FORM_token!"=="!_tilde!" (
-                        set "READ_FORM_quote=unquote"
+                    IF "!READ_FORM_token!"=="!_backtick!" (
+                        set "READ_FORM_quote=quasiquote"
                         call :READ_PREFIX READ_FORM_form%_recursive_count% %2 %3 READ_FORM_quote
                     ) ELSE (
-                        IF "!READ_FORM_token!"=="!_splice_unquote!" (
-                            set "READ_FORM_quote=splice-unquote"
+                        IF "!READ_FORM_token!"=="!_tilde!" (
+                            set "READ_FORM_quote=unquote"
                             call :READ_PREFIX READ_FORM_form%_recursive_count% %2 %3 READ_FORM_quote
                         ) ELSE (
-                            IF "!READ_FORM_token!"=="@" (
-                                set "READ_FORM_quote=deref"
+                            IF "!READ_FORM_token!"=="!_splice_unquote!" (
+                                set "READ_FORM_quote=splice-unquote"
                                 call :READ_PREFIX READ_FORM_form%_recursive_count% %2 %3 READ_FORM_quote
                             ) ELSE (
-                                call :READ_ATOM READ_FORM_form%_recursive_count% %2 %3
+                                IF "!READ_FORM_token!"=="@" (
+                                    set "READ_FORM_quote=deref"
+                                    call :READ_PREFIX READ_FORM_form%_recursive_count% %2 %3 READ_FORM_quote
+                                ) ELSE (
+                                    call :READ_ATOM READ_FORM_form%_recursive_count% %2 %3
+                                )
                             )
                         )
                     )
