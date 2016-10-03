@@ -99,38 +99,38 @@ EXIT /B 0
     IF "!EVAL_AST_is_vector!"=="!TRUE!" (
         CALL :VECTOR_LENGTH EVAL_AST_vector_length %2
         set /a "EVAL_AST_vector_length-=1"
-        CALL :VECTOR_NEW EVAL_AST_new_vector%_recursive_count%
+        CALL :VECTOR_NEW EVAL_AST_new_vector%_recursion_count%
         FOR /L %%G IN (0, 1, !EVAL_AST_vector_length!) DO (
             set "EVAL_AST_index=%%G"
-            CALL :VECTOR_GET EVAL_AST_form%_recursive_count% %2 EVAL_AST_index
-            CALL :EVAL EVAL_AST_evaluated%_recursive_count% EVAL_AST_form%_recursive_count% %3
-            CALL :VECTOR_PUSH EVAL_AST_new_vector%_recursive_count% EVAL_AST_evaluated%_recursive_count%
+            CALL :VECTOR_GET EVAL_AST_form%_recursion_count% %2 EVAL_AST_index
+            CALL :EVAL EVAL_AST_evaluated%_recursion_count% EVAL_AST_form%_recursion_count% %3
+            CALL :VECTOR_PUSH EVAL_AST_new_vector%_recursion_count% EVAL_AST_evaluated%_recursion_count%
         )
-        set "%1=!EVAL_AST_new_vector%_recursive_count%!"
+        set "%1=!EVAL_AST_new_vector%_recursion_count%!"
         EXIT /B 0
     )
 
     CALL :HASHMAP? EVAL_AST_is_hashmap %2
     IF "!EVAL_AST_is_hashmap!"=="!TRUE!" (
-        CALL :HASHMAP_KEYS EVAL_AST_keys%_recursive_count% %2
-        CALL :VECTOR_LENGTH EVAL_AST_keys_length EVAL_AST_keys%_recursive_count%
+        CALL :HASHMAP_KEYS EVAL_AST_keys%_recursion_count% %2
+        CALL :VECTOR_LENGTH EVAL_AST_keys_length EVAL_AST_keys%_recursion_count%
         set /a "EVAL_AST_keys_length-=1"
-        CALL :HASHMAP_NEW EVAL_AST_new_hashmap%_recursive_count%
+        CALL :HASHMAP_NEW EVAL_AST_new_hashmap%_recursion_count%
         FOR /L %%G IN (0, 1, !EVAL_AST_keys_length!) DO (
             set "EVAL_AST_index=%%G"
-            CALL :VECTOR_GET EVAL_AST_key%_recursive_count% EVAL_AST_keys%_recursive_count% EVAL_AST_index
-            CALL :HASHMAP_GET EVAL_AST_value%_recursive_count% %2 EVAL_AST_key%_recursive_count%
-            CALL :EVAL EVAL_AST_evaluated%_recursive_count% EVAL_AST_value%_recursive_count% %3
-            CALL :HASHMAP_INSERT EVAL_AST_new_hashmap%_recursive_count% EVAL_AST_key%_recursive_count% EVAL_AST_evaluated%_recursive_count%
+            CALL :VECTOR_GET EVAL_AST_key%_recursion_count% EVAL_AST_keys%_recursion_count% EVAL_AST_index
+            CALL :HASHMAP_GET EVAL_AST_value%_recursion_count% %2 EVAL_AST_key%_recursion_count%
+            CALL :EVAL EVAL_AST_evaluated%_recursion_count% EVAL_AST_value%_recursion_count% %3
+            CALL :HASHMAP_INSERT EVAL_AST_new_hashmap%_recursion_count% EVAL_AST_key%_recursion_count% EVAL_AST_evaluated%_recursion_count%
         )
-        set "%1=!EVAL_AST_new_hashmap%_recursive_count%!"
+        set "%1=!EVAL_AST_new_hashmap%_recursion_count%!"
         EXIT /B 0
     )
 
     CALL :ATOM? EVAL_AST_is_atom %2
     IF "!EVAL_AST_is_atom!"=="!TRUE!" (
-        CALL :ATOM_TO_STR EVAL_AST_atom_str%_recursive_count% %2
-        CALL :HASHMAP_GET %1 %3 EVAL_AST_atom_str%_recursive_count%
+        CALL :ATOM_TO_STR EVAL_AST_atom_str%_recursion_count% %2
+        CALL :HASHMAP_GET %1 %3 EVAL_AST_atom_str%_recursion_count%
         EXIT /B 0
     )
 
@@ -138,37 +138,37 @@ EXIT /B 0
 EXIT /B 0
 
 :EVAL
-    set /a "_recursive_count+=1"
+    set /a "_recursion_count+=1"
 
     CALL :LIST? EVAL_is_list %2
     IF "!EVAL_is_list!"=="!TRUE!" (
         IF "!%2!"=="!NIL!" (
             set "%1=!%2!"
-            set /a "_recursive_count-=1"
+            set /a "_recursion_count-=1"
             EXIT /B 0
         )
 
-        CALL :EVAL_AST EVAL_list%_recursive_count% %2 %3
+        CALL :EVAL_AST EVAL_list%_recursion_count% %2 %3
 
-        CALL :FIRST EVAL_function%_recursive_count% EVAL_list%_recursive_count%
-        CALL :FUNCTION_TO_STR EVAL_function_str%_recursive_count% EVAL_function%_recursive_count%
+        CALL :FIRST EVAL_function%_recursion_count% EVAL_list%_recursion_count%
+        CALL :FUNCTION_TO_STR EVAL_function_str%_recursion_count% EVAL_function%_recursion_count%
 
-        CALL :REST EVAL_list%_recursive_count% EVAL_list%_recursive_count%
-        CALL :FIRST EVAL_a%_recursive_count% EVAL_list%_recursive_count%
+        CALL :REST EVAL_list%_recursion_count% EVAL_list%_recursion_count%
+        CALL :FIRST EVAL_a%_recursion_count% EVAL_list%_recursion_count%
 
-        CALL :REST EVAL_list%_recursive_count% EVAL_list%_recursive_count%
-        CALL :FIRST EVAL_b%_recursive_count% EVAL_list%_recursive_count%
+        CALL :REST EVAL_list%_recursion_count% EVAL_list%_recursion_count%
+        CALL :FIRST EVAL_b%_recursion_count% EVAL_list%_recursion_count%
 
-        CALL :CALL_STACK_PUSH EVAL_b%_recursive_count%
-        CALL :CALL_STACK_PUSH EVAL_a%_recursive_count%
-        CALL !EVAL_function_str%_recursive_count%!
+        CALL :CALL_STACK_PUSH EVAL_b%_recursion_count%
+        CALL :CALL_STACK_PUSH EVAL_a%_recursion_count%
+        CALL !EVAL_function_str%_recursion_count%!
         CALL :CALL_STACK_POP %1
 
-        set /a "_recursive_count-=1"
+        set /a "_recursion_count-=1"
         EXIT /B 0
     )
 
     CALL :EVAL_AST %1 %2 %3
 
-    set /a "_recursive_count-=1"
+    set /a "_recursion_count-=1"
 EXIT /B 0

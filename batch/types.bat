@@ -55,9 +55,9 @@ EXIT /B 0
 EXIT /B 0
 
 :LIST_MAP
-    set "LIST_MAP_list%_recursive_count%=!NIL!"
-    call :_LIST_MAP LIST_MAP_list%_recursive_count% %2 %3 %4
-    call :LIST_REVERSE %1 LIST_MAP_list%_recursive_count%
+    set "LIST_MAP_list%_recursion_count%=!NIL!"
+    call :_LIST_MAP LIST_MAP_list%_recursion_count% %2 %3 %4
+    call :LIST_REVERSE %1 LIST_MAP_list%_recursion_count%
 EXIT /B 0
 
 :_LIST_MAP
@@ -65,14 +65,14 @@ EXIT /B 0
         EXIT /B 0
     )
 
-    call :FIRST LIST_MAP_first%_recursive_count% %2
-    call :REST LIST_MAP_rest%_recursive_count% %2
+    call :FIRST LIST_MAP_first%_recursion_count% %2
+    call :REST LIST_MAP_rest%_recursion_count% %2
 
-    call %3 LIST_MAP_mapped%_recursive_count% LIST_MAP_first%_recursive_count% %4
+    call %3 LIST_MAP_mapped%_recursion_count% LIST_MAP_first%_recursion_count% %4
 
-    call :CONS %1 LIST_MAP_mapped%_recursive_count% %1
+    call :CONS %1 LIST_MAP_mapped%_recursion_count% %1
 
-    call :_LIST_MAP %1 LIST_MAP_rest%_recursive_count% %3 %4
+    call :_LIST_MAP %1 LIST_MAP_rest%_recursion_count% %3 %4
 EXIT /B 0
 
 
