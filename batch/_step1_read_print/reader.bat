@@ -260,6 +260,18 @@ EXIT /B 0
     call :CONS %1 READ_PREFIX_atom%_recursive_count% %1
 EXIT /B 0
 
+:READ_PREFIX2
+    set /a "%3+=1"
+
+    set "%1=!NIL!"
+    call :ATOM_NEW READ_PREFIX_atom%_recursive_count% %4
+    call :READ_FORM READ_PREFIX_form%_recursive_count% %2 %3
+    call :READ_FORM READ_PREFIX_form2%_recursive_count% %2 %3
+    call :CONS %1 READ_PREFIX_form%_recursive_count% %1
+    call :CONS %1 READ_PREFIX_form2%_recursive_count% %1
+    call :CONS %1 READ_PREFIX_atom%_recursive_count% %1
+EXIT /B 0
+
 :READ_FORM
 :: To get around the limitation of no local variables,
 :: we keep a recursion count to diffirentiate variables
@@ -304,7 +316,12 @@ EXIT /B 0
                                     set "READ_FORM_quote=deref"
                                     call :READ_PREFIX READ_FORM_form%_recursive_count% %2 %3 READ_FORM_quote
                                 ) ELSE (
-                                    call :READ_ATOM READ_FORM_form%_recursive_count% %2 %3
+                                    IF "!READ_FORM_token!"=="!_with_meta!" (
+                                        set "READ_FORM_quote=with-meta"
+                                        call :READ_PREFIX2 READ_FORM_form%_recursive_count% %2 %3 READ_FORM_quote
+                                    ) ELSE (
+                                        call :READ_ATOM READ_FORM_form%_recursive_count% %2 %3
+                                    )
                                 )
                             )
                         )

@@ -20,6 +20,7 @@ set _singlequote=^'
 set _backtick=^`
 set _tilde=^~
 set _splice_unquote=^~^@
+set _with_meta=^^
 
 GOTO :START
 
