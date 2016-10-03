@@ -2,25 +2,25 @@
 SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
 
 :: While macros
-set BREAK=EXIT
-set WHILE=IF "%1"=="fi301kvnro2qa9vm2" (FOR /L %%? IN () DO IF
-set DO=(
-set END_WHILE=) ELSE %BREAK%) ELSE CMD /Q /C "%~F0" fi301kvnro2qa9vm2
+SET BREAK=EXIT
+SET WHILE=IF "%1"=="fi301kvnro2qa9vm2" (FOR /L %%? IN () DO IF
+SET DO=(
+SET END_WHILE=) ELSE %BREAK%) ELSE CMD /Q /C "%~F0" fi301kvnro2qa9vm2
 
 :: Magic number that says we're calling a loop
 IF "%1"=="fi301kvnro2qa9vm2" GOTO %2
 
-set "NIL="
-set "TRUE=t"
-set "FALSE=f"
+SET "NIL="
+SET "TRUE=t"
+SET "FALSE=f"
 
-set _doublequote=^"
-set _backslash=^\
-set _singlequote=^'
-set _backtick=^`
-set _tilde=^~
-set _splice_unquote=^~^@
-set _with_meta=^^
+SET _doublequote=^"
+SET _backslash=^\
+SET _singlequote=^'
+SET _backtick=^`
+SET _tilde=^~
+SET _splice_unquote=^~^@
+SET _with_meta=^^
 
 GOTO :START
 

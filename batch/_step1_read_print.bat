@@ -1,28 +1,28 @@
 
 :START
 :REPL
-    set "_input="
-    call :READ
-    call :EVAL
-    call :PRINT
+    SET "_input="
+    CALL :READ
+    CALL :EVAL
+    CALL :PRINT
 GOTO :REPL
 
 :READ
     :: prompt the user and assign the user's input to _input.
-    set /p "_input=user> "
-    :: If nothing is written, empty the input and reset the error level
-    if errorlevel 1 set "_input=" & verify>nul
+    SET /p "_input=user> "
+    :: If nothing is written, empty the input and reSET the error level
+    IF  errorlevel 1 SET "_input=" & verify>nul
 
     IF "!_input!"=="exit" EXIT :: Exit command used for testing purposes
 
-    call :READ_STR form _input
+    CALL :READ_STR form _input
 EXIT /B 0
 
 :EVAL
-    set "_result="
+    SET "_result="
 EXIT /B 0
 
 :PRINT
-    call :PR_STR output form
-    call :ECHO output
+    CALL :PR_STR output form
+    CALL :ECHO output
 EXIT /B 0

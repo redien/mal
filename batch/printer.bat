@@ -5,103 +5,103 @@
 :: for each recursion level.
 
 :: This can be solved better in the future by making them tail-recursive
-    set "_recursion_count=0"
-    call :_PR_STR %1 %2
+    SET "_recursion_count=0"
+    CALL :_PR_STR %1 %2
 EXIT /B 0
 
 :_PR_STR
-    set /a "_recursion_count+=1"
+    SET /a "_recursion_count+=1"
 
-    call :ATOM? PR_STR_is_atom %2
+    CALL :ATOM? PR_STR_is_atom %2
     IF "!PR_STR_is_atom!"=="!TRUE!" (
-        call :ATOM_TO_STR PR_STR_tmp %2
-        set "%1=!PR_STR_tmp!"
-        set /a "_recursion_count-=1"
+        CALL :ATOM_TO_STR PR_STR_tmp %2
+        SET "%1=!PR_STR_tmp!"
+        SET /a "_recursion_count-=1"
         EXIT /B 0
     )
 
-    call :NUMBER? PR_STR_is_number %2
+    CALL :NUMBER? PR_STR_is_number %2
     IF "!PR_STR_is_number!"=="!TRUE!" (
-        call :NUMBER_TO_STR PR_STR_tmp %2
-        set "%1=!PR_STR_tmp!"
-        set /a "_recursion_count-=1"
+        CALL :NUMBER_TO_STR PR_STR_tmp %2
+        SET "%1=!PR_STR_tmp!"
+        SET /a "_recursion_count-=1"
         EXIT /B 0
     )
 
-    call :FUNCTION? PR_STR_is_function %2
+    CALL :FUNCTION? PR_STR_is_function %2
     IF "!PR_STR_is_function!"=="!TRUE!" (
-        set "%1=#<function>"
-        set /a "_recursion_count-=1"
+        SET "%1=#<function>"
+        SET /a "_recursion_count-=1"
         EXIT /B 0
     )
 
-    call :LIST? PR_STR_is_list %2
+    CALL :LIST? PR_STR_is_list %2
     IF "!PR_STR_is_list!"=="!TRUE!" (
-        set "%1=("
-        set "_PR_STR_tail%_recursion_count%=!%2!"
+        SET "%1=("
+        SET "_PR_STR_tail%_recursion_count%=!%2!"
 :_PR_STR_LIST_LOOP
-        call :NIL? _PR_STR_is_nil _PR_STR_tail%_recursion_count%
+        CALL :NIL? _PR_STR_is_nil _PR_STR_tail%_recursion_count%
         IF "!_PR_STR_is_nil!"=="!FALSE!" (
-            call :FIRST _PR_STR_form _PR_STR_tail%_recursion_count%
-            call :REST _PR_STR_tail%_recursion_count% _PR_STR_tail%_recursion_count%
+            CALL :FIRST _PR_STR_form _PR_STR_tail%_recursion_count%
+            CALL :REST _PR_STR_tail%_recursion_count% _PR_STR_tail%_recursion_count%
 
-            call :_PR_STR PR_STR_str%_recursion_count% _PR_STR_form
+            CALL :_PR_STR PR_STR_str%_recursion_count% _PR_STR_form
 
-            set "%1=!%1!!PR_STR_str%_recursion_count%!"
-            call :NIL? _PR_STR_is_nil _PR_STR_tail%_recursion_count%
+            SET "%1=!%1!!PR_STR_str%_recursion_count%!"
+            CALL :NIL? _PR_STR_is_nil _PR_STR_tail%_recursion_count%
             IF "!_PR_STR_is_nil!"=="!FALSE!" (
-                set "%1=!%1! "
+                SET "%1=!%1! "
             )
             GOTO :_PR_STR_LIST_LOOP
         )
 
-        set "%1=!%1!)"
-        set /a "_recursion_count-=1"
+        SET "%1=!%1!)"
+        SET /a "_recursion_count-=1"
         EXIT /B 0
     )
 
-    call :VECTOR? PR_STR_is_vector %2
+    CALL :VECTOR? PR_STR_is_vector %2
     IF "!PR_STR_is_vector!"=="!TRUE!" (
-        call :VECTOR_LENGTH PR_STR_length %2
-        set /a "PR_STR_length-=1"
-        set "%1=["
+        CALL :VECTOR_LENGTH PR_STR_length %2
+        SET /a "PR_STR_length-=1"
+        SET "%1=["
         FOR /L %%G IN (0, 1, !PR_STR_length!) DO (
-            set "PR_STR_index=%%G"
-            call :VECTOR_GET PR_STR_item%_recursion_count% %2 PR_STR_index
-            call :_PR_STR PR_STR_str%_recursion_count% PR_STR_item%_recursion_count%
+            SET "PR_STR_index=%%G"
+            CALL :VECTOR_GET PR_STR_item%_recursion_count% %2 PR_STR_index
+            CALL :_PR_STR PR_STR_str%_recursion_count% PR_STR_item%_recursion_count%
             IF %%G NEQ 0 (
-                set "%1=!%1! "
+                SET "%1=!%1! "
             )
-            set "%1=!%1!!PR_STR_str%_recursion_count%!"
+            SET "%1=!%1!!PR_STR_str%_recursion_count%!"
         )
-        set "%1=!%1!]"
+        SET "%1=!%1!]"
 
-        set /a "_recursion_count-=1"
+        SET /a "_recursion_count-=1"
         EXIT /B 0
     )
 
-    call :HASHMAP? PR_STR_is_hashmap %2
+    CALL :HASHMAP? PR_STR_is_hashmap %2
     IF "!PR_STR_is_hashmap!"=="!TRUE!" (
-        call :HASHMAP_KEYS PR_STR_keys%_recursion_count% %2
-        call :VECTOR_LENGTH PR_STR_length PR_STR_keys%_recursion_count%
-        set /a "PR_STR_length-=1"
-        set "%1={"
+        CALL :HASHMAP_KEYS PR_STR_keys%_recursion_count% %2
+        CALL :VECTOR_LENGTH PR_STR_length PR_STR_keys%_recursion_count%
+        SET /a "PR_STR_length-=1"
+        SET "%1={"
         FOR /L %%G IN (0, 1, !PR_STR_length!) DO (
-            set "PR_STR_index=%%G"
-            call :VECTOR_GET PR_STR_key%_recursion_count% PR_STR_keys%_recursion_count% PR_STR_index
-            call :HASHMAP_GET PR_STR_value%_recursion_count% %2 PR_STR_key%_recursion_count%
-            call :_PR_STR PR_STR_str%_recursion_count% PR_STR_value%_recursion_count%
+            SET "PR_STR_index=%%G"
+            CALL :VECTOR_GET PR_STR_key%_recursion_count% PR_STR_keys%_recursion_count% PR_STR_index
+            CALL :HASHMAP_GET PR_STR_value%_recursion_count% %2 PR_STR_key%_recursion_count%
+            CALL :_PR_STR PR_STR_str%_recursion_count% PR_STR_value%_recursion_count%
             IF %%G NEQ 0 (
-                set "%1=!%1! "
+                SET "%1=!%1! "
             )
-            set "%1=!%1!!PR_STR_key%_recursion_count%! !PR_STR_str%_recursion_count%!"
+            SET "%1=!%1!!PR_STR_key%_recursion_count%! !PR_STR_str%_recursion_count%!"
         )
-        set "%1=!%1!}"
+        SET "%1=!%1!}"
 
-        set /a "_recursion_count-=1"
+        SET /a "_recursion_count-=1"
         EXIT /B 0
     )
 
     echo !%2!
-    call :ABORT "Unexpected type !%2:~0,1!"
+    CALL :ABORT "Unexpected type !%2:~0,1!"
 EXIT /B 0

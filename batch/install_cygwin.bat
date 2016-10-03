@@ -1,6 +1,6 @@
 
 REM URL to cygwin-setup
-set "cygwin_setup_url=https://cygwin.com/setup-x86.exe"
+SET "cygwin_setup_url=https://cygwin.com/setup-x86.exe"
 
 REM Download cygwin-setup
 PowerShell -Command "Invoke-WebRequest $env:cygwin_setup_url -OutFile 'cygwin_setup.exe'"
