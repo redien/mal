@@ -110,6 +110,24 @@ EXIT /B 0
     CALL :_LIST_MAP %1 LIST_MAP_rest%_recursion_count% %3 %4
 EXIT /B 0
 
+:LIST_LAST
+    IF "!%2!"=="!NIL!" (
+        SET "%1=!NIL!"
+        EXIT /B 0
+    )
+    SET "LIST_LAST_list=!%2!"
+:LIST_LAST_LOOP
+
+    CALL :REST LIST_LAST_rest LIST_LAST_list
+
+    IF "!LIST_LAST_rest!"=="!NIL!" (
+        CALL :FIRST %1 LIST_LAST_list
+        EXIT /B 0
+    )
+
+    SET "LIST_LAST_list=!LIST_LAST_rest!"
+    GOTO :LIST_LAST_LOOP
+EXIT /B 0
 
 :VECTOR_NEW
     SET /a "_vector_counter+=1"
@@ -702,6 +720,24 @@ EXIT /B 0
         GOTO :READ_FORM_EXIT
     )
 
+    IF "!READ_FORM_token!"=="nil" (
+        set "READ_FORM_form%_recursion_count%=!NIL!"
+        SET /a "%3+=1"
+        GOTO :READ_FORM_EXIT
+    )
+
+    IF "!READ_FORM_token!"=="true" (
+        set "READ_FORM_form%_recursion_count%=!TRUE!"
+        SET /a "%3+=1"
+        GOTO :READ_FORM_EXIT
+    )
+
+    IF "!READ_FORM_token!"=="false" (
+        set "READ_FORM_form%_recursion_count%=!FALSE!"
+        SET /a "%3+=1"
+        GOTO :READ_FORM_EXIT
+    )
+
     CALL :READ_ATOM READ_FORM_form%_recursion_count% %2 %3
 
 :READ_FORM_EXIT
@@ -748,6 +784,24 @@ EXIT /B 0
     CALL :FUNCTION? PR_STR_is_function %2
     IF "!PR_STR_is_function!"=="!TRUE!" (
         SET "%1=#<function>"
+        SET /a "_recursion_count-=1"
+        EXIT /B 0
+    )
+
+    IF "!%2!"=="!NIL!" (
+        SET "%1=nil"
+        SET /a "_recursion_count-=1"
+        EXIT /B 0
+    )
+
+    IF "!%2!"=="!TRUE!" (
+        SET "%1=true"
+        SET /a "_recursion_count-=1"
+        EXIT /B 0
+    )
+
+    IF "!%2!"=="!FALSE!" (
+        SET "%1=false"
         SET /a "_recursion_count-=1"
         EXIT /B 0
     )

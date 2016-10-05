@@ -4,6 +4,7 @@
 CALL :BUILD_STEP step1_read_print
 CALL :BUILD_STEP step2_eval
 CALL :BUILD_STEP step3_env
+CALL :BUILD_STEP step4_if_fn_do
 EXIT /B 0
 
 :BUILD_STEP

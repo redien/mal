@@ -75,6 +75,24 @@ EXIT /B 0
     CALL :_LIST_MAP %1 LIST_MAP_rest%_recursion_count% %3 %4
 EXIT /B 0
 
+:LIST_LAST
+    IF "!%2!"=="!NIL!" (
+        SET "%1=!NIL!"
+        EXIT /B 0
+    )
+    SET "LIST_LAST_list=!%2!"
+:LIST_LAST_LOOP
+
+    CALL :REST LIST_LAST_rest LIST_LAST_list
+
+    IF "!LIST_LAST_rest!"=="!NIL!" (
+        CALL :FIRST %1 LIST_LAST_list
+        EXIT /B 0
+    )
+
+    SET "LIST_LAST_list=!LIST_LAST_rest!"
+    GOTO :LIST_LAST_LOOP
+EXIT /B 0
 
 :VECTOR_NEW
     SET /a "_vector_counter+=1"

@@ -370,6 +370,24 @@ EXIT /B 0
         GOTO :READ_FORM_EXIT
     )
 
+    IF "!READ_FORM_token!"=="nil" (
+        set "READ_FORM_form%_recursion_count%=!NIL!"
+        SET /a "%3+=1"
+        GOTO :READ_FORM_EXIT
+    )
+
+    IF "!READ_FORM_token!"=="true" (
+        set "READ_FORM_form%_recursion_count%=!TRUE!"
+        SET /a "%3+=1"
+        GOTO :READ_FORM_EXIT
+    )
+
+    IF "!READ_FORM_token!"=="false" (
+        set "READ_FORM_form%_recursion_count%=!FALSE!"
+        SET /a "%3+=1"
+        GOTO :READ_FORM_EXIT
+    )
+
     CALL :READ_ATOM READ_FORM_form%_recursion_count% %2 %3
 
 :READ_FORM_EXIT

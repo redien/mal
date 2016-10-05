@@ -35,6 +35,24 @@ EXIT /B 0
         EXIT /B 0
     )
 
+    IF "!%2!"=="!NIL!" (
+        SET "%1=nil"
+        SET /a "_recursion_count-=1"
+        EXIT /B 0
+    )
+
+    IF "!%2!"=="!TRUE!" (
+        SET "%1=true"
+        SET /a "_recursion_count-=1"
+        EXIT /B 0
+    )
+
+    IF "!%2!"=="!FALSE!" (
+        SET "%1=false"
+        SET /a "_recursion_count-=1"
+        EXIT /B 0
+    )
+
     CALL :LIST? PR_STR_is_list %2
     IF "!PR_STR_is_list!"=="!TRUE!" (
         SET "%1=("
