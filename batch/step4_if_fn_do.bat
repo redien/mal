@@ -906,17 +906,6 @@ EXIT /B 0
     )
 EXIT /B 0
 
-:CALL_STACK_PUSH
-    SET /a "_call_stack_size+=1"
-    SET "_call_stack_value!_call_stack_size!=!%1!"
-EXIT /B 0
-
-:CALL_STACK_POP
-    SET "CALL_STACK_POP_ref=_call_stack_value!_call_stack_size!"
-    SET "%1=!%CALL_STACK_POP_ref%!"
-    SET /a "_call_stack_size-=1"
-EXIT /B 0
-
 :MAL_NUMBER_ADD
     CALL :CALL_STACK_POP NUMBER_ADD_first
     CALL :CALL_STACK_POP NUMBER_ADD_second
@@ -955,6 +944,17 @@ EXIT /B 0
     SET /a "NUMBER_DIVIDE_value_str=!NUMBER_DIVIDE_first_str!/!NUMBER_DIVIDE_second_str!"
     CALL :NUMBER_NEW NUMBER_DIVIDE_value NUMBER_DIVIDE_value_str
     CALL :CALL_STACK_PUSH NUMBER_DIVIDE_value
+EXIT /B 0
+
+:CALL_STACK_PUSH
+    SET /a "_call_stack_size+=1"
+    SET "_call_stack_value!_call_stack_size!=!%1!"
+EXIT /B 0
+
+:CALL_STACK_POP
+    SET "CALL_STACK_POP_ref=_call_stack_value!_call_stack_size!"
+    SET "%1=!%CALL_STACK_POP_ref%!"
+    SET /a "_call_stack_size-=1"
 EXIT /B 0
 
 :DEFINE_FUN

@@ -15,7 +15,8 @@ EXIT /B 0
     copy /b tmp4.bat+reader.bat tmp5.bat > nul
     copy /b tmp5.bat+printer.bat tmp6.bat > nul
     copy /b tmp6.bat+env.bat tmp7.bat > nul
-    copy /b tmp7.bat+_%1.bat tmp8.bat > nul
-    copy /b tmp8.bat %1.bat > nul
+    copy /b tmp7.bat+core.bat tmp8.bat > nul
+    copy /b tmp8.bat+_%1.bat tmp9.bat > nul
+    copy /b tmp9.bat %1.bat > nul
     del tmp*.bat > nul
 EXIT /B 0
