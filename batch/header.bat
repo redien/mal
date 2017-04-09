@@ -21,6 +21,14 @@ SET _backtick=^`
 SET _tilde=^~
 SET _splice_unquote=^~^@
 SET _with_meta=^^
+SET _greater_than=^>
+SET _lower_than=^<
+SET _greater_than_equal=^>^=
+SET _lower_than_equal=^<^=
+SET _plus=^+
+SET _minus=^-
+SET _slash=^/
+SET _asterisk=^*
 
 GOTO :START
 
@@ -29,6 +37,8 @@ GOTO :START
 EXIT /B 0
 
 :ABORT
+    :: With to many calls to abort the stack starts to fill up.
+    :: Better to return an error value instead.
     ECHO %~1
     GOTO :START
 EXIT

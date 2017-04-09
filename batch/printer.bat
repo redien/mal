@@ -12,18 +12,31 @@ EXIT /B 0
 :_PR_STR
     SET /a "_recursion_count+=1"
 
+    CALL :ERROR? PR_STR_is_error %2
+    IF "!PR_STR_is_error!"=="!TRUE!" (
+        CALL :ERROR_TO_STR %1 %2
+        SET /a "_recursion_count-=1"
+        EXIT /B 0
+    )
+
     CALL :ATOM? PR_STR_is_atom %2
     IF "!PR_STR_is_atom!"=="!TRUE!" (
-        CALL :ATOM_TO_STR PR_STR_tmp %2
-        SET "%1=!PR_STR_tmp!"
+        CALL :ATOM_TO_STR %1 %2
         SET /a "_recursion_count-=1"
         EXIT /B 0
     )
 
     CALL :NUMBER? PR_STR_is_number %2
     IF "!PR_STR_is_number!"=="!TRUE!" (
-        CALL :NUMBER_TO_STR PR_STR_tmp %2
-        SET "%1=!PR_STR_tmp!"
+        CALL :NUMBER_TO_STR %1 %2
+        SET /a "_recursion_count-=1"
+        EXIT /B 0
+    )
+
+    CALL :STRING? PR_STR_is_string %2
+    IF "!PR_STR_is_string!"=="!TRUE!" (
+        CALL :STRING_TO_STR PR_STR_string %2
+        SET "%1=!_doublequote!!PR_STR_string!!_doublequote!"
         SET /a "_recursion_count-=1"
         EXIT /B 0
     )

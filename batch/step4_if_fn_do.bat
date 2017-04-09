@@ -22,6 +22,14 @@ SET _backtick=^`
 SET _tilde=^~
 SET _splice_unquote=^~^@
 SET _with_meta=^^
+SET _greater_than=^>
+SET _lower_than=^<
+SET _greater_than_equal=^>^=
+SET _lower_than_equal=^<^=
+SET _plus=^+
+SET _minus=^-
+SET _slash=^/
+SET _asterisk=^*
 
 GOTO :START
 
@@ -30,6 +38,9 @@ GOTO :START
 EXIT /B 0
 
 :ABORT
+    :: Handle this in a better way somehow.
+    :: Can we clear the stack so this doesn't make it grow?
+    :: Place to start: http://stackoverflow.com/questions/31445330/does-windows-batch-support-exception-handling
     ECHO %~1
     GOTO :START
 EXIT
@@ -68,6 +79,17 @@ EXIT /B 0
         ) ELSE (
             SET "%~1=!FALSE!"
         )
+    )
+EXIT /B 0
+
+:LIST_COUNT
+    SET "%1=0"
+
+:LIST_COUNT_LOOP
+    IF NOT "!%2!"=="!NIL!" (
+        CALL :REST %2 %2
+        SET /a "%1+=1"
+        GOTO :LIST_COUNT_LOOP
     )
 EXIT /B 0
 
@@ -303,6 +325,31 @@ EXIT /B 0
 
 :HASHMAP?
     IF "!%2:~0,1!"=="H" (
+        SET "%1=!TRUE!"
+    ) ELSE (
+        SET "%1=!FALSE!"
+    )
+EXIT /B 0
+
+
+:ERROR_NEW
+    SET /a "_error_counter+=1"
+    SET "_error_value!_error_counter!=!%2!"
+    SET "%1=E!_error_counter!"
+EXIT /B 0
+
+:ERROR_TO_STR
+    SET "_ref=_error_value!%2:~1,8191!"
+    SET "%1=!%_ref%!"
+EXIT /B 0
+
+:ERROR_TO_STRING
+    SET "ERROR_TO_STRING_str=_error_value!%2:~1,8191!"
+    CALL :STRING_NEW %1 ERROR_TO_STRING_str
+EXIT /B 0
+
+:ERROR?
+    IF "!%2:~0,1!"=="E" (
         SET "%1=!TRUE!"
     ) ELSE (
         SET "%1=!FALSE!"
@@ -720,20 +767,27 @@ EXIT /B 0
         GOTO :READ_FORM_EXIT
     )
 
+    IF "!READ_FORM_token:~0,1!"=="!_doublequote!" (
+        SET "READ_FORM_string_str=!READ_FORM_token:~1,-1!"
+        CALL :STRING_NEW READ_FORM_form%_recursion_count% READ_FORM_string_str
+        SET /a "%3+=1"
+        GOTO :READ_FORM_EXIT
+    )
+
     IF "!READ_FORM_token!"=="nil" (
-        set "READ_FORM_form%_recursion_count%=!NIL!"
+        SET "READ_FORM_form%_recursion_count%=!NIL!"
         SET /a "%3+=1"
         GOTO :READ_FORM_EXIT
     )
 
     IF "!READ_FORM_token!"=="true" (
-        set "READ_FORM_form%_recursion_count%=!TRUE!"
+        SET "READ_FORM_form%_recursion_count%=!TRUE!"
         SET /a "%3+=1"
         GOTO :READ_FORM_EXIT
     )
 
     IF "!READ_FORM_token!"=="false" (
-        set "READ_FORM_form%_recursion_count%=!FALSE!"
+        SET "READ_FORM_form%_recursion_count%=!FALSE!"
         SET /a "%3+=1"
         GOTO :READ_FORM_EXIT
     )
@@ -765,18 +819,31 @@ EXIT /B 0
 :_PR_STR
     SET /a "_recursion_count+=1"
 
+    CALL :ERROR? PR_STR_is_error %2
+    IF "!PR_STR_is_error!"=="!TRUE!" (
+        CALL :ERROR_TO_STR %1 %2
+        SET /a "_recursion_count-=1"
+        EXIT /B 0
+    )
+
     CALL :ATOM? PR_STR_is_atom %2
     IF "!PR_STR_is_atom!"=="!TRUE!" (
-        CALL :ATOM_TO_STR PR_STR_tmp %2
-        SET "%1=!PR_STR_tmp!"
+        CALL :ATOM_TO_STR %1 %2
         SET /a "_recursion_count-=1"
         EXIT /B 0
     )
 
     CALL :NUMBER? PR_STR_is_number %2
     IF "!PR_STR_is_number!"=="!TRUE!" (
-        CALL :NUMBER_TO_STR PR_STR_tmp %2
-        SET "%1=!PR_STR_tmp!"
+        CALL :NUMBER_TO_STR %1 %2
+        SET /a "_recursion_count-=1"
+        EXIT /B 0
+    )
+
+    CALL :STRING? PR_STR_is_string %2
+    IF "!PR_STR_is_string!"=="!TRUE!" (
+        CALL :STRING_TO_STR PR_STR_string %2
+        SET "%1=!_doublequote!!PR_STR_string!!_doublequote!"
         SET /a "_recursion_count-=1"
         EXIT /B 0
     )
@@ -907,8 +974,8 @@ EXIT /B 0
 EXIT /B 0
 
 :MAL_NUMBER_ADD
-    CALL :CALL_STACK_POP NUMBER_ADD_first
     CALL :CALL_STACK_POP NUMBER_ADD_second
+    CALL :CALL_STACK_POP NUMBER_ADD_first
     CALL :NUMBER_TO_STR NUMBER_ADD_first_str NUMBER_ADD_first
     CALL :NUMBER_TO_STR NUMBER_ADD_second_str NUMBER_ADD_second
     SET /a "NUMBER_ADD_value_str=!NUMBER_ADD_first_str!+!NUMBER_ADD_second_str!"
@@ -917,8 +984,8 @@ EXIT /B 0
 EXIT /B 0
 
 :MAL_NUMBER_SUBTRACT
-    CALL :CALL_STACK_POP NUMBER_SUBTRACT_first
     CALL :CALL_STACK_POP NUMBER_SUBTRACT_second
+    CALL :CALL_STACK_POP NUMBER_SUBTRACT_first
     CALL :NUMBER_TO_STR NUMBER_SUBTRACT_first_str NUMBER_SUBTRACT_first
     CALL :NUMBER_TO_STR NUMBER_SUBTRACT_second_str NUMBER_SUBTRACT_second
     SET /a "NUMBER_SUBTRACT_value_str=!NUMBER_SUBTRACT_first_str!-!NUMBER_SUBTRACT_second_str!"
@@ -927,8 +994,8 @@ EXIT /B 0
 EXIT /B 0
 
 :MAL_NUMBER_MULTIPLY
-    CALL :CALL_STACK_POP NUMBER_MULTIPLY_first
     CALL :CALL_STACK_POP NUMBER_MULTIPLY_second
+    CALL :CALL_STACK_POP NUMBER_MULTIPLY_first
     CALL :NUMBER_TO_STR NUMBER_MULTIPLY_first_str NUMBER_MULTIPLY_first
     CALL :NUMBER_TO_STR NUMBER_MULTIPLY_second_str NUMBER_MULTIPLY_second
     SET /a "NUMBER_MULTIPLY_value_str=!NUMBER_MULTIPLY_first_str!*!NUMBER_MULTIPLY_second_str!"
@@ -937,13 +1004,98 @@ EXIT /B 0
 EXIT /B 0
 
 :MAL_NUMBER_DIVIDE
-    CALL :CALL_STACK_POP NUMBER_DIVIDE_first
     CALL :CALL_STACK_POP NUMBER_DIVIDE_second
+    CALL :CALL_STACK_POP NUMBER_DIVIDE_first
     CALL :NUMBER_TO_STR NUMBER_DIVIDE_first_str NUMBER_DIVIDE_first
     CALL :NUMBER_TO_STR NUMBER_DIVIDE_second_str NUMBER_DIVIDE_second
     SET /a "NUMBER_DIVIDE_value_str=!NUMBER_DIVIDE_first_str!/!NUMBER_DIVIDE_second_str!"
     CALL :NUMBER_NEW NUMBER_DIVIDE_value NUMBER_DIVIDE_value_str
     CALL :CALL_STACK_PUSH NUMBER_DIVIDE_value
+EXIT /B 0
+
+:MAL_PRN
+    CALL :CALL_STACK_POP MAL_PRN_first
+    CALL :PR_STR MAL_PRN_string MAL_PRN_first
+    CALL :ECHO MAL_PRN_string
+    CALL :CALL_STACK_PUSH NIL
+EXIT /B 0
+
+:MAL_LIST?
+    CALL :CALL_STACK_POP MAL_PRN_first
+    CALL :LIST? MAL_LIST?_is_list MAL_PRN_first
+    CALL :CALL_STACK_PUSH MAL_LIST?_is_list
+EXIT /B 0
+
+:MAL_EMPTY?
+    CALL :CALL_STACK_POP MAL_EMPTY?_first
+    CALL :NIL? MAL_EMPTY?_is_empty MAL_EMPTY?_first
+    CALL :CALL_STACK_PUSH MAL_EMPTY?_is_empty
+EXIT /B 0
+
+:MAL_COUNT
+    CALL :CALL_STACK_POP MAL_COUNT_first
+    CALL :LIST_COUNT MAL_COUNT_count MAL_COUNT_first
+    CALL :NUMBER_NEW MAL_COUNT_count_number MAL_COUNT_count
+    CALL :CALL_STACK_PUSH MAL_COUNT_count_number
+EXIT /B 0
+
+:MAL_GREATER_THAN
+    CALL :CALL_STACK_POP MAL_GREATER_THAN_second
+    CALL :CALL_STACK_POP MAL_GREATER_THAN_first
+    CALL :NUMBER_TO_STR MAL_GREATER_THAN_first_str MAL_GREATER_THAN_first
+    CALL :NUMBER_TO_STR MAL_GREATER_THAN_second_str MAL_GREATER_THAN_second
+    IF !MAL_GREATER_THAN_first_str! GTR !MAL_GREATER_THAN_second_str! (
+        CALL :CALL_STACK_PUSH TRUE
+    ) ELSE (
+        CALL :CALL_STACK_PUSH FALSE
+    )
+EXIT /B 0
+
+:MAL_LOWER_THAN
+    CALL :CALL_STACK_POP MAL_LOWER_THAN_second
+    CALL :CALL_STACK_POP MAL_LOWER_THAN_first
+    CALL :NUMBER_TO_STR MAL_LOWER_THAN_first_str MAL_LOWER_THAN_first
+    CALL :NUMBER_TO_STR MAL_LOWER_THAN_second_str MAL_LOWER_THAN_second
+    IF !MAL_LOWER_THAN_first_str! LSS !MAL_LOWER_THAN_second_str! (
+        CALL :CALL_STACK_PUSH TRUE
+    ) ELSE (
+        CALL :CALL_STACK_PUSH FALSE
+    )
+EXIT /B 0
+
+:MAL_GREATER_THAN_OR_EQUAL
+    CALL :CALL_STACK_POP MAL_GREATER_THAN_OR_EQUAL_second
+    CALL :CALL_STACK_POP MAL_GREATER_THAN_OR_EQUAL_first
+    CALL :NUMBER_TO_STR MAL_GREATER_THAN_OR_EQUAL_first_str MAL_GREATER_THAN_OR_EQUAL_first
+    CALL :NUMBER_TO_STR MAL_GREATER_THAN_OR_EQUAL_second_str MAL_GREATER_THAN_OR_EQUAL_second
+    IF !MAL_GREATER_THAN_OR_EQUAL_first_str! GEQ !MAL_GREATER_THAN_OR_EQUAL_second_str! (
+        CALL :CALL_STACK_PUSH TRUE
+    ) ELSE (
+        CALL :CALL_STACK_PUSH FALSE
+    )
+EXIT /B 0
+
+:MAL_LOWER_THAN_OR_EQUAL
+    CALL :CALL_STACK_POP MAL_LOWER_THAN_OR_EQUAL_second
+    CALL :CALL_STACK_POP MAL_LOWER_THAN_OR_EQUAL_first
+    CALL :NUMBER_TO_STR MAL_LOWER_THAN_OR_EQUAL_first_str MAL_LOWER_THAN_OR_EQUAL_first
+    CALL :NUMBER_TO_STR MAL_LOWER_THAN_OR_EQUAL_second_str MAL_LOWER_THAN_OR_EQUAL_second
+    IF !MAL_LOWER_THAN_OR_EQUAL_first_str! LEQ !MAL_LOWER_THAN_OR_EQUAL_second_str! (
+        CALL :CALL_STACK_PUSH TRUE
+    ) ELSE (
+        CALL :CALL_STACK_PUSH FALSE
+    )
+EXIT /B 0
+
+:MAL_LIST
+    SET "MAL_LIST_list=!NIL!"
+    CALL :CALL_STACK_SIZE MAL_LIST_arguments
+    SET /a "MAL_LIST_arguments-=1"
+    FOR /L %%G IN (0, 1, !MAL_LIST_arguments!) DO (
+        CALL :CALL_STACK_POP MAL_LIST_argument
+        CALL :CONS MAL_LIST_list MAL_LIST_argument MAL_LIST_list
+    )
+    CALL :CALL_STACK_PUSH MAL_LIST_list
 EXIT /B 0
 
 :CALL_STACK_PUSH
@@ -957,20 +1109,42 @@ EXIT /B 0
     SET /a "_call_stack_size-=1"
 EXIT /B 0
 
+:CALL_STACK_SIZE
+    SET "%1=!_call_stack_size!"
+EXIT /B 0
+
+:CALL_STACK_CLEAR
+    SET "_call_stack_size=0"
+EXIT /B 0
+
 :DEFINE_FUN
     CALL :FUNCTION_NEW DEFINE_FUN_value %3
-    SET "DEFINE_FUN_key_str=%2"
-    CALL :ATOM_NEW DEFINE_FUN_key DEFINE_FUN_key_str
+    CALL :ATOM_NEW DEFINE_FUN_key %2
     CALL :ENV_SET %1 DEFINE_FUN_key DEFINE_FUN_value
 EXIT /B 0
 
 :START
 
 CALL :ENV_NEW REPL_env
-CALL :DEFINE_FUN REPL_env + :MAL_NUMBER_ADD
-CALL :DEFINE_FUN REPL_env - :MAL_NUMBER_SUBTRACT
-CALL :DEFINE_FUN REPL_env * :MAL_NUMBER_MULTIPLY
-CALL :DEFINE_FUN REPL_env / :MAL_NUMBER_DIVIDE
+CALL :DEFINE_FUN REPL_env _plus :MAL_NUMBER_ADD
+CALL :DEFINE_FUN REPL_env _minus :MAL_NUMBER_SUBTRACT
+CALL :DEFINE_FUN REPL_env _asterisk :MAL_NUMBER_MULTIPLY
+CALL :DEFINE_FUN REPL_env _slash :MAL_NUMBER_DIVIDE
+SET "_name=prn"
+CALL :DEFINE_FUN REPL_env _name :MAL_PRN
+SET "_name=list"
+CALL :DEFINE_FUN REPL_env _name :MAL_LIST
+SET "_name=list?"
+CALL :DEFINE_FUN REPL_env _name :MAL_LIST?
+SET "_name=empty?"
+CALL :DEFINE_FUN REPL_env _name :MAL_EMPTY?
+SET "_name=count"
+CALL :DEFINE_FUN REPL_env _name :MAL_COUNT
+::CALL :DEFINE_FUN REPL_env = :MAL_EQUAL
+CALL :DEFINE_FUN REPL_env _greater_than :MAL_GREATER_THAN
+CALL :DEFINE_FUN REPL_env _lower_than :MAL_LOWER_THAN
+CALL :DEFINE_FUN REPL_env _greater_than_equal :MAL_GREATER_THAN_OR_EQUAL
+CALL :DEFINE_FUN REPL_env _lower_than_equal :MAL_LOWER_THAN_OR_EQUAL
 
 :REPL
     SET "_input="
@@ -1041,7 +1215,7 @@ EXIT /B 0
         IF "!%1!"=="!NIL!" (
             CALL :ATOM_TO_STR EVAL_AST_atom_str %2
             SET "EVAL_AST_error=Not defined: !EVAL_AST_atom_str!"
-            CALL :ABORT "!EVAL_AST_error!"
+            CALL :ERROR_NEW %1 EVAL_AST_error
         )
         EXIT /B 0
     )
@@ -1112,6 +1286,13 @@ EXIT /B 0
             IF "!EVAL_first_atom_str!"=="do" (
                 CALL :REST EVAL_list%_recursion_count% %2
                 CALL :EVAL_AST EVAL_evaluated_list%_recursion_count% EVAL_list%_recursion_count% %3
+                CALL :ERROR? EVAL_evaluated_list_is_error%_recursion_count% EVAL_evaluated_list%_recursion_count%
+                IF "!EVAL_evaluated_list_is_error%_recursion_count%!"=="!TRUE!" (
+                    SET "%1=!EVAL_evaluated_list%_recursion_count%!"
+                    SET /a "_recursion_count-=1"
+                    EXIT /B 0
+                )
+
                 CALL :LIST_LAST EVAL_evaluated_value%_recursion_count% EVAL_evaluated_list%_recursion_count%
                 SET "%1=!EVAL_evaluated_value%_recursion_count%!"
                 SET /a "_recursion_count-=1"
@@ -1124,6 +1305,13 @@ EXIT /B 0
                 CALL :FIRST EVAL_true_expression%_recursion_count% EVAL_rest%_recursion_count%
 
                 CALL :EVAL_AST EVAL_evaluated_predicate%_recursion_count% EVAL_predicate%_recursion_count% %3
+                CALL :ERROR? EVAL_evaluated_predicate_is_error%_recursion_count% EVAL_evaluated_predicate%_recursion_count%
+                IF "!EVAL_evaluated_predicate_is_error%_recursion_count%!"=="!TRUE!" (
+                    SET "%1=!EVAL_evaluated_predicate%_recursion_count%!"
+                    SET /a "_recursion_count-=1"
+                    EXIT /B 0
+                )
+
                 IF "!EVAL_evaluated_predicate%_recursion_count%!"=="!TRUE!" (
                     CALL :EVAL_AST EVAL_evaluated_value%_recursion_count% EVAL_true_expression%_recursion_count% %3
                 ) ELSE (
@@ -1166,18 +1354,25 @@ EXIT /B 0
         )
 
         CALL :EVAL_AST EVAL_list%_recursion_count% %2 %3
+        CALL :ERROR? EVAL_list_is_error%_recursion_count% EVAL_list%_recursion_count%
+        IF "!EVAL_list_is_error%_recursion_count%!"=="!TRUE!" (
+            SET "%1=!EVAL_list%_recursion_count%!"
+            SET /a "_recursion_count-=1"
+            EXIT /B 0
+        )
 
         CALL :FIRST EVAL_function%_recursion_count% EVAL_list%_recursion_count%
         CALL :FUNCTION_TO_STR EVAL_function_str%_recursion_count% EVAL_function%_recursion_count%
-
         CALL :REST EVAL_list%_recursion_count% EVAL_list%_recursion_count%
-        CALL :FIRST EVAL_a%_recursion_count% EVAL_list%_recursion_count%
 
-        CALL :REST EVAL_list%_recursion_count% EVAL_list%_recursion_count%
-        CALL :FIRST EVAL_b%_recursion_count% EVAL_list%_recursion_count%
+:EVAL_ARGUMENT_LOOP
+        IF NOT "!EVAL_list%_recursion_count%!"=="!NIL!" (
+            CALL :FIRST EVAL_argument%_recursion_count% EVAL_list%_recursion_count%
+            CALL :REST EVAL_list%_recursion_count% EVAL_list%_recursion_count%
+            CALL :CALL_STACK_PUSH EVAL_argument%_recursion_count%
+            GOTO :EVAL_ARGUMENT_LOOP
+        )
 
-        CALL :CALL_STACK_PUSH EVAL_b%_recursion_count%
-        CALL :CALL_STACK_PUSH EVAL_a%_recursion_count%
         CALL !EVAL_function_str%_recursion_count%!
         CALL :CALL_STACK_POP %1
 

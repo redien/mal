@@ -36,6 +36,17 @@ EXIT /B 0
     )
 EXIT /B 0
 
+:LIST_COUNT
+    SET "%1=0"
+
+:LIST_COUNT_LOOP
+    IF NOT "!%2!"=="!NIL!" (
+        CALL :REST %2 %2
+        SET /a "%1+=1"
+        GOTO :LIST_COUNT_LOOP
+    )
+EXIT /B 0
+
 :LIST_REVERSE
     SET "%1=!NIL!"
     CALL :_LIST_REVERSE %1 %2
@@ -268,6 +279,31 @@ EXIT /B 0
 
 :HASHMAP?
     IF "!%2:~0,1!"=="H" (
+        SET "%1=!TRUE!"
+    ) ELSE (
+        SET "%1=!FALSE!"
+    )
+EXIT /B 0
+
+
+:ERROR_NEW
+    SET /a "_error_counter+=1"
+    SET "_error_value!_error_counter!=!%2!"
+    SET "%1=E!_error_counter!"
+EXIT /B 0
+
+:ERROR_TO_STR
+    SET "_ref=_error_value!%2:~1,8191!"
+    SET "%1=!%_ref%!"
+EXIT /B 0
+
+:ERROR_TO_STRING
+    SET "ERROR_TO_STRING_str=_error_value!%2:~1,8191!"
+    CALL :STRING_NEW %1 ERROR_TO_STRING_str
+EXIT /B 0
+
+:ERROR?
+    IF "!%2:~0,1!"=="E" (
         SET "%1=!TRUE!"
     ) ELSE (
         SET "%1=!FALSE!"

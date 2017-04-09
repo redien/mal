@@ -370,20 +370,27 @@ EXIT /B 0
         GOTO :READ_FORM_EXIT
     )
 
+    IF "!READ_FORM_token:~0,1!"=="!_doublequote!" (
+        SET "READ_FORM_string_str=!READ_FORM_token:~1,-1!"
+        CALL :STRING_NEW READ_FORM_form%_recursion_count% READ_FORM_string_str
+        SET /a "%3+=1"
+        GOTO :READ_FORM_EXIT
+    )
+
     IF "!READ_FORM_token!"=="nil" (
-        set "READ_FORM_form%_recursion_count%=!NIL!"
+        SET "READ_FORM_form%_recursion_count%=!NIL!"
         SET /a "%3+=1"
         GOTO :READ_FORM_EXIT
     )
 
     IF "!READ_FORM_token!"=="true" (
-        set "READ_FORM_form%_recursion_count%=!TRUE!"
+        SET "READ_FORM_form%_recursion_count%=!TRUE!"
         SET /a "%3+=1"
         GOTO :READ_FORM_EXIT
     )
 
     IF "!READ_FORM_token!"=="false" (
-        set "READ_FORM_form%_recursion_count%=!FALSE!"
+        SET "READ_FORM_form%_recursion_count%=!FALSE!"
         SET /a "%3+=1"
         GOTO :READ_FORM_EXIT
     )
