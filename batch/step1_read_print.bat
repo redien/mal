@@ -336,6 +336,16 @@ EXIT /B 0
     CALL :STRING_NEW %1 NUMBER_TO_STRING_str
 EXIT /B 0
 
+:NUMBER_EQUAL
+    SET "NUMBER_EQUAL_first=_number_value!%2:~1,8191!"
+    SET "NUMBER_EQUAL_second=_number_value!%3:~1,8191!"
+    IF "!%NUMBER_EQUAL_first%!"=="!%NUMBER_EQUAL_second%!" (
+        SET "%1=!TRUE!"
+    ) ELSE (
+        SET "%1=!FALSE!"
+    )
+EXIT /B 0
+
 :NUMBER?
     IF "!%2:~0,1!"=="N" (
         SET "%1=!TRUE!"
@@ -1204,7 +1214,18 @@ EXIT /B 0
     IF "!MAL_EQUAL_first!"=="!MAL_EQUAL_second!" (
         CALL :CALL_STACK_PUSH TRUE
     ) ELSE (
-        CALL :CALL_STACK_PUSH FALSE
+        CALL :NUMBER? MAL_EQUAL_first_is_number MAL_EQUAL_first
+        IF "!MAL_EQUAL_first_is_number!"=="!TRUE!" (
+            CALL :NUMBER? MAL_EQUAL_second_is_number MAL_EQUAL_second
+            IF "!MAL_EQUAL_second_is_number!"=="!TRUE!" (
+                CALL :NUMBER_EQUAL MAL_EQUAL_result MAL_EQUAL_first MAL_EQUAL_second
+                CALL :CALL_STACK_PUSH MAL_EQUAL_result
+            ) ELSE (
+                CALL :CALL_STACK_PUSH FALSE
+            )
+        ) ELSE (
+            CALL :CALL_STACK_PUSH FALSE
+        )
     )
 EXIT /B 0
 

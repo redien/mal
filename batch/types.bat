@@ -289,6 +289,16 @@ EXIT /B 0
     CALL :STRING_NEW %1 NUMBER_TO_STRING_str
 EXIT /B 0
 
+:NUMBER_EQUAL
+    SET "NUMBER_EQUAL_first=_number_value!%2:~1,8191!"
+    SET "NUMBER_EQUAL_second=_number_value!%3:~1,8191!"
+    IF "!%NUMBER_EQUAL_first%!"=="!%NUMBER_EQUAL_second%!" (
+        SET "%1=!TRUE!"
+    ) ELSE (
+        SET "%1=!FALSE!"
+    )
+EXIT /B 0
+
 :NUMBER?
     IF "!%2:~0,1!"=="N" (
         SET "%1=!TRUE!"

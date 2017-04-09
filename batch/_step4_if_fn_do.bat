@@ -41,7 +41,6 @@ SET "_name=empty?"
 CALL :DEFINE_FUN REPL_env _name :MAL_EMPTY?
 SET "_name=count"
 CALL :DEFINE_FUN REPL_env _name :MAL_COUNT
-::CALL :DEFINE_FUN REPL_env = :MAL_EQUAL
 CALL :DEFINE_FUN REPL_env _greater_than :MAL_GREATER_THAN
 CALL :DEFINE_FUN REPL_env _lower_than :MAL_LOWER_THAN
 CALL :DEFINE_FUN REPL_env _greater_than_equal :MAL_GREATER_THAN_OR_EQUAL

@@ -119,7 +119,18 @@ EXIT /B 0
     IF "!MAL_EQUAL_first!"=="!MAL_EQUAL_second!" (
         CALL :CALL_STACK_PUSH TRUE
     ) ELSE (
-        CALL :CALL_STACK_PUSH FALSE
+        CALL :NUMBER? MAL_EQUAL_first_is_number MAL_EQUAL_first
+        IF "!MAL_EQUAL_first_is_number!"=="!TRUE!" (
+            CALL :NUMBER? MAL_EQUAL_second_is_number MAL_EQUAL_second
+            IF "!MAL_EQUAL_second_is_number!"=="!TRUE!" (
+                CALL :NUMBER_EQUAL MAL_EQUAL_result MAL_EQUAL_first MAL_EQUAL_second
+                CALL :CALL_STACK_PUSH MAL_EQUAL_result
+            ) ELSE (
+                CALL :CALL_STACK_PUSH FALSE
+            )
+        ) ELSE (
+            CALL :CALL_STACK_PUSH FALSE
+        )
     )
 EXIT /B 0
 
