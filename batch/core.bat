@@ -116,33 +116,8 @@ EXIT /B 0
 :MAL_EQUAL
     CALL :CALL_STACK_POP MAL_EQUAL_second
     CALL :CALL_STACK_POP MAL_EQUAL_first
-    IF "!MAL_EQUAL_first!"=="!MAL_EQUAL_second!" (
-        CALL :CALL_STACK_PUSH TRUE
-    ) ELSE (
-        CALL :NUMBER? MAL_EQUAL_first_is_number MAL_EQUAL_first
-        IF "!MAL_EQUAL_first_is_number!"=="!TRUE!" (
-            CALL :NUMBER? MAL_EQUAL_second_is_number MAL_EQUAL_second
-            IF "!MAL_EQUAL_second_is_number!"=="!TRUE!" (
-                CALL :NUMBER_EQUAL MAL_EQUAL_result MAL_EQUAL_first MAL_EQUAL_second
-                CALL :CALL_STACK_PUSH MAL_EQUAL_result
-            ) ELSE (
-                CALL :CALL_STACK_PUSH FALSE
-            )
-        ) ELSE (
-            CALL :STRING? MAL_EQUAL_first_is_string MAL_EQUAL_first
-            IF "!MAL_EQUAL_first_is_string!"=="!TRUE!" (
-                CALL :STRING? MAL_EQUAL_second_is_string MAL_EQUAL_second
-                IF "!MAL_EQUAL_second_is_string!"=="!TRUE!" (
-                    CALL :STRING_EQUAL MAL_EQUAL_result MAL_EQUAL_first MAL_EQUAL_second
-                    CALL :CALL_STACK_PUSH MAL_EQUAL_result
-                ) ELSE (
-                    CALL :CALL_STACK_PUSH FALSE
-                )
-            ) ELSE (
-                CALL :CALL_STACK_PUSH FALSE
-            )
-        )
-    )
+    CALL :EQUAL? MAL_EQUAL_result MAL_EQUAL_first MAL_EQUAL_second
+    CALL :CALL_STACK_PUSH MAL_EQUAL_result
 EXIT /B 0
 
 :MAL_LIST

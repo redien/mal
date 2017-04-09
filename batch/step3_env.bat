@@ -174,6 +174,37 @@ EXIT /B 0
     CALL :_LIST_FIND %1 LIST_FIND_rest%LIST_FIND_recursion_count% %3 %4
 EXIT /B 0
 
+:LIST_EQUAL
+    SET /A "LIST_EQUAL_recursion_count+=1"
+    SET "LIST_EQUAL_rest_left%LIST_EQUAL_recursion_count%=!%2!"
+    SET "LIST_EQUAL_rest_right%LIST_EQUAL_recursion_count%=!%3!"
+    CALL :_LIST_EQUAL %1
+    SET /A "LIST_EQUAL_recursion_count-=1"
+EXIT /B 0
+
+:_LIST_EQUAL
+    IF "!LIST_EQUAL_rest_left%LIST_EQUAL_recursion_count%!"=="!EMPTY_LIST!" (
+        IF "!LIST_EQUAL_rest_right%LIST_EQUAL_recursion_count%!"=="!EMPTY_LIST!" (
+            SET "%1=!TRUE!"
+        ) ELSE (
+            SET "%1=!FALSE!"
+        )
+        EXIT /B 0
+    )
+
+    CALL :FIRST LIST_EQUAL_first_left%LIST_EQUAL_recursion_count% LIST_EQUAL_rest_left%LIST_EQUAL_recursion_count%
+    CALL :REST LIST_EQUAL_rest_left%LIST_EQUAL_recursion_count% LIST_EQUAL_rest_left%LIST_EQUAL_recursion_count%
+
+    CALL :FIRST LIST_EQUAL_first_right%LIST_EQUAL_recursion_count% LIST_EQUAL_rest_right%LIST_EQUAL_recursion_count%
+    CALL :REST LIST_EQUAL_rest_right%LIST_EQUAL_recursion_count% LIST_EQUAL_rest_right%LIST_EQUAL_recursion_count%
+
+    CALL :EQUAL? %1 LIST_EQUAL_first_left%LIST_EQUAL_recursion_count% LIST_EQUAL_first_right%LIST_EQUAL_recursion_count%
+
+    IF "!%1!"=="!FALSE!" EXIT /B 0
+
+    GOTO :_LIST_EQUAL
+EXIT /B 0
+
 :LIST_LAST
     IF "!%2!"=="!EMPTY_LIST!" (
         SET "%1=!NIL!"
@@ -461,6 +492,31 @@ EXIT /B 0
     ) ELSE (
         SET "%1=!FALSE!"
     )
+EXIT /B 0
+
+
+:EQUAL?
+    IF "!%2!"=="!%3!" (
+        SET "%1=!TRUE!"
+        EXIT /B 0
+    ) ELSE (
+        IF "!%2:~0,1!"=="!%3:~0,1!" (
+            :: Types are the same
+            IF "!%2:~0,1!"=="N" (
+                CALL :NUMBER_EQUAL %1 %2 %3
+                EXIT /B 0
+            )
+            IF "!%2:~0,1!"=="S" (
+                CALL :STRING_EQUAL %1 %2 %3
+                EXIT /B 0
+            )
+            IF "!%2:~0,1!"=="L" (
+                CALL :LIST_EQUAL %1 %2 %3
+                EXIT /B 0
+            )
+        )
+    )
+    SET "%1=!FALSE!"
 EXIT /B 0
 
 :SUBSTRING
@@ -1221,33 +1277,8 @@ EXIT /B 0
 :MAL_EQUAL
     CALL :CALL_STACK_POP MAL_EQUAL_second
     CALL :CALL_STACK_POP MAL_EQUAL_first
-    IF "!MAL_EQUAL_first!"=="!MAL_EQUAL_second!" (
-        CALL :CALL_STACK_PUSH TRUE
-    ) ELSE (
-        CALL :NUMBER? MAL_EQUAL_first_is_number MAL_EQUAL_first
-        IF "!MAL_EQUAL_first_is_number!"=="!TRUE!" (
-            CALL :NUMBER? MAL_EQUAL_second_is_number MAL_EQUAL_second
-            IF "!MAL_EQUAL_second_is_number!"=="!TRUE!" (
-                CALL :NUMBER_EQUAL MAL_EQUAL_result MAL_EQUAL_first MAL_EQUAL_second
-                CALL :CALL_STACK_PUSH MAL_EQUAL_result
-            ) ELSE (
-                CALL :CALL_STACK_PUSH FALSE
-            )
-        ) ELSE (
-            CALL :STRING? MAL_EQUAL_first_is_string MAL_EQUAL_first
-            IF "!MAL_EQUAL_first_is_string!"=="!TRUE!" (
-                CALL :STRING? MAL_EQUAL_second_is_string MAL_EQUAL_second
-                IF "!MAL_EQUAL_second_is_string!"=="!TRUE!" (
-                    CALL :STRING_EQUAL MAL_EQUAL_result MAL_EQUAL_first MAL_EQUAL_second
-                    CALL :CALL_STACK_PUSH MAL_EQUAL_result
-                ) ELSE (
-                    CALL :CALL_STACK_PUSH FALSE
-                )
-            ) ELSE (
-                CALL :CALL_STACK_PUSH FALSE
-            )
-        )
-    )
+    CALL :EQUAL? MAL_EQUAL_result MAL_EQUAL_first MAL_EQUAL_second
+    CALL :CALL_STACK_PUSH MAL_EQUAL_result
 EXIT /B 0
 
 :MAL_LIST
