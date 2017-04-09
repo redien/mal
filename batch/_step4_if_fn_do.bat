@@ -46,6 +46,7 @@ CALL :DEFINE_FUN REPL_env _greater_than :MAL_GREATER_THAN
 CALL :DEFINE_FUN REPL_env _lower_than :MAL_LOWER_THAN
 CALL :DEFINE_FUN REPL_env _greater_than_equal :MAL_GREATER_THAN_OR_EQUAL
 CALL :DEFINE_FUN REPL_env _lower_than_equal :MAL_LOWER_THAN_OR_EQUAL
+CALL :DEFINE_FUN REPL_env _equal :MAL_EQUAL
 
 :REPL
     SET "_input="
@@ -105,171 +106,179 @@ EXIT /B 0
 EXIT /B 0
 
 :EVAL_DEF_LIST
-    SET "EVAL_DEF_LIST_list%_recursion_count%=!%2!"
+    SET /a "EVAL_DEF_LIST_recursion_count+=1"
+
+    SET "EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%=!%2!"
 :_EVAL_DEF_LIST
-    CALL :FIRST EVAL_DEF_LIST_key%_recursion_count% EVAL_DEF_LIST_list%_recursion_count%
-    CALL :REST EVAL_DEF_LIST_list%_recursion_count% EVAL_DEF_LIST_list%_recursion_count%
+    CALL :FIRST EVAL_DEF_LIST_key%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%
+    CALL :REST EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%
 
-    CALL :FIRST EVAL_DEF_LIST_value%_recursion_count% EVAL_DEF_LIST_list%_recursion_count%
-    CALL :REST EVAL_DEF_LIST_list%_recursion_count% EVAL_DEF_LIST_list%_recursion_count%
+    CALL :FIRST EVAL_DEF_LIST_value%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%
+    CALL :REST EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%
 
-    CALL :EVAL EVAL_DEF_LIST_evaluated_value%_recursion_count% EVAL_DEF_LIST_value%_recursion_count% %1
+    CALL :EVAL EVAL_DEF_LIST_evaluated_value%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_value%EVAL_DEF_LIST_recursion_count% %1
 
-    CALL :ENV_SET %1 EVAL_DEF_LIST_key%_recursion_count% EVAL_DEF_LIST_evaluated_value%_recursion_count%
+    CALL :ENV_SET %1 EVAL_DEF_LIST_key%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_evaluated_value%EVAL_DEF_LIST_recursion_count%
 
-    IF NOT "!EVAL_DEF_LIST_list%_recursion_count%!"=="!EMPTY_LIST!" (
+    IF NOT "!EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%!"=="!EMPTY_LIST!" (
         GOTO :_EVAL_DEF_LIST
     )
+
+    SET /a "EVAL_DEF_LIST_recursion_count-=1"
 EXIT /B 0
 
 :EVAL_DEF_VECTOR
+    SET /a "EVAL_DEF_VECTOR_recursion_count+=1"
+
     CALL :VECTOR_LENGTH EVAL_DEF_VECTOR_vector_length %2
     SET /a "EVAL_DEF_VECTOR_vector_length-=1"
     FOR /L %%G IN (0, 2, !EVAL_DEF_VECTOR_vector_length!) DO (
         SET "EVAL_DEF_VECTOR_index=%%G"
-        CALL :VECTOR_GET EVAL_DEF_VECTOR_key%_recursion_count% %2 EVAL_DEF_VECTOR_index
+        CALL :VECTOR_GET EVAL_DEF_VECTOR_key%EVAL_DEF_VECTOR_recursion_count% %2 EVAL_DEF_VECTOR_index
         SET /a "EVAL_DEF_VECTOR_index+=1"
-        CALL :VECTOR_GET EVAL_DEF_VECTOR_value%_recursion_count% %2 EVAL_DEF_VECTOR_index
+        CALL :VECTOR_GET EVAL_DEF_VECTOR_value%EVAL_DEF_VECTOR_recursion_count% %2 EVAL_DEF_VECTOR_index
 
-        CALL :EVAL EVAL_DEF_VECTOR_evaluated_value%_recursion_count% EVAL_DEF_VECTOR_value%_recursion_count% %1
+        CALL :EVAL EVAL_DEF_VECTOR_evaluated_value%EVAL_DEF_VECTOR_recursion_count% EVAL_DEF_VECTOR_value%EVAL_DEF_VECTOR_recursion_count% %1
 
-        CALL :ENV_SET %1 EVAL_DEF_VECTOR_key%_recursion_count% EVAL_DEF_VECTOR_evaluated_value%_recursion_count%
+        CALL :ENV_SET %1 EVAL_DEF_VECTOR_key%EVAL_DEF_VECTOR_recursion_count% EVAL_DEF_VECTOR_evaluated_value%EVAL_DEF_VECTOR_recursion_count%
     )
+
+    SET /a "EVAL_DEF_VECTOR_recursion_count-=1"
 EXIT /B 0
 
 :EVAL
-    SET /a "_recursion_count+=1"
+    SET /a "EVAL_recursion_count+=1"
 
     CALL :LIST? EVAL_is_list %2
     IF "!EVAL_is_list!"=="!TRUE!" (
         IF "!%2!"=="!EMPTY_LIST!" (
             SET "%1=!%2!"
-            SET /a "_recursion_count-=1"
+            SET /a "EVAL_recursion_count-=1"
             EXIT /B 0
         )
 
         CALL :FIRST EVAL_first_form %2
-        CALL :REST EVAL_rest%_recursion_count% %2
+        CALL :REST EVAL_rest%EVAL_recursion_count% %2
         CALL :ATOM? EVAL_is_atom EVAL_first_form
         IF "!EVAL_is_atom!"=="!TRUE!" (
             CALL :ATOM_TO_STR EVAL_first_atom_str EVAL_first_form
             IF "!EVAL_first_atom_str!"=="def^!" (
-                CALL :FIRST EVAL_key%_recursion_count% EVAL_rest%_recursion_count%
-                CALL :REST EVAL_rest%_recursion_count% EVAL_rest%_recursion_count%
-                CALL :FIRST EVAL_value%_recursion_count% EVAL_rest%_recursion_count%
-                CALL :EVAL EVAL_evaluated_value%_recursion_count% EVAL_value%_recursion_count% %3
-                CALL :ENV_SET %3 EVAL_key%_recursion_count% EVAL_evaluated_value%_recursion_count%
-                SET "%1=!EVAL_evaluated_value%_recursion_count%!"
-                SET /a "_recursion_count-=1"
+                CALL :FIRST EVAL_key%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :FIRST EVAL_value%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :EVAL EVAL_evaluated_value%EVAL_recursion_count% EVAL_value%EVAL_recursion_count% %3
+                CALL :ENV_SET %3 EVAL_key%EVAL_recursion_count% EVAL_evaluated_value%EVAL_recursion_count%
+                SET "%1=!EVAL_evaluated_value%EVAL_recursion_count%!"
+                SET /a "EVAL_recursion_count-=1"
                 EXIT /B 0
             )
 
             IF "!EVAL_first_atom_str!"=="do" (
-                CALL :REST EVAL_list%_recursion_count% %2
-                CALL :EVAL_AST EVAL_evaluated_list%_recursion_count% EVAL_list%_recursion_count% %3
-                CALL :ERROR? EVAL_evaluated_list_is_error%_recursion_count% EVAL_evaluated_list%_recursion_count%
-                IF "!EVAL_evaluated_list_is_error%_recursion_count%!"=="!TRUE!" (
-                    SET "%1=!EVAL_evaluated_list%_recursion_count%!"
-                    SET /a "_recursion_count-=1"
+                CALL :REST EVAL_list%EVAL_recursion_count% %2
+                CALL :EVAL_AST EVAL_evaluated_list%EVAL_recursion_count% EVAL_list%EVAL_recursion_count% %3
+                CALL :LIST_FIND EVAL_error%EVAL_recursion_count% EVAL_evaluated_list%EVAL_recursion_count% :ERROR?
+                IF NOT "!EVAL_error%EVAL_recursion_count%!"=="!NIL!" (
+                    SET "%1=!EVAL_error%EVAL_recursion_count%!"
+                    SET /a "EVAL_recursion_count-=1"
                     EXIT /B 0
                 )
 
-                CALL :LIST_LAST EVAL_evaluated_value%_recursion_count% EVAL_evaluated_list%_recursion_count%
-                SET "%1=!EVAL_evaluated_value%_recursion_count%!"
-                SET /a "_recursion_count-=1"
+                CALL :LIST_LAST EVAL_evaluated_value%EVAL_recursion_count% EVAL_evaluated_list%EVAL_recursion_count%
+                SET "%1=!EVAL_evaluated_value%EVAL_recursion_count%!"
+                SET /a "EVAL_recursion_count-=1"
                 EXIT /B 0
             )
 
             IF "!EVAL_first_atom_str!"=="if" (
-                CALL :FIRST EVAL_predicate%_recursion_count% EVAL_rest%_recursion_count%
-                CALL :REST EVAL_rest%_recursion_count% EVAL_rest%_recursion_count%
-                CALL :FIRST EVAL_true_expression%_recursion_count% EVAL_rest%_recursion_count%
+                CALL :FIRST EVAL_predicate%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :FIRST EVAL_true_expression%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
 
-                CALL :EVAL EVAL_evaluated_predicate%_recursion_count% EVAL_predicate%_recursion_count% %3
-                CALL :ERROR? EVAL_evaluated_predicate_is_error%_recursion_count% EVAL_evaluated_predicate%_recursion_count%
-                IF "!EVAL_evaluated_predicate_is_error%_recursion_count%!"=="!TRUE!" (
-                    SET "%1=!EVAL_evaluated_predicate%_recursion_count%!"
-                    SET /a "_recursion_count-=1"
+                CALL :EVAL EVAL_evaluated_predicate%EVAL_recursion_count% EVAL_predicate%EVAL_recursion_count% %3
+                CALL :ERROR? EVAL_evaluated_predicate_is_error%EVAL_recursion_count% EVAL_evaluated_predicate%EVAL_recursion_count%
+                IF "!EVAL_evaluated_predicate_is_error%EVAL_recursion_count%!"=="!TRUE!" (
+                    SET "%1=!EVAL_evaluated_predicate%EVAL_recursion_count%!"
+                    SET /a "EVAL_recursion_count-=1"
                     EXIT /B 0
                 )
 
-                SET "EVAL_is_falsey%_recursion_count%=!FALSE!"
-                IF "!EVAL_evaluated_predicate%_recursion_count%!"=="!FALSE!" (
-                    SET "EVAL_is_falsey%_recursion_count%=!TRUE!"
+                SET "EVAL_is_falsey%EVAL_recursion_count%=!FALSE!"
+                IF "!EVAL_evaluated_predicate%EVAL_recursion_count%!"=="!FALSE!" (
+                    SET "EVAL_is_falsey%EVAL_recursion_count%=!TRUE!"
                 )
-                IF "!EVAL_evaluated_predicate%_recursion_count%!"=="!NIL!" (
-                    SET "EVAL_is_falsey%_recursion_count%=!TRUE!"
+                IF "!EVAL_evaluated_predicate%EVAL_recursion_count%!"=="!NIL!" (
+                    SET "EVAL_is_falsey%EVAL_recursion_count%=!TRUE!"
                 )
 
-                IF "!EVAL_is_falsey%_recursion_count%!"=="!TRUE!" (
-                    CALL :REST EVAL_rest%_recursion_count% EVAL_rest%_recursion_count%
-                    IF NOT "!EVAL_rest%_recursion_count%!"=="!EMPTY_LIST!" (
-                        CALL :FIRST EVAL_false_expression%_recursion_count% EVAL_rest%_recursion_count%
-                        CALL :EVAL EVAL_evaluated_value%_recursion_count% EVAL_false_expression%_recursion_count% %3
+                IF "!EVAL_is_falsey%EVAL_recursion_count%!"=="!TRUE!" (
+                    CALL :REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                    IF NOT "!EVAL_rest%EVAL_recursion_count%!"=="!EMPTY_LIST!" (
+                        CALL :FIRST EVAL_false_expression%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                        CALL :EVAL EVAL_evaluated_value%EVAL_recursion_count% EVAL_false_expression%EVAL_recursion_count% %3
                     ) ELSE (
-                        SET "EVAL_evaluated_value%_recursion_count%=!NIL!"
+                        SET "EVAL_evaluated_value%EVAL_recursion_count%=!NIL!"
                     )
                 ) ELSE (
-                    CALL :EVAL EVAL_evaluated_value%_recursion_count% EVAL_true_expression%_recursion_count% %3
+                    CALL :EVAL EVAL_evaluated_value%EVAL_recursion_count% EVAL_true_expression%EVAL_recursion_count% %3
                 )
 
-                SET "%1=!EVAL_evaluated_value%_recursion_count%!"
-                SET /a "_recursion_count-=1"
+                SET "%1=!EVAL_evaluated_value%EVAL_recursion_count%!"
+                SET /a "EVAL_recursion_count-=1"
                 EXIT /B 0
             )
 
             IF "!EVAL_first_atom_str!"=="let*" (
-                CALL :ENV_NEW EVAL_env%_recursion_count%
-                CALL :ENV_SET_OUTER EVAL_env%_recursion_count% %3
+                CALL :ENV_NEW EVAL_env%EVAL_recursion_count%
+                CALL :ENV_SET_OUTER EVAL_env%EVAL_recursion_count% %3
 
-                CALL :FIRST EVAL_def_list%_recursion_count% EVAL_rest%_recursion_count%
+                CALL :FIRST EVAL_def_list%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
 
-                CALL :LIST? EVAL_is_list EVAL_def_list%_recursion_count%
+                CALL :LIST? EVAL_is_list EVAL_def_list%EVAL_recursion_count%
                 IF "!EVAL_is_list!"=="!TRUE!" (
-                    CALL :EVAL_DEF_LIST EVAL_env%_recursion_count% EVAL_def_list%_recursion_count%
+                    CALL :EVAL_DEF_LIST EVAL_env%EVAL_recursion_count% EVAL_def_list%EVAL_recursion_count%
                 ) ELSE (
-                    CALL :EVAL_DEF_VECTOR EVAL_env%_recursion_count% EVAL_def_list%_recursion_count%
+                    CALL :EVAL_DEF_VECTOR EVAL_env%EVAL_recursion_count% EVAL_def_list%EVAL_recursion_count%
                 )
 
-                CALL :REST EVAL_rest%_recursion_count% EVAL_rest%_recursion_count%
-                CALL :FIRST EVAL_value%_recursion_count% EVAL_rest%_recursion_count%
+                CALL :REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :FIRST EVAL_value%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
 
-                CALL :EVAL EVAL_evaluated_value%_recursion_count% EVAL_value%_recursion_count% EVAL_env%_recursion_count%
+                CALL :EVAL EVAL_evaluated_value%EVAL_recursion_count% EVAL_value%EVAL_recursion_count% EVAL_env%EVAL_recursion_count%
 
-                SET "%1=!EVAL_evaluated_value%_recursion_count%!"
-                SET /a "_recursion_count-=1"
+                SET "%1=!EVAL_evaluated_value%EVAL_recursion_count%!"
+                SET /a "EVAL_recursion_count-=1"
                 EXIT /B 0
             )
         )
 
-        CALL :EVAL_AST EVAL_list%_recursion_count% %2 %3
-        CALL :LIST_FIND EVAL_error%_recursion_count% EVAL_list%_recursion_count% :ERROR?
-        IF NOT "!EVAL_error%_recursion_count%!"=="!NIL!" (
-            SET "%1=!EVAL_error%_recursion_count%!"
-            SET /a "_recursion_count-=1"
+        CALL :EVAL_AST EVAL_list%EVAL_recursion_count% %2 %3
+        CALL :LIST_FIND EVAL_error%EVAL_recursion_count% EVAL_list%EVAL_recursion_count% :ERROR?
+        IF NOT "!EVAL_error%EVAL_recursion_count%!"=="!NIL!" (
+            SET "%1=!EVAL_error%EVAL_recursion_count%!"
+            SET /a "EVAL_recursion_count-=1"
             EXIT /B 0
         )
 
-        CALL :FIRST EVAL_function%_recursion_count% EVAL_list%_recursion_count%
-        CALL :FUNCTION_TO_STR EVAL_function_str%_recursion_count% EVAL_function%_recursion_count%
-        CALL :REST EVAL_list%_recursion_count% EVAL_list%_recursion_count%
+        CALL :FIRST EVAL_function%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
+        CALL :FUNCTION_TO_STR EVAL_function_str%EVAL_recursion_count% EVAL_function%EVAL_recursion_count%
+        CALL :REST EVAL_list%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
 
 :EVAL_ARGUMENT_LOOP
-        IF NOT "!EVAL_list%_recursion_count%!"=="!EMPTY_LIST!" (
-            CALL :FIRST EVAL_argument%_recursion_count% EVAL_list%_recursion_count%
-            CALL :REST EVAL_list%_recursion_count% EVAL_list%_recursion_count%
-            CALL :CALL_STACK_PUSH EVAL_argument%_recursion_count%
+        IF NOT "!EVAL_list%EVAL_recursion_count%!"=="!EMPTY_LIST!" (
+            CALL :FIRST EVAL_argument%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
+            CALL :REST EVAL_list%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
+            CALL :CALL_STACK_PUSH EVAL_argument%EVAL_recursion_count%
             GOTO :EVAL_ARGUMENT_LOOP
         )
 
-        CALL !EVAL_function_str%_recursion_count%!
+        CALL !EVAL_function_str%EVAL_recursion_count%!
         CALL :CALL_STACK_POP %1
 
-        SET /a "_recursion_count-=1"
+        SET /a "EVAL_recursion_count-=1"
         EXIT /B 0
     )
 
     CALL :EVAL_AST %1 %2 %3
 
-    SET /a "_recursion_count-=1"
+    SET /a "EVAL_recursion_count-=1"
 EXIT /B 0

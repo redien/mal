@@ -10,8 +10,8 @@ SET END_WHILE=) ELSE %BREAK%) ELSE CMD /Q /C "%~F0" fi301kvnro2qa9vm2
 :: Magic number that says we're calling a loop
 IF "%1"=="fi301kvnro2qa9vm2" GOTO %2
 
-SET "NIL="
-SET "EMPTY_LIST=*"
+SET "NIL=n"
+SET "EMPTY_LIST=l"
 SET "TRUE=t"
 SET "FALSE=f"
 
@@ -26,6 +26,7 @@ SET _greater_than=^>
 SET _lower_than=^<
 SET _greater_than_equal=^>^=
 SET _lower_than_equal=^<^=
+SET _equal=^=
 SET _plus=^+
 SET _minus=^-
 SET _slash=^/

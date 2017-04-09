@@ -113,6 +113,16 @@ EXIT /B 0
     )
 EXIT /B 0
 
+:MAL_EQUAL
+    CALL :CALL_STACK_POP MAL_EQUAL_second
+    CALL :CALL_STACK_POP MAL_EQUAL_first
+    IF "!MAL_EQUAL_first!"=="!MAL_EQUAL_second!" (
+        CALL :CALL_STACK_PUSH TRUE
+    ) ELSE (
+        CALL :CALL_STACK_PUSH FALSE
+    )
+EXIT /B 0
+
 :MAL_LIST
     SET "MAL_LIST_list=!EMPTY_LIST!"
     CALL :CALL_STACK_SIZE MAL_LIST_arguments

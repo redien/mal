@@ -51,9 +51,11 @@ EXIT /B 0
         EXIT /B 0
     )
 
+    SET "LIST_COUNT_list=!%2!"
+
 :LIST_COUNT_LOOP
-    IF NOT "!%2!"=="!EMPTY_LIST!" (
-        CALL :REST %2 %2
+    IF NOT "!LIST_COUNT_list!"=="!EMPTY_LIST!" (
+        CALL :REST LIST_COUNT_list LIST_COUNT_list
         SET /a "%1+=1"
         GOTO :LIST_COUNT_LOOP
     )
@@ -78,9 +80,11 @@ EXIT /B 0
 EXIT /B 0
 
 :LIST_MAP
-    SET "LIST_MAP_list%_recursion_count%=!EMPTY_LIST!"
-    CALL :_LIST_MAP LIST_MAP_list%_recursion_count% %2 %3 %4
-    CALL :LIST_REVERSE %1 LIST_MAP_list%_recursion_count%
+    SET /A "LIST_MAP_recursion_count+=1"
+    SET "LIST_MAP_list%LIST_MAP_recursion_count%=!EMPTY_LIST!"
+    CALL :_LIST_MAP LIST_MAP_list%LIST_MAP_recursion_count% %2 %3 %4
+    CALL :LIST_REVERSE %1 LIST_MAP_list%LIST_MAP_recursion_count%
+    SET /A "LIST_MAP_recursion_count-=1"
 EXIT /B 0
 
 :_LIST_MAP
@@ -88,33 +92,39 @@ EXIT /B 0
         EXIT /B 0
     )
 
-    CALL :FIRST LIST_MAP_first%_recursion_count% %2
-    CALL :REST LIST_MAP_rest%_recursion_count% %2
+    CALL :FIRST LIST_MAP_first%LIST_MAP_recursion_count% %2
+    CALL :REST LIST_MAP_rest%LIST_MAP_recursion_count% %2
 
-    CALL %3 LIST_MAP_mapped%_recursion_count% LIST_MAP_first%_recursion_count% %4
+    CALL %3 LIST_MAP_mapped%LIST_MAP_recursion_count% LIST_MAP_first%LIST_MAP_recursion_count% %4
 
-    CALL :CONS %1 LIST_MAP_mapped%_recursion_count% %1
+    CALL :CONS %1 LIST_MAP_mapped%LIST_MAP_recursion_count% %1
 
-    CALL :_LIST_MAP %1 LIST_MAP_rest%_recursion_count% %3 %4
+    CALL :_LIST_MAP %1 LIST_MAP_rest%LIST_MAP_recursion_count% %3 %4
 EXIT /B 0
 
 :LIST_FIND
+    SET /A "LIST_FIND_recursion_count+=1"
+    CALL :_LIST_FIND %1 %2 %3 %4
+    SET /A "LIST_FIND_recursion_count-=1"
+EXIT /B 0
+
+:_LIST_FIND
     IF "!%2!"=="!EMPTY_LIST!" (
         SET "%1=!NIL!"
         EXIT /B 0
     )
 
-    CALL :FIRST LIST_FIND_first%_recursion_count% %2
-    CALL :REST LIST_FIND_rest%_recursion_count% %2
+    CALL :FIRST LIST_FIND_first%LIST_FIND_recursion_count% %2
+    CALL :REST LIST_FIND_rest%LIST_FIND_recursion_count% %2
 
-    CALL %3 LIST_FIND_predicate%_recursion_count% LIST_FIND_first%_recursion_count% %4
+    CALL %3 LIST_FIND_predicate%LIST_FIND_recursion_count% LIST_FIND_first%LIST_FIND_recursion_count% %4
 
-    IF "!LIST_FIND_predicate%_recursion_count%!"=="!TRUE!" (
-        SET "%1=!LIST_FIND_first%_recursion_count%!"
+    IF "!LIST_FIND_predicate%LIST_FIND_recursion_count%!"=="!TRUE!" (
+        SET "%1=!LIST_FIND_first%LIST_FIND_recursion_count%!"
         EXIT /B 0
     )
 
-    CALL :LIST_FIND %1 LIST_FIND_rest%_recursion_count% %3 %4
+    CALL :_LIST_FIND %1 LIST_FIND_rest%LIST_FIND_recursion_count% %3 %4
 EXIT /B 0
 
 :LIST_LAST
@@ -162,16 +172,22 @@ EXIT /B 0
 EXIT /B 0
 
 :VECTOR_MAP
-    CALL :VECTOR_LENGTH VECTOR_MAP_vector_length%_recursion_count% %2
-    SET /a "VECTOR_MAP_vector_length%_recursion_count%-=1"
-    CALL :VECTOR_NEW VECTOR_MAP_new_vector%_recursion_count%
-    FOR /L %%G IN (0, 1, !VECTOR_MAP_vector_length%_recursion_count%!) DO (
-        SET "VECTOR_MAP_index%_recursion_count%=%%G"
-        CALL :VECTOR_GET VECTOR_MAP_value%_recursion_count% %2 VECTOR_MAP_index%_recursion_count%
-        CALL %3 VECTOR_MAP_mapped%_recursion_count% VECTOR_MAP_value%_recursion_count% %4
-        CALL :VECTOR_PUSH VECTOR_MAP_new_vector%_recursion_count% VECTOR_MAP_mapped%_recursion_count%
+    SET /A "VECTOR_MAP_recursion_count+=1"
+    CALL :_VECTOR_MAP %1 %2 %3 %4
+    SET /A VECTOR_MAP_recursion_count-=1"
+EXIT /B 0
+
+:_VECTOR_MAP
+    CALL :VECTOR_LENGTH VECTOR_MAP_vector_length%VECTOR_MAP_recursion_count% %2
+    SET /a "VECTOR_MAP_vector_length%VECTOR_MAP_recursion_count%-=1"
+    CALL :VECTOR_NEW VECTOR_MAP_new_vector%VECTOR_MAP_recursion_count%
+    FOR /L %%G IN (0, 1, !VECTOR_MAP_vector_length%VECTOR_MAP_recursion_count%!) DO (
+        SET "VECTOR_MAP_index%VECTOR_MAP_recursion_count%=%%G"
+        CALL :VECTOR_GET VECTOR_MAP_value%VECTOR_MAP_recursion_count% %2 VECTOR_MAP_index%VECTOR_MAP_recursion_count%
+        CALL %3 VECTOR_MAP_mapped%VECTOR_MAP_recursion_count% VECTOR_MAP_value%VECTOR_MAP_recursion_count% %4
+        CALL :VECTOR_PUSH VECTOR_MAP_new_vector%VECTOR_MAP_recursion_count% VECTOR_MAP_mapped%VECTOR_MAP_recursion_count%
     )
-    SET "%1=!VECTOR_MAP_new_vector%_recursion_count%!"
+    SET "%1=!VECTOR_MAP_new_vector%VECTOR_MAP_recursion_count%!"
 EXIT /B 0
 
 :VECTOR?
@@ -327,18 +343,24 @@ EXIT /B 0
 EXIT /B 0
 
 :HASHMAP_MAP
-    CALL :HASHMAP_KEYS HASHMAP_MAP_keys%_recursion_count% %2
-    CALL :VECTOR_LENGTH HASHMAP_MAP_keys_length%_recursion_count% HASHMAP_MAP_keys%_recursion_count%
-    SET /a "HASHMAP_MAP_keys_length%_recursion_count%-=1"
-    CALL :HASHMAP_NEW HASHMAP_MAP_new_hashmap%_recursion_count%
-    FOR /L %%G IN (0, 1, !HASHMAP_MAP_keys_length%_recursion_count%!) DO (
-        SET "HASHMAP_MAP_index%_recursion_count%=%%G"
-        CALL :VECTOR_GET HASHMAP_MAP_key%_recursion_count% HASHMAP_MAP_keys%_recursion_count% HASHMAP_MAP_index%_recursion_count%
-        CALL :HASHMAP_GET HASHMAP_MAP_value%_recursion_count% %2 HASHMAP_MAP_key%_recursion_count%
-        CALL %3 HASHMAP_MAP_mapped%_recursion_count% HASHMAP_MAP_value%_recursion_count% %4
-        CALL :HASHMAP_INSERT HASHMAP_MAP_new_hashmap%_recursion_count% HASHMAP_MAP_key%_recursion_count% HASHMAP_MAP_mapped%_recursion_count%
+    SET /A "HASHMAP_MAP_recursion_count+=1"
+    CALL :_HASHMAP_MAP %1 %2 %3 %4
+    SET /A HASHMAP_MAP_recursion_count-=1"
+EXIT /B 0
+
+:_HASHMAP_MAP
+    CALL :HASHMAP_KEYS HASHMAP_MAP_keys%HASHMAP_MAP_recursion_count% %2
+    CALL :VECTOR_LENGTH HASHMAP_MAP_keys_length%HASHMAP_MAP_recursion_count% HASHMAP_MAP_keys%HASHMAP_MAP_recursion_count%
+    SET /a "HASHMAP_MAP_keys_length%HASHMAP_MAP_recursion_count%-=1"
+    CALL :HASHMAP_NEW HASHMAP_MAP_new_hashmap%HASHMAP_MAP_recursion_count%
+    FOR /L %%G IN (0, 1, !HASHMAP_MAP_keys_length%HASHMAP_MAP_recursion_count%!) DO (
+        SET "HASHMAP_MAP_index%HASHMAP_MAP_recursion_count%=%%G"
+        CALL :VECTOR_GET HASHMAP_MAP_key%HASHMAP_MAP_recursion_count% HASHMAP_MAP_keys%HASHMAP_MAP_recursion_count% HASHMAP_MAP_index%HASHMAP_MAP_recursion_count%
+        CALL :HASHMAP_GET HASHMAP_MAP_value%HASHMAP_MAP_recursion_count% %2 HASHMAP_MAP_key%HASHMAP_MAP_recursion_count%
+        CALL %3 HASHMAP_MAP_mapped%HASHMAP_MAP_recursion_count% HASHMAP_MAP_value%HASHMAP_MAP_recursion_count% %4
+        CALL :HASHMAP_INSERT HASHMAP_MAP_new_hashmap%HASHMAP_MAP_recursion_count% HASHMAP_MAP_key%HASHMAP_MAP_recursion_count% HASHMAP_MAP_mapped%HASHMAP_MAP_recursion_count%
     )
-    SET "%1=!HASHMAP_MAP_new_hashmap%_recursion_count%!"
+    SET "%1=!HASHMAP_MAP_new_hashmap%HASHMAP_MAP_recursion_count%!"
 EXIT /B 0
 
 :HASHMAP?
