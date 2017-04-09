@@ -131,6 +131,25 @@ EXIT /B 0
     CALL :_LIST_MAP %1 LIST_MAP_rest%_recursion_count% %3 %4
 EXIT /B 0
 
+:LIST_FIND
+    IF "!%2!"=="!NIL!" (
+        SET "%1=!NIL!"
+        EXIT /B 0
+    )
+
+    CALL :FIRST LIST_FIND_first%_recursion_count% %2
+    CALL :REST LIST_FIND_rest%_recursion_count% %2
+
+    CALL %3 LIST_FIND_predicate%_recursion_count% LIST_FIND_first%_recursion_count% %4
+
+    IF "!LIST_FIND_predicate%_recursion_count%!"=="!TRUE!" (
+        SET "%1=!LIST_FIND_first%_recursion_count%!"
+        EXIT /B 0
+    )
+
+    CALL :LIST_FIND %1 LIST_FIND_rest%_recursion_count% %3 %4
+EXIT /B 0
+
 :LIST_LAST
     IF "!%2!"=="!NIL!" (
         SET "%1=!NIL!"

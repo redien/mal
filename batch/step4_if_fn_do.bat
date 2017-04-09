@@ -131,6 +131,25 @@ EXIT /B 0
     CALL :_LIST_MAP %1 LIST_MAP_rest%_recursion_count% %3 %4
 EXIT /B 0
 
+:LIST_FIND
+    IF "!%2!"=="!NIL!" (
+        SET "%1=!NIL!"
+        EXIT /B 0
+    )
+
+    CALL :FIRST LIST_FIND_first%_recursion_count% %2
+    CALL :REST LIST_FIND_rest%_recursion_count% %2
+
+    CALL %3 LIST_FIND_predicate%_recursion_count% LIST_FIND_first%_recursion_count% %4
+
+    IF "!LIST_FIND_predicate%_recursion_count%!"=="!TRUE!" (
+        SET "%1=!LIST_FIND_first%_recursion_count%!"
+        EXIT /B 0
+    )
+
+    CALL :LIST_FIND %1 LIST_FIND_rest%_recursion_count% %3 %4
+EXIT /B 0
+
 :LIST_LAST
     IF "!%2!"=="!NIL!" (
         SET "%1=!NIL!"
@@ -1316,7 +1335,7 @@ EXIT /B 0
                 CALL :REST EVAL_rest%_recursion_count% EVAL_rest%_recursion_count%
                 CALL :FIRST EVAL_true_expression%_recursion_count% EVAL_rest%_recursion_count%
 
-                CALL :EVAL_AST EVAL_evaluated_predicate%_recursion_count% EVAL_predicate%_recursion_count% %3
+                CALL :EVAL EVAL_evaluated_predicate%_recursion_count% EVAL_predicate%_recursion_count% %3
                 CALL :ERROR? EVAL_evaluated_predicate_is_error%_recursion_count% EVAL_evaluated_predicate%_recursion_count%
                 IF "!EVAL_evaluated_predicate_is_error%_recursion_count%!"=="!TRUE!" (
                     SET "%1=!EVAL_evaluated_predicate%_recursion_count%!"
@@ -1324,16 +1343,24 @@ EXIT /B 0
                     EXIT /B 0
                 )
 
-                IF "!EVAL_evaluated_predicate%_recursion_count%!"=="!TRUE!" (
-                    CALL :EVAL_AST EVAL_evaluated_value%_recursion_count% EVAL_true_expression%_recursion_count% %3
-                ) ELSE (
+                SET "EVAL_is_falsey%_recursion_count%=!FALSE!"
+                IF "!EVAL_evaluated_predicate%_recursion_count%!"=="!FALSE!" (
+                    SET "EVAL_is_falsey%_recursion_count%=!TRUE!"
+                )
+                IF "!EVAL_evaluated_predicate%_recursion_count%!"=="!NIL!" (
+                    SET "EVAL_is_falsey%_recursion_count%=!TRUE!"
+                )
+
+                IF "!EVAL_is_falsey%_recursion_count%!"=="!TRUE!" (
                     CALL :REST EVAL_rest%_recursion_count% EVAL_rest%_recursion_count%
                     IF NOT "!EVAL_rest%_recursion_count%!"=="!NIL!" (
                         CALL :FIRST EVAL_false_expression%_recursion_count% EVAL_rest%_recursion_count%
-                        CALL :EVAL_AST EVAL_evaluated_value%_recursion_count% EVAL_false_expression%_recursion_count% %3
+                        CALL :EVAL EVAL_evaluated_value%_recursion_count% EVAL_false_expression%_recursion_count% %3
                     ) ELSE (
                         SET "EVAL_evaluated_value%_recursion_count%=!NIL!"
                     )
+                ) ELSE (
+                    CALL :EVAL EVAL_evaluated_value%_recursion_count% EVAL_true_expression%_recursion_count% %3
                 )
 
                 SET "%1=!EVAL_evaluated_value%_recursion_count%!"
@@ -1366,9 +1393,9 @@ EXIT /B 0
         )
 
         CALL :EVAL_AST EVAL_list%_recursion_count% %2 %3
-        CALL :ERROR? EVAL_list_is_error%_recursion_count% EVAL_list%_recursion_count%
-        IF "!EVAL_list_is_error%_recursion_count%!"=="!TRUE!" (
-            SET "%1=!EVAL_list%_recursion_count%!"
+        CALL :LIST_FIND EVAL_error%_recursion_count% EVAL_list%_recursion_count% :ERROR?
+        IF NOT "!EVAL_error%_recursion_count%!"=="!NIL!" (
+            SET "%1=!EVAL_error%_recursion_count%!"
             SET /a "_recursion_count-=1"
             EXIT /B 0
         )
