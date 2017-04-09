@@ -264,6 +264,16 @@ EXIT /B 0
     SET "%1=!%_ref%!"
 EXIT /B 0
 
+:STRING_EQUAL
+    SET "STRING_EQUAL_first=_string_contents_!%2:~1,8191!"
+    SET "STRING_EQUAL_second=_string_contents_!%3:~1,8191!"
+    IF "!%STRING_EQUAL_first%!"=="!%STRING_EQUAL_second%!" (
+        SET "%1=!TRUE!"
+    ) ELSE (
+        SET "%1=!FALSE!"
+    )
+EXIT /B 0
+
 :STRING?
     IF "!%2:~0,1!"=="S" (
         SET "%1=!TRUE!"
@@ -1224,7 +1234,18 @@ EXIT /B 0
                 CALL :CALL_STACK_PUSH FALSE
             )
         ) ELSE (
-            CALL :CALL_STACK_PUSH FALSE
+            CALL :STRING? MAL_EQUAL_first_is_string MAL_EQUAL_first
+            IF "!MAL_EQUAL_first_is_string!"=="!TRUE!" (
+                CALL :STRING? MAL_EQUAL_second_is_string MAL_EQUAL_second
+                IF "!MAL_EQUAL_second_is_string!"=="!TRUE!" (
+                    CALL :STRING_EQUAL MAL_EQUAL_result MAL_EQUAL_first MAL_EQUAL_second
+                    CALL :CALL_STACK_PUSH MAL_EQUAL_result
+                ) ELSE (
+                    CALL :CALL_STACK_PUSH FALSE
+                )
+            ) ELSE (
+                CALL :CALL_STACK_PUSH FALSE
+            )
         )
     )
 EXIT /B 0

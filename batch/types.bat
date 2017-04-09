@@ -217,6 +217,16 @@ EXIT /B 0
     SET "%1=!%_ref%!"
 EXIT /B 0
 
+:STRING_EQUAL
+    SET "STRING_EQUAL_first=_string_contents_!%2:~1,8191!"
+    SET "STRING_EQUAL_second=_string_contents_!%3:~1,8191!"
+    IF "!%STRING_EQUAL_first%!"=="!%STRING_EQUAL_second%!" (
+        SET "%1=!TRUE!"
+    ) ELSE (
+        SET "%1=!FALSE!"
+    )
+EXIT /B 0
+
 :STRING?
     IF "!%2:~0,1!"=="S" (
         SET "%1=!TRUE!"
