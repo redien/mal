@@ -54,7 +54,7 @@ EXIT /B 0
 
 :MAL_EMPTY?
     CALL :CALL_STACK_POP MAL_EMPTY?_first
-    CALL :NIL? MAL_EMPTY?_is_empty MAL_EMPTY?_first
+    CALL :LIST_EMPTY? MAL_EMPTY?_is_empty MAL_EMPTY?_first
     CALL :CALL_STACK_PUSH MAL_EMPTY?_is_empty
 EXIT /B 0
 
@@ -114,7 +114,7 @@ EXIT /B 0
 EXIT /B 0
 
 :MAL_LIST
-    SET "MAL_LIST_list=!NIL!"
+    SET "MAL_LIST_list=!EMPTY_LIST!"
     CALL :CALL_STACK_SIZE MAL_LIST_arguments
     SET /a "MAL_LIST_arguments-=1"
     FOR /L %%G IN (0, 1, !MAL_LIST_arguments!) DO (

@@ -117,7 +117,7 @@ EXIT /B 0
 
     CALL :ENV_SET %1 EVAL_DEF_LIST_key%_recursion_count% EVAL_DEF_LIST_evaluated_value%_recursion_count%
 
-    IF NOT "!EVAL_DEF_LIST_list%_recursion_count%!"=="!NIL!" (
+    IF NOT "!EVAL_DEF_LIST_list%_recursion_count%!"=="!EMPTY_LIST!" (
         GOTO :_EVAL_DEF_LIST
     )
 EXIT /B 0
@@ -142,7 +142,7 @@ EXIT /B 0
 
     CALL :LIST? EVAL_is_list %2
     IF "!EVAL_is_list!"=="!TRUE!" (
-        IF "!%2!"=="!NIL!" (
+        IF "!%2!"=="!EMPTY_LIST!" (
             SET "%1=!%2!"
             SET /a "_recursion_count-=1"
             EXIT /B 0
@@ -203,7 +203,7 @@ EXIT /B 0
 
                 IF "!EVAL_is_falsey%_recursion_count%!"=="!TRUE!" (
                     CALL :REST EVAL_rest%_recursion_count% EVAL_rest%_recursion_count%
-                    IF NOT "!EVAL_rest%_recursion_count%!"=="!NIL!" (
+                    IF NOT "!EVAL_rest%_recursion_count%!"=="!EMPTY_LIST!" (
                         CALL :FIRST EVAL_false_expression%_recursion_count% EVAL_rest%_recursion_count%
                         CALL :EVAL EVAL_evaluated_value%_recursion_count% EVAL_false_expression%_recursion_count% %3
                     ) ELSE (
@@ -255,7 +255,7 @@ EXIT /B 0
         CALL :REST EVAL_list%_recursion_count% EVAL_list%_recursion_count%
 
 :EVAL_ARGUMENT_LOOP
-        IF NOT "!EVAL_list%_recursion_count%!"=="!NIL!" (
+        IF NOT "!EVAL_list%_recursion_count%!"=="!EMPTY_LIST!" (
             CALL :FIRST EVAL_argument%_recursion_count% EVAL_list%_recursion_count%
             CALL :REST EVAL_list%_recursion_count% EVAL_list%_recursion_count%
             CALL :CALL_STACK_PUSH EVAL_argument%_recursion_count%

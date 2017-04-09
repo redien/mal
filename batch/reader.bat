@@ -180,7 +180,7 @@ EXIT /B 0
 
 :READ_LIST
     SET /a "%3+=1"
-    SET "%1=!NIL!"
+    SET "%1=!EMPTY_LIST!"
     CALL :VECTOR_LENGTH READ_LIST_length %2
 :READ_LIST_LOOP
     IF !%3! GEQ !READ_LIST_length! (
@@ -279,7 +279,7 @@ EXIT /B 0
 :READ_PREFIX
     SET /a "%3+=1"
 
-    SET "%1=!NIL!"
+    SET "%1=!EMPTY_LIST!"
     CALL :ATOM_NEW READ_PREFIX_atom%_recursion_count% %4
     CALL :READ_FORM READ_PREFIX_form%_recursion_count% %2 %3
     CALL :CONS %1 READ_PREFIX_form%_recursion_count% %1
@@ -289,7 +289,7 @@ EXIT /B 0
 :READ_PREFIX2
     SET /a "%3+=1"
 
-    SET "%1=!NIL!"
+    SET "%1=!EMPTY_LIST!"
     CALL :ATOM_NEW READ_PREFIX_atom%_recursion_count% %4
     CALL :READ_FORM READ_PREFIX_form%_recursion_count% %2 %3
     CALL :READ_FORM READ_PREFIX_form2%_recursion_count% %2 %3

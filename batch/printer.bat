@@ -54,6 +54,12 @@ EXIT /B 0
         EXIT /B 0
     )
 
+    IF "!%2!"=="!EMPTY_LIST!" (
+        SET "%1=()"
+        SET /a "_recursion_count-=1"
+        EXIT /B 0
+    )
+
     IF "!%2!"=="!TRUE!" (
         SET "%1=true"
         SET /a "_recursion_count-=1"
@@ -71,16 +77,16 @@ EXIT /B 0
         SET "%1=("
         SET "_PR_STR_tail%_recursion_count%=!%2!"
 :_PR_STR_LIST_LOOP
-        CALL :NIL? _PR_STR_is_nil _PR_STR_tail%_recursion_count%
-        IF "!_PR_STR_is_nil!"=="!FALSE!" (
+        CALL :LIST_EMPTY? _PR_STR_is_empty _PR_STR_tail%_recursion_count%
+        IF "!_PR_STR_is_empty!"=="!FALSE!" (
             CALL :FIRST _PR_STR_form _PR_STR_tail%_recursion_count%
             CALL :REST _PR_STR_tail%_recursion_count% _PR_STR_tail%_recursion_count%
 
             CALL :_PR_STR PR_STR_str%_recursion_count% _PR_STR_form
 
             SET "%1=!%1!!PR_STR_str%_recursion_count%!"
-            CALL :NIL? _PR_STR_is_nil _PR_STR_tail%_recursion_count%
-            IF "!_PR_STR_is_nil!"=="!FALSE!" (
+            CALL :LIST_EMPTY? _PR_STR_is_empty _PR_STR_tail%_recursion_count%
+            IF "!_PR_STR_is_empty!"=="!FALSE!" (
                 SET "%1=!%1! "
             )
             GOTO :_PR_STR_LIST_LOOP

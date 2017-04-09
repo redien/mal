@@ -25,7 +25,7 @@ EXIT /B 0
 EXIT /B 0
 
 :LIST?
-    IF "!%2!"=="!NIL!" (
+    IF "!%2!"=="!EMPTY_LIST!" (
         SET "%~1=!TRUE!"
     ) ELSE (
         IF "!%~2:~0,1!"=="L" (
@@ -36,11 +36,23 @@ EXIT /B 0
     )
 EXIT /B 0
 
+:LIST_EMPTY?
+    IF "!%2!"=="!EMPTY_LIST!" (
+        SET "%~1=!TRUE!"
+    ) ELSE (
+        SET "%~1=!FALSE!"
+    )
+EXIT /B 0
+
 :LIST_COUNT
     SET "%1=0"
 
+    IF "!%2!"=="!NIL!" (
+        EXIT /B 0
+    )
+
 :LIST_COUNT_LOOP
-    IF NOT "!%2!"=="!NIL!" (
+    IF NOT "!%2!"=="!EMPTY_LIST!" (
         CALL :REST %2 %2
         SET /a "%1+=1"
         GOTO :LIST_COUNT_LOOP
@@ -48,12 +60,12 @@ EXIT /B 0
 EXIT /B 0
 
 :LIST_REVERSE
-    SET "%1=!NIL!"
+    SET "%1=!EMPTY_LIST!"
     CALL :_LIST_REVERSE %1 %2
 EXIT /B 0
 
 :_LIST_REVERSE
-    IF "!%2!"=="!NIL!" (
+    IF "!%2!"=="!EMPTY_LIST!" (
         EXIT /B 0
     )
 
@@ -66,13 +78,13 @@ EXIT /B 0
 EXIT /B 0
 
 :LIST_MAP
-    SET "LIST_MAP_list%_recursion_count%=!NIL!"
+    SET "LIST_MAP_list%_recursion_count%=!EMPTY_LIST!"
     CALL :_LIST_MAP LIST_MAP_list%_recursion_count% %2 %3 %4
     CALL :LIST_REVERSE %1 LIST_MAP_list%_recursion_count%
 EXIT /B 0
 
 :_LIST_MAP
-    IF "!%2!"=="!NIL!" (
+    IF "!%2!"=="!EMPTY_LIST!" (
         EXIT /B 0
     )
 
@@ -87,7 +99,7 @@ EXIT /B 0
 EXIT /B 0
 
 :LIST_FIND
-    IF "!%2!"=="!NIL!" (
+    IF "!%2!"=="!EMPTY_LIST!" (
         SET "%1=!NIL!"
         EXIT /B 0
     )
@@ -106,7 +118,7 @@ EXIT /B 0
 EXIT /B 0
 
 :LIST_LAST
-    IF "!%2!"=="!NIL!" (
+    IF "!%2!"=="!EMPTY_LIST!" (
         SET "%1=!NIL!"
         EXIT /B 0
     )
@@ -115,7 +127,7 @@ EXIT /B 0
 
     CALL :REST LIST_LAST_rest LIST_LAST_list
 
-    IF "!LIST_LAST_rest!"=="!NIL!" (
+    IF "!LIST_LAST_rest!"=="!EMPTY_LIST!" (
         CALL :FIRST %1 LIST_LAST_list
         EXIT /B 0
     )

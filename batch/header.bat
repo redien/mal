@@ -11,6 +11,7 @@ SET END_WHILE=) ELSE %BREAK%) ELSE CMD /Q /C "%~F0" fi301kvnro2qa9vm2
 IF "%1"=="fi301kvnro2qa9vm2" GOTO %2
 
 SET "NIL="
+SET "EMPTY_LIST=*"
 SET "TRUE=t"
 SET "FALSE=f"
 

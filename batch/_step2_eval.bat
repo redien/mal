@@ -142,7 +142,7 @@ EXIT /B 0
 
     CALL :LIST? EVAL_is_list %2
     IF "!EVAL_is_list!"=="!TRUE!" (
-        IF "!%2!"=="!NIL!" (
+        IF "!%2!"=="!EMPTY_LIST!" (
             SET "%1=!%2!"
             SET /a "_recursion_count-=1"
             EXIT /B 0

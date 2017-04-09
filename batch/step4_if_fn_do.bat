@@ -12,6 +12,7 @@ SET END_WHILE=) ELSE %BREAK%) ELSE CMD /Q /C "%~F0" fi301kvnro2qa9vm2
 IF "%1"=="fi301kvnro2qa9vm2" GOTO %2
 
 SET "NIL="
+SET "EMPTY_LIST=*"
 SET "TRUE=t"
 SET "FALSE=f"
 
@@ -70,7 +71,7 @@ EXIT /B 0
 EXIT /B 0
 
 :LIST?
-    IF "!%2!"=="!NIL!" (
+    IF "!%2!"=="!EMPTY_LIST!" (
         SET "%~1=!TRUE!"
     ) ELSE (
         IF "!%~2:~0,1!"=="L" (
@@ -81,11 +82,23 @@ EXIT /B 0
     )
 EXIT /B 0
 
+:LIST_EMPTY?
+    IF "!%2!"=="!EMPTY_LIST!" (
+        SET "%~1=!TRUE!"
+    ) ELSE (
+        SET "%~1=!FALSE!"
+    )
+EXIT /B 0
+
 :LIST_COUNT
     SET "%1=0"
 
+    IF "!%2!"=="!NIL!" (
+        EXIT /B 0
+    )
+
 :LIST_COUNT_LOOP
-    IF NOT "!%2!"=="!NIL!" (
+    IF NOT "!%2!"=="!EMPTY_LIST!" (
         CALL :REST %2 %2
         SET /a "%1+=1"
         GOTO :LIST_COUNT_LOOP
@@ -93,12 +106,12 @@ EXIT /B 0
 EXIT /B 0
 
 :LIST_REVERSE
-    SET "%1=!NIL!"
+    SET "%1=!EMPTY_LIST!"
     CALL :_LIST_REVERSE %1 %2
 EXIT /B 0
 
 :_LIST_REVERSE
-    IF "!%2!"=="!NIL!" (
+    IF "!%2!"=="!EMPTY_LIST!" (
         EXIT /B 0
     )
 
@@ -111,13 +124,13 @@ EXIT /B 0
 EXIT /B 0
 
 :LIST_MAP
-    SET "LIST_MAP_list%_recursion_count%=!NIL!"
+    SET "LIST_MAP_list%_recursion_count%=!EMPTY_LIST!"
     CALL :_LIST_MAP LIST_MAP_list%_recursion_count% %2 %3 %4
     CALL :LIST_REVERSE %1 LIST_MAP_list%_recursion_count%
 EXIT /B 0
 
 :_LIST_MAP
-    IF "!%2!"=="!NIL!" (
+    IF "!%2!"=="!EMPTY_LIST!" (
         EXIT /B 0
     )
 
@@ -132,7 +145,7 @@ EXIT /B 0
 EXIT /B 0
 
 :LIST_FIND
-    IF "!%2!"=="!NIL!" (
+    IF "!%2!"=="!EMPTY_LIST!" (
         SET "%1=!NIL!"
         EXIT /B 0
     )
@@ -151,7 +164,7 @@ EXIT /B 0
 EXIT /B 0
 
 :LIST_LAST
-    IF "!%2!"=="!NIL!" (
+    IF "!%2!"=="!EMPTY_LIST!" (
         SET "%1=!NIL!"
         EXIT /B 0
     )
@@ -160,7 +173,7 @@ EXIT /B 0
 
     CALL :REST LIST_LAST_rest LIST_LAST_list
 
-    IF "!LIST_LAST_rest!"=="!NIL!" (
+    IF "!LIST_LAST_rest!"=="!EMPTY_LIST!" (
         CALL :FIRST %1 LIST_LAST_list
         EXIT /B 0
     )
@@ -628,7 +641,7 @@ EXIT /B 0
 
 :READ_LIST
     SET /a "%3+=1"
-    SET "%1=!NIL!"
+    SET "%1=!EMPTY_LIST!"
     CALL :VECTOR_LENGTH READ_LIST_length %2
 :READ_LIST_LOOP
     IF !%3! GEQ !READ_LIST_length! (
@@ -727,7 +740,7 @@ EXIT /B 0
 :READ_PREFIX
     SET /a "%3+=1"
 
-    SET "%1=!NIL!"
+    SET "%1=!EMPTY_LIST!"
     CALL :ATOM_NEW READ_PREFIX_atom%_recursion_count% %4
     CALL :READ_FORM READ_PREFIX_form%_recursion_count% %2 %3
     CALL :CONS %1 READ_PREFIX_form%_recursion_count% %1
@@ -737,7 +750,7 @@ EXIT /B 0
 :READ_PREFIX2
     SET /a "%3+=1"
 
-    SET "%1=!NIL!"
+    SET "%1=!EMPTY_LIST!"
     CALL :ATOM_NEW READ_PREFIX_atom%_recursion_count% %4
     CALL :READ_FORM READ_PREFIX_form%_recursion_count% %2 %3
     CALL :READ_FORM READ_PREFIX_form2%_recursion_count% %2 %3
@@ -912,6 +925,12 @@ EXIT /B 0
         EXIT /B 0
     )
 
+    IF "!%2!"=="!EMPTY_LIST!" (
+        SET "%1=()"
+        SET /a "_recursion_count-=1"
+        EXIT /B 0
+    )
+
     IF "!%2!"=="!TRUE!" (
         SET "%1=true"
         SET /a "_recursion_count-=1"
@@ -929,16 +948,16 @@ EXIT /B 0
         SET "%1=("
         SET "_PR_STR_tail%_recursion_count%=!%2!"
 :_PR_STR_LIST_LOOP
-        CALL :NIL? _PR_STR_is_nil _PR_STR_tail%_recursion_count%
-        IF "!_PR_STR_is_nil!"=="!FALSE!" (
+        CALL :LIST_EMPTY? _PR_STR_is_empty _PR_STR_tail%_recursion_count%
+        IF "!_PR_STR_is_empty!"=="!FALSE!" (
             CALL :FIRST _PR_STR_form _PR_STR_tail%_recursion_count%
             CALL :REST _PR_STR_tail%_recursion_count% _PR_STR_tail%_recursion_count%
 
             CALL :_PR_STR PR_STR_str%_recursion_count% _PR_STR_form
 
             SET "%1=!%1!!PR_STR_str%_recursion_count%!"
-            CALL :NIL? _PR_STR_is_nil _PR_STR_tail%_recursion_count%
-            IF "!_PR_STR_is_nil!"=="!FALSE!" (
+            CALL :LIST_EMPTY? _PR_STR_is_empty _PR_STR_tail%_recursion_count%
+            IF "!_PR_STR_is_empty!"=="!FALSE!" (
                 SET "%1=!%1! "
             )
             GOTO :_PR_STR_LIST_LOOP
@@ -1079,7 +1098,7 @@ EXIT /B 0
 
 :MAL_EMPTY?
     CALL :CALL_STACK_POP MAL_EMPTY?_first
-    CALL :NIL? MAL_EMPTY?_is_empty MAL_EMPTY?_first
+    CALL :LIST_EMPTY? MAL_EMPTY?_is_empty MAL_EMPTY?_first
     CALL :CALL_STACK_PUSH MAL_EMPTY?_is_empty
 EXIT /B 0
 
@@ -1139,7 +1158,7 @@ EXIT /B 0
 EXIT /B 0
 
 :MAL_LIST
-    SET "MAL_LIST_list=!NIL!"
+    SET "MAL_LIST_list=!EMPTY_LIST!"
     CALL :CALL_STACK_SIZE MAL_LIST_arguments
     SET /a "MAL_LIST_arguments-=1"
     FOR /L %%G IN (0, 1, !MAL_LIST_arguments!) DO (
@@ -1267,7 +1286,7 @@ EXIT /B 0
 
     CALL :ENV_SET %1 EVAL_DEF_LIST_key%_recursion_count% EVAL_DEF_LIST_evaluated_value%_recursion_count%
 
-    IF NOT "!EVAL_DEF_LIST_list%_recursion_count%!"=="!NIL!" (
+    IF NOT "!EVAL_DEF_LIST_list%_recursion_count%!"=="!EMPTY_LIST!" (
         GOTO :_EVAL_DEF_LIST
     )
 EXIT /B 0
@@ -1292,7 +1311,7 @@ EXIT /B 0
 
     CALL :LIST? EVAL_is_list %2
     IF "!EVAL_is_list!"=="!TRUE!" (
-        IF "!%2!"=="!NIL!" (
+        IF "!%2!"=="!EMPTY_LIST!" (
             SET "%1=!%2!"
             SET /a "_recursion_count-=1"
             EXIT /B 0
@@ -1353,7 +1372,7 @@ EXIT /B 0
 
                 IF "!EVAL_is_falsey%_recursion_count%!"=="!TRUE!" (
                     CALL :REST EVAL_rest%_recursion_count% EVAL_rest%_recursion_count%
-                    IF NOT "!EVAL_rest%_recursion_count%!"=="!NIL!" (
+                    IF NOT "!EVAL_rest%_recursion_count%!"=="!EMPTY_LIST!" (
                         CALL :FIRST EVAL_false_expression%_recursion_count% EVAL_rest%_recursion_count%
                         CALL :EVAL EVAL_evaluated_value%_recursion_count% EVAL_false_expression%_recursion_count% %3
                     ) ELSE (
@@ -1405,7 +1424,7 @@ EXIT /B 0
         CALL :REST EVAL_list%_recursion_count% EVAL_list%_recursion_count%
 
 :EVAL_ARGUMENT_LOOP
-        IF NOT "!EVAL_list%_recursion_count%!"=="!NIL!" (
+        IF NOT "!EVAL_list%_recursion_count%!"=="!EMPTY_LIST!" (
             CALL :FIRST EVAL_argument%_recursion_count% EVAL_list%_recursion_count%
             CALL :REST EVAL_list%_recursion_count% EVAL_list%_recursion_count%
             CALL :CALL_STACK_PUSH EVAL_argument%_recursion_count%
