@@ -105,6 +105,7 @@ EXIT /B 0
     GOTO :LIST_LAST_LOOP
 EXIT /B 0
 
+
 :VECTOR_NEW
     SET /a "_vector_counter+=1"
     SET "_vector_length_!_vector_counter!=0"
@@ -129,6 +130,19 @@ EXIT /B 0
     SET /a "%_length%+=1"
 EXIT /B 0
 
+:VECTOR_MAP
+    CALL :VECTOR_LENGTH VECTOR_MAP_vector_length%_recursion_count% %2
+    SET /a "VECTOR_MAP_vector_length%_recursion_count%-=1"
+    CALL :VECTOR_NEW VECTOR_MAP_new_vector%_recursion_count%
+    FOR /L %%G IN (0, 1, !VECTOR_MAP_vector_length%_recursion_count%!) DO (
+        SET "VECTOR_MAP_index%_recursion_count%=%%G"
+        CALL :VECTOR_GET VECTOR_MAP_value%_recursion_count% %2 VECTOR_MAP_index%_recursion_count%
+        CALL %3 VECTOR_MAP_mapped%_recursion_count% VECTOR_MAP_value%_recursion_count% %4
+        CALL :VECTOR_PUSH VECTOR_MAP_new_vector%_recursion_count% VECTOR_MAP_mapped%_recursion_count%
+    )
+    SET "%1=!VECTOR_MAP_new_vector%_recursion_count%!"
+EXIT /B 0
+
 :VECTOR?
     IF "!%2:~0,1!"=="V" (
         SET "%1=!TRUE!"
@@ -136,6 +150,7 @@ EXIT /B 0
         SET "%1=!FALSE!"
     )
 EXIT /B 0
+
 
 :STRING_NEW
     SET /a "_string_counter+=1"
@@ -163,6 +178,7 @@ EXIT /B 0
     )
 EXIT /B 0
 
+
 :ATOM_NEW
     SET /a "_atom_counter+=1"
     SET "_length=_atom_length_!_atom_counter!"
@@ -189,6 +205,7 @@ EXIT /B 0
     )
 EXIT /B 0
 
+
 :FUNCTION_NEW
     SET /a "_function_counter+=1"
     SET "_function_name_!_function_counter!=!%2!"
@@ -207,6 +224,7 @@ EXIT /B 0
         SET "%1=!FALSE!"
     )
 EXIT /B 0
+
 
 :NUMBER_NEW
     SET /a "_number_counter+=1"
@@ -275,6 +293,21 @@ EXIT /B 0
     SET "_id=!%2:~1,8191!"
     SET "_ref=_hashmap_keys!_id!"
     SET "%1=!%_ref%!"
+EXIT /B 0
+
+:HASHMAP_MAP
+    CALL :HASHMAP_KEYS HASHMAP_MAP_keys%_recursion_count% %2
+    CALL :VECTOR_LENGTH HASHMAP_MAP_keys_length%_recursion_count% HASHMAP_MAP_keys%_recursion_count%
+    SET /a "HASHMAP_MAP_keys_length%_recursion_count%-=1"
+    CALL :HASHMAP_NEW HASHMAP_MAP_new_hashmap%_recursion_count%
+    FOR /L %%G IN (0, 1, !HASHMAP_MAP_keys_length%_recursion_count%!) DO (
+        SET "HASHMAP_MAP_index%_recursion_count%=%%G"
+        CALL :VECTOR_GET HASHMAP_MAP_key%_recursion_count% HASHMAP_MAP_keys%_recursion_count% HASHMAP_MAP_index%_recursion_count%
+        CALL :HASHMAP_GET HASHMAP_MAP_value%_recursion_count% %2 HASHMAP_MAP_key%_recursion_count%
+        CALL %3 HASHMAP_MAP_mapped%_recursion_count% HASHMAP_MAP_value%_recursion_count% %4
+        CALL :HASHMAP_INSERT HASHMAP_MAP_new_hashmap%_recursion_count% HASHMAP_MAP_key%_recursion_count% HASHMAP_MAP_mapped%_recursion_count%
+    )
+    SET "%1=!HASHMAP_MAP_new_hashmap%_recursion_count%!"
 EXIT /B 0
 
 :HASHMAP?

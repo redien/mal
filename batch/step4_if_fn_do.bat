@@ -38,9 +38,8 @@ GOTO :START
 EXIT /B 0
 
 :ABORT
-    :: Handle this in a better way somehow.
-    :: Can we clear the stack so this doesn't make it grow?
-    :: Place to start: http://stackoverflow.com/questions/31445330/does-windows-batch-support-exception-handling
+    :: With to many calls to abort the stack starts to fill up.
+    :: Better to return an error value instead.
     ECHO %~1
     GOTO :START
 EXIT
@@ -151,6 +150,7 @@ EXIT /B 0
     GOTO :LIST_LAST_LOOP
 EXIT /B 0
 
+
 :VECTOR_NEW
     SET /a "_vector_counter+=1"
     SET "_vector_length_!_vector_counter!=0"
@@ -175,6 +175,19 @@ EXIT /B 0
     SET /a "%_length%+=1"
 EXIT /B 0
 
+:VECTOR_MAP
+    CALL :VECTOR_LENGTH VECTOR_MAP_vector_length%_recursion_count% %2
+    SET /a "VECTOR_MAP_vector_length%_recursion_count%-=1"
+    CALL :VECTOR_NEW VECTOR_MAP_new_vector%_recursion_count%
+    FOR /L %%G IN (0, 1, !VECTOR_MAP_vector_length%_recursion_count%!) DO (
+        SET "VECTOR_MAP_index%_recursion_count%=%%G"
+        CALL :VECTOR_GET VECTOR_MAP_value%_recursion_count% %2 VECTOR_MAP_index%_recursion_count%
+        CALL %3 VECTOR_MAP_mapped%_recursion_count% VECTOR_MAP_value%_recursion_count% %4
+        CALL :VECTOR_PUSH VECTOR_MAP_new_vector%_recursion_count% VECTOR_MAP_mapped%_recursion_count%
+    )
+    SET "%1=!VECTOR_MAP_new_vector%_recursion_count%!"
+EXIT /B 0
+
 :VECTOR?
     IF "!%2:~0,1!"=="V" (
         SET "%1=!TRUE!"
@@ -182,6 +195,7 @@ EXIT /B 0
         SET "%1=!FALSE!"
     )
 EXIT /B 0
+
 
 :STRING_NEW
     SET /a "_string_counter+=1"
@@ -209,6 +223,7 @@ EXIT /B 0
     )
 EXIT /B 0
 
+
 :ATOM_NEW
     SET /a "_atom_counter+=1"
     SET "_length=_atom_length_!_atom_counter!"
@@ -235,6 +250,7 @@ EXIT /B 0
     )
 EXIT /B 0
 
+
 :FUNCTION_NEW
     SET /a "_function_counter+=1"
     SET "_function_name_!_function_counter!=!%2!"
@@ -253,6 +269,7 @@ EXIT /B 0
         SET "%1=!FALSE!"
     )
 EXIT /B 0
+
 
 :NUMBER_NEW
     SET /a "_number_counter+=1"
@@ -321,6 +338,21 @@ EXIT /B 0
     SET "_id=!%2:~1,8191!"
     SET "_ref=_hashmap_keys!_id!"
     SET "%1=!%_ref%!"
+EXIT /B 0
+
+:HASHMAP_MAP
+    CALL :HASHMAP_KEYS HASHMAP_MAP_keys%_recursion_count% %2
+    CALL :VECTOR_LENGTH HASHMAP_MAP_keys_length%_recursion_count% HASHMAP_MAP_keys%_recursion_count%
+    SET /a "HASHMAP_MAP_keys_length%_recursion_count%-=1"
+    CALL :HASHMAP_NEW HASHMAP_MAP_new_hashmap%_recursion_count%
+    FOR /L %%G IN (0, 1, !HASHMAP_MAP_keys_length%_recursion_count%!) DO (
+        SET "HASHMAP_MAP_index%_recursion_count%=%%G"
+        CALL :VECTOR_GET HASHMAP_MAP_key%_recursion_count% HASHMAP_MAP_keys%_recursion_count% HASHMAP_MAP_index%_recursion_count%
+        CALL :HASHMAP_GET HASHMAP_MAP_value%_recursion_count% %2 HASHMAP_MAP_key%_recursion_count%
+        CALL %3 HASHMAP_MAP_mapped%_recursion_count% HASHMAP_MAP_value%_recursion_count% %4
+        CALL :HASHMAP_INSERT HASHMAP_MAP_new_hashmap%_recursion_count% HASHMAP_MAP_key%_recursion_count% HASHMAP_MAP_mapped%_recursion_count%
+    )
+    SET "%1=!HASHMAP_MAP_new_hashmap%_recursion_count%!"
 EXIT /B 0
 
 :HASHMAP?
@@ -1179,33 +1211,13 @@ EXIT /B 0
 
     CALL :VECTOR? EVAL_AST_is_vector %2
     IF "!EVAL_AST_is_vector!"=="!TRUE!" (
-        CALL :VECTOR_LENGTH EVAL_AST_vector_length %2
-        SET /a "EVAL_AST_vector_length-=1"
-        CALL :VECTOR_NEW EVAL_AST_new_vector%_recursion_count%
-        FOR /L %%G IN (0, 1, !EVAL_AST_vector_length!) DO (
-            SET "EVAL_AST_index=%%G"
-            CALL :VECTOR_GET EVAL_AST_form%_recursion_count% %2 EVAL_AST_index
-            CALL :EVAL EVAL_AST_evaluated%_recursion_count% EVAL_AST_form%_recursion_count% %3
-            CALL :VECTOR_PUSH EVAL_AST_new_vector%_recursion_count% EVAL_AST_evaluated%_recursion_count%
-        )
-        SET "%1=!EVAL_AST_new_vector%_recursion_count%!"
+        CALL :VECTOR_MAP %1 %2 :EVAL %3
         EXIT /B 0
     )
 
     CALL :HASHMAP? EVAL_AST_is_hashmap %2
     IF "!EVAL_AST_is_hashmap!"=="!TRUE!" (
-        CALL :HASHMAP_KEYS EVAL_AST_keys%_recursion_count% %2
-        CALL :VECTOR_LENGTH EVAL_AST_keys_length EVAL_AST_keys%_recursion_count%
-        SET /a "EVAL_AST_keys_length-=1"
-        CALL :HASHMAP_NEW EVAL_AST_new_hashmap%_recursion_count%
-        FOR /L %%G IN (0, 1, !EVAL_AST_keys_length!) DO (
-            SET "EVAL_AST_index=%%G"
-            CALL :VECTOR_GET EVAL_AST_key%_recursion_count% EVAL_AST_keys%_recursion_count% EVAL_AST_index
-            CALL :HASHMAP_GET EVAL_AST_value%_recursion_count% %2 EVAL_AST_key%_recursion_count%
-            CALL :EVAL EVAL_AST_evaluated%_recursion_count% EVAL_AST_value%_recursion_count% %3
-            CALL :HASHMAP_INSERT EVAL_AST_new_hashmap%_recursion_count% EVAL_AST_key%_recursion_count% EVAL_AST_evaluated%_recursion_count%
-        )
-        SET "%1=!EVAL_AST_new_hashmap%_recursion_count%!"
+        CALL :HASHMAP_MAP %1 %2 :EVAL %3
         EXIT /B 0
     )
 

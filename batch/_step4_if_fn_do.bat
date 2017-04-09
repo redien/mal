@@ -80,33 +80,13 @@ EXIT /B 0
 
     CALL :VECTOR? EVAL_AST_is_vector %2
     IF "!EVAL_AST_is_vector!"=="!TRUE!" (
-        CALL :VECTOR_LENGTH EVAL_AST_vector_length %2
-        SET /a "EVAL_AST_vector_length-=1"
-        CALL :VECTOR_NEW EVAL_AST_new_vector%_recursion_count%
-        FOR /L %%G IN (0, 1, !EVAL_AST_vector_length!) DO (
-            SET "EVAL_AST_index=%%G"
-            CALL :VECTOR_GET EVAL_AST_form%_recursion_count% %2 EVAL_AST_index
-            CALL :EVAL EVAL_AST_evaluated%_recursion_count% EVAL_AST_form%_recursion_count% %3
-            CALL :VECTOR_PUSH EVAL_AST_new_vector%_recursion_count% EVAL_AST_evaluated%_recursion_count%
-        )
-        SET "%1=!EVAL_AST_new_vector%_recursion_count%!"
+        CALL :VECTOR_MAP %1 %2 :EVAL %3
         EXIT /B 0
     )
 
     CALL :HASHMAP? EVAL_AST_is_hashmap %2
     IF "!EVAL_AST_is_hashmap!"=="!TRUE!" (
-        CALL :HASHMAP_KEYS EVAL_AST_keys%_recursion_count% %2
-        CALL :VECTOR_LENGTH EVAL_AST_keys_length EVAL_AST_keys%_recursion_count%
-        SET /a "EVAL_AST_keys_length-=1"
-        CALL :HASHMAP_NEW EVAL_AST_new_hashmap%_recursion_count%
-        FOR /L %%G IN (0, 1, !EVAL_AST_keys_length!) DO (
-            SET "EVAL_AST_index=%%G"
-            CALL :VECTOR_GET EVAL_AST_key%_recursion_count% EVAL_AST_keys%_recursion_count% EVAL_AST_index
-            CALL :HASHMAP_GET EVAL_AST_value%_recursion_count% %2 EVAL_AST_key%_recursion_count%
-            CALL :EVAL EVAL_AST_evaluated%_recursion_count% EVAL_AST_value%_recursion_count% %3
-            CALL :HASHMAP_INSERT EVAL_AST_new_hashmap%_recursion_count% EVAL_AST_key%_recursion_count% EVAL_AST_evaluated%_recursion_count%
-        )
-        SET "%1=!EVAL_AST_new_hashmap%_recursion_count%!"
+        CALL :HASHMAP_MAP %1 %2 :EVAL %3
         EXIT /B 0
     )
 
