@@ -1179,30 +1179,30 @@ EXIT /B 0
     )
 EXIT /B 0
 
-:NUMBER_OF_PARAMS_OR_ERROR
-    CALL :CALL_STACK_POP NUMBER_OF_PARAMS_OR_ERROR_size_number
-    CALL :NUMBER_TO_STR NUMBER_OF_PARAMS_OR_ERROR_size NUMBER_OF_PARAMS_OR_ERROR_size_number
-    IF NOT "!NUMBER_OF_PARAMS_OR_ERROR_size!"=="%2" (
-        SET "NUMBER_OF_PARAMS_OR_ERROR_error_message=Wrong number of arguments: got !NUMBER_OF_PARAMS_OR_ERROR_size! expected %2!"
-        CALL :ERROR_NEW %1 NUMBER_OF_PARAMS_OR_ERROR_error_message
+:NUMBER_OF_ARGS_OR_ERROR
+    CALL :CALL_STACK_POP NUMBER_OF_ARGS_OR_ERROR_size_number
+    CALL :NUMBER_TO_STR NUMBER_OF_ARGS_OR_ERROR_size NUMBER_OF_ARGS_OR_ERROR_size_number
+    IF NOT "!NUMBER_OF_ARGS_OR_ERROR_size!"=="%2" (
+        SET "NUMBER_OF_ARGS_OR_ERROR_error_message=Wrong number of arguments: got !NUMBER_OF_ARGS_OR_ERROR_size! expected %2!"
+        CALL :ERROR_NEW %1 NUMBER_OF_ARGS_OR_ERROR_error_message
 
         :: We clean up the stack on error.
-        SET /a "NUMBER_OF_PARAMS_OR_ERROR_size-=1"
-        FOR /L %%G IN (0, 1, !NUMBER_OF_PARAMS_OR_ERROR_size!) DO (
-            SET "NUMBER_OF_PARAMS_OR_ERROR_index=%%G"
+        SET /a "NUMBER_OF_ARGS_OR_ERROR_size-=1"
+        FOR /L %%G IN (0, 1, !NUMBER_OF_ARGS_OR_ERROR_size!) DO (
+            SET "NUMBER_OF_ARGS_OR_ERROR_index=%%G"
             CALL :CALL_STACK_POP _
         )
 
     ) ELSE (
-        SET "%1=!NUMBER_OF_PARAMS_OR_ERROR_size_number!"
+        SET "%1=!NUMBER_OF_ARGS_OR_ERROR_size_number!"
     )
 EXIT /B 0
 
 :MAL_NUMBER_ADD
-    CALL :NUMBER_OF_PARAMS_OR_ERROR MAL_NUMBER_ADD_params 2
-    CALL :ERROR? MAL_NUMBER_ADD_params_is_error MAL_NUMBER_ADD_params
-    IF "!MAL_NUMBER_ADD_params_is_error!"=="!TRUE!" (
-        CALL :CALL_STACK_PUSH MAL_NUMBER_ADD_params
+    CALL :NUMBER_OF_ARGS_OR_ERROR MAL_NUMBER_ADD_args 2
+    CALL :ERROR? MAL_NUMBER_ADD_args_is_error MAL_NUMBER_ADD_args
+    IF "!MAL_NUMBER_ADD_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH MAL_NUMBER_ADD_args
         EXIT /B 0
     )
 
@@ -1216,10 +1216,10 @@ EXIT /B 0
 EXIT /B 0
 
 :MAL_NUMBER_SUBTRACT
-    CALL :NUMBER_OF_PARAMS_OR_ERROR NUMBER_SUBTRACT_params 2
-    CALL :ERROR? NUMBER_SUBTRACT_params_is_error NUMBER_SUBTRACT_params
-    IF "!NUMBER_SUBTRACT_params_is_error!"=="!TRUE!" (
-        CALL :CALL_STACK_PUSH NUMBER_SUBTRACT_params
+    CALL :NUMBER_OF_ARGS_OR_ERROR NUMBER_SUBTRACT_args 2
+    CALL :ERROR? NUMBER_SUBTRACT_args_is_error NUMBER_SUBTRACT_args
+    IF "!NUMBER_SUBTRACT_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH NUMBER_SUBTRACT_args
         EXIT /B 0
     )
 
@@ -1233,10 +1233,10 @@ EXIT /B 0
 EXIT /B 0
 
 :MAL_NUMBER_MULTIPLY
-    CALL :NUMBER_OF_PARAMS_OR_ERROR NUMBER_MULTIPLY_params 2
-    CALL :ERROR? NUMBER_MULTIPLY_params_is_error NUMBER_MULTIPLY_params
-    IF "!NUMBER_MULTIPLY_params_is_error!"=="!TRUE!" (
-        CALL :CALL_STACK_PUSH NUMBER_MULTIPLY_params
+    CALL :NUMBER_OF_ARGS_OR_ERROR NUMBER_MULTIPLY_args 2
+    CALL :ERROR? NUMBER_MULTIPLY_args_is_error NUMBER_MULTIPLY_args
+    IF "!NUMBER_MULTIPLY_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH NUMBER_MULTIPLY_args
         EXIT /B 0
     )
 
@@ -1250,10 +1250,10 @@ EXIT /B 0
 EXIT /B 0
 
 :MAL_NUMBER_DIVIDE
-    CALL :NUMBER_OF_PARAMS_OR_ERROR NUMBER_DIVIDE_params 2
-    CALL :ERROR? NUMBER_DIVIDE_params_is_error NUMBER_DIVIDE_params
-    IF "!NUMBER_DIVIDE_params_is_error!"=="!TRUE!" (
-        CALL :CALL_STACK_PUSH NUMBER_DIVIDE_params
+    CALL :NUMBER_OF_ARGS_OR_ERROR NUMBER_DIVIDE_args 2
+    CALL :ERROR? NUMBER_DIVIDE_args_is_error NUMBER_DIVIDE_args
+    IF "!NUMBER_DIVIDE_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH NUMBER_DIVIDE_args
         EXIT /B 0
     )
 
@@ -1268,10 +1268,10 @@ EXIT /B 0
 
 :MAL_PRN
     SET "MAL_PRN_string="
-    CALL :CALL_STACK_POP MAL_PRN_params_number
-    CALL :NUMBER_TO_STR MAL_PRN_params MAL_PRN_params_number
-    SET /a "MAL_PRN_params-=1"
-    FOR /L %%G IN (0, 1, !MAL_PRN_params!) DO (
+    CALL :CALL_STACK_POP MAL_PRN_args_number
+    CALL :NUMBER_TO_STR MAL_PRN_args MAL_PRN_args_number
+    SET /a "MAL_PRN_args-=1"
+    FOR /L %%G IN (0, 1, !MAL_PRN_args!) DO (
         CALL :CALL_STACK_POP MAL_PRN_argument
         CALL :PR_STR MAL_PRN_substring MAL_PRN_argument
         SET "MAL_PRN_string=!MAL_PRN_substring! !MAL_PRN_string!"
@@ -1282,10 +1282,10 @@ EXIT /B 0
 EXIT /B 0
 
 :MAL_LIST?
-    CALL :NUMBER_OF_PARAMS_OR_ERROR MAL_LIST?_params 1
-    CALL :ERROR? MAL_LIST?_params_is_error MAL_LIST?_params
-    IF "!MAL_LIST?_params_is_error!"=="!TRUE!" (
-        CALL :CALL_STACK_PUSH MAL_LIST?_params
+    CALL :NUMBER_OF_ARGS_OR_ERROR MAL_LIST?_args 1
+    CALL :ERROR? MAL_LIST?_args_is_error MAL_LIST?_args
+    IF "!MAL_LIST?_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH MAL_LIST?_args
         EXIT /B 0
     )
 
@@ -1295,10 +1295,10 @@ EXIT /B 0
 EXIT /B 0
 
 :MAL_EMPTY?
-    CALL :NUMBER_OF_PARAMS_OR_ERROR MAL_EMPTY?_params 1
-    CALL :ERROR? MAL_EMPTY?_params_is_error MAL_EMPTY?_params
-    IF "!MAL_EMPTY?_params_is_error!"=="!TRUE!" (
-        CALL :CALL_STACK_PUSH MAL_EMPTY?_params
+    CALL :NUMBER_OF_ARGS_OR_ERROR MAL_EMPTY?_args 1
+    CALL :ERROR? MAL_EMPTY?_args_is_error MAL_EMPTY?_args
+    IF "!MAL_EMPTY?_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH MAL_EMPTY?_args
         EXIT /B 0
     )
 
@@ -1308,10 +1308,10 @@ EXIT /B 0
 EXIT /B 0
 
 :MAL_COUNT
-    CALL :NUMBER_OF_PARAMS_OR_ERROR MAL_COUNT_params 1
-    CALL :ERROR? MAL_COUNT_params_is_error MAL_COUNT_params
-    IF "!MAL_COUNT_params_is_error!"=="!TRUE!" (
-        CALL :CALL_STACK_PUSH MAL_COUNT_params
+    CALL :NUMBER_OF_ARGS_OR_ERROR MAL_COUNT_args 1
+    CALL :ERROR? MAL_COUNT_args_is_error MAL_COUNT_args
+    IF "!MAL_COUNT_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH MAL_COUNT_args
         EXIT /B 0
     )
 
@@ -1322,10 +1322,10 @@ EXIT /B 0
 EXIT /B 0
 
 :MAL_GREATER_THAN
-    CALL :NUMBER_OF_PARAMS_OR_ERROR MAL_GREATER_THAN_params 2
-    CALL :ERROR? MAL_GREATER_THAN_params_is_error MAL_GREATER_THAN_params
-    IF "!MAL_GREATER_THAN_params_is_error!"=="!TRUE!" (
-        CALL :CALL_STACK_PUSH MAL_GREATER_THAN_params
+    CALL :NUMBER_OF_ARGS_OR_ERROR MAL_GREATER_THAN_args 2
+    CALL :ERROR? MAL_GREATER_THAN_args_is_error MAL_GREATER_THAN_args
+    IF "!MAL_GREATER_THAN_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH MAL_GREATER_THAN_args
         EXIT /B 0
     )
 
@@ -1341,10 +1341,10 @@ EXIT /B 0
 EXIT /B 0
 
 :MAL_LOWER_THAN
-    CALL :NUMBER_OF_PARAMS_OR_ERROR MAL_LOWER_THAN_params 2
-    CALL :ERROR? MAL_LOWER_THAN_params_is_error MAL_LOWER_THAN_params
-    IF "!MAL_LOWER_THAN_params_is_error!"=="!TRUE!" (
-        CALL :CALL_STACK_PUSH MAL_LOWER_THAN_params
+    CALL :NUMBER_OF_ARGS_OR_ERROR MAL_LOWER_THAN_args 2
+    CALL :ERROR? MAL_LOWER_THAN_args_is_error MAL_LOWER_THAN_args
+    IF "!MAL_LOWER_THAN_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH MAL_LOWER_THAN_args
         EXIT /B 0
     )
 
@@ -1360,10 +1360,10 @@ EXIT /B 0
 EXIT /B 0
 
 :MAL_GREATER_THAN_OR_EQUAL
-    CALL :NUMBER_OF_PARAMS_OR_ERROR MAL_GREATER_THAN_OR_EQUAL_params 2
-    CALL :ERROR? MAL_GREATER_THAN_OR_EQUAL_params_is_error MAL_GREATER_THAN_OR_EQUAL_params
-    IF "!MAL_GREATER_THAN_OR_EQUAL_params_is_error!"=="!TRUE!" (
-        CALL :CALL_STACK_PUSH MAL_GREATER_THAN_OR_EQUAL_params
+    CALL :NUMBER_OF_ARGS_OR_ERROR MAL_GREATER_THAN_OR_EQUAL_args 2
+    CALL :ERROR? MAL_GREATER_THAN_OR_EQUAL_args_is_error MAL_GREATER_THAN_OR_EQUAL_args
+    IF "!MAL_GREATER_THAN_OR_EQUAL_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH MAL_GREATER_THAN_OR_EQUAL_args
         EXIT /B 0
     )
 
@@ -1379,10 +1379,10 @@ EXIT /B 0
 EXIT /B 0
 
 :MAL_LOWER_THAN_OR_EQUAL
-    CALL :NUMBER_OF_PARAMS_OR_ERROR MAL_LOWER_THAN_OR_EQUAL_params 2
-    CALL :ERROR? MAL_LOWER_THAN_OR_EQUAL_params_is_error MAL_LOWER_THAN_OR_EQUAL_params
-    IF "!MAL_LOWER_THAN_OR_EQUAL_params_is_error!"=="!TRUE!" (
-        CALL :CALL_STACK_PUSH MAL_LOWER_THAN_OR_EQUAL_params
+    CALL :NUMBER_OF_ARGS_OR_ERROR MAL_LOWER_THAN_OR_EQUAL_args 2
+    CALL :ERROR? MAL_LOWER_THAN_OR_EQUAL_args_is_error MAL_LOWER_THAN_OR_EQUAL_args
+    IF "!MAL_LOWER_THAN_OR_EQUAL_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH MAL_LOWER_THAN_OR_EQUAL_args
         EXIT /B 0
     )
 
@@ -1398,10 +1398,10 @@ EXIT /B 0
 EXIT /B 0
 
 :MAL_EQUAL
-    CALL :NUMBER_OF_PARAMS_OR_ERROR MAL_EQUAL_params 2
-    CALL :ERROR? MAL_EQUAL_params_is_error MAL_EQUAL_params
-    IF "!MAL_EQUAL_params_is_error!"=="!TRUE!" (
-        CALL :CALL_STACK_PUSH MAL_EQUAL_params
+    CALL :NUMBER_OF_ARGS_OR_ERROR MAL_EQUAL_args 2
+    CALL :ERROR? MAL_EQUAL_args_is_error MAL_EQUAL_args
+    IF "!MAL_EQUAL_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH MAL_EQUAL_args
         EXIT /B 0
     )
 
@@ -1413,14 +1413,48 @@ EXIT /B 0
 
 :MAL_LIST
     SET "MAL_LIST_list=!EMPTY_LIST!"
-    CALL :CALL_STACK_POP MAL_LIST_params_number
-    CALL :NUMBER_TO_STR MAL_LIST_params MAL_LIST_params_number
-    SET /a "MAL_LIST_params-=1"
-    FOR /L %%G IN (0, 1, !MAL_LIST_params!) DO (
+    CALL :CALL_STACK_POP MAL_LIST_args_number
+    CALL :NUMBER_TO_STR MAL_LIST_args MAL_LIST_args_number
+    SET /a "MAL_LIST_args-=1"
+    FOR /L %%G IN (0, 1, !MAL_LIST_args!) DO (
         CALL :CALL_STACK_POP MAL_LIST_argument
         CALL :CONS MAL_LIST_list MAL_LIST_argument MAL_LIST_list
     )
     CALL :CALL_STACK_PUSH MAL_LIST_list
+EXIT /B 0
+
+:MAL_LAMBDA
+    SET /a "MAL_LAMBDA_recursion_count+=1"
+
+    CALL :FUNCTION_GET_PARAMS MAL_LAMBDA_params%MAL_LAMBDA_recursion_count% %1
+    CALL :FUNCTION_GET_ENV MAL_LAMBDA_env_outer%MAL_LAMBDA_recursion_count% %1
+    CALL :FUNCTION_GET_BODY MAL_LAMBDA_body%MAL_LAMBDA_recursion_count% %1
+
+    CALL :ENV_NEW MAL_LAMBDA_env%MAL_LAMBDA_recursion_count%
+    CALL :ENV_SET_OUTER MAL_LAMBDA_env%MAL_LAMBDA_recursion_count% MAL_LAMBDA_env_outer%MAL_LAMBDA_recursion_count%
+
+    CALL :VECTOR_LENGTH MAL_LAMBDA_params_length%MAL_LAMBDA_recursion_count% MAL_LAMBDA_params%MAL_LAMBDA_recursion_count%
+    CALL :NUMBER_OF_ARGS_OR_ERROR MAL_LAMBDA_args%MAL_LAMBDA_recursion_count% !MAL_LAMBDA_params_length%MAL_LAMBDA_recursion_count%!
+    CALL :ERROR? MAL_LAMBDA_args_is_error MAL_LAMBDA_args%MAL_LAMBDA_recursion_count%
+    IF "!MAL_LAMBDA_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH MAL_LAMBDA_args%MAL_LAMBDA_recursion_count%
+        SET /a "MAL_LAMBDA_recursion_count-=1"
+        EXIT /B 0
+    )
+
+    CALL :NUMBER_TO_STR MAL_LAMBDA_args_length%MAL_LAMBDA_recursion_count% MAL_LAMBDA_args%MAL_LAMBDA_recursion_count%
+    SET /a "MAL_LAMBDA_args_length%MAL_LAMBDA_recursion_count%-=1"
+    FOR /L %%G IN (0, 1, !MAL_LAMBDA_args_length%MAL_LAMBDA_recursion_count%!) DO (
+        SET "MAL_LAMBDA_args_index=%%G"
+        CALL :VECTOR_GET MAL_LAMBDA_param MAL_LAMBDA_params%MAL_LAMBDA_recursion_count% MAL_LAMBDA_args_index
+        CALL :CALL_STACK_POP MAL_LAMBDA_argument
+        CALL :ENV_SET MAL_LAMBDA_env%MAL_LAMBDA_recursion_count% MAL_LAMBDA_param MAL_LAMBDA_argument
+    )
+
+    CALL :EVAL MAL_LAMBDA_result%MAL_LAMBDA_recursion_count% MAL_LAMBDA_body%MAL_LAMBDA_recursion_count% MAL_LAMBDA_env%MAL_LAMBDA_recursion_count%
+    CALL :CALL_STACK_PUSH MAL_LAMBDA_result%MAL_LAMBDA_recursion_count%
+
+    SET /a "MAL_LAMBDA_recursion_count-=1"
 EXIT /B 0
 
 :START

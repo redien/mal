@@ -165,14 +165,14 @@ EXIT /B 0
         CALL :ATOM? EVAL_is_atom EVAL_first_form
         IF "!EVAL_is_atom!"=="!TRUE!" (
             CALL :ATOM_TO_STR EVAL_first_atom_str EVAL_first_form
-            IF "!EVAL_first_atom_str!"=="fn^*" (
-                CALL :FIRST EVAL_args%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+            IF "!EVAL_first_atom_str!"=="fn*" (
+                CALL :FIRST EVAL_params%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
                 CALL :REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
                 CALL :FIRST EVAL_body%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
-                CALL :ENV_NEW EVAL_env
-                CALL :ENV_SET_OUTER EVAL_env %3
-                CALL :ENV_SET %3 EVAL_key%EVAL_recursion_count% EVAL_evaluated_value%EVAL_recursion_count%
-                SET "%1=!EVAL_evaluated_value%EVAL_recursion_count%!"
+
+                SET "EVAL_lambda_function=:MAL_LAMBDA"
+                CALL :FUNCTION_NEW %1 EVAL_lambda_function %3 EVAL_params%EVAL_recursion_count% EVAL_body%EVAL_recursion_count%
+
                 SET /a "EVAL_recursion_count-=1"
                 EXIT /B 0
             )
