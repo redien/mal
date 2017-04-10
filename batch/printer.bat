@@ -15,6 +15,7 @@ EXIT /B 0
     CALL :ERROR? PR_STR_is_error %2
     IF "!PR_STR_is_error!"=="!TRUE!" (
         CALL :ERROR_TO_STR %1 %2
+        SET "%1=Error: !%1!"
         SET /a "PR_STR_recursion_count-=1"
         EXIT /B 0
     )

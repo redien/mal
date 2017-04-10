@@ -297,11 +297,29 @@ EXIT /B 0
 :FUNCTION_NEW
     SET /a "_function_counter+=1"
     SET "_function_name_!_function_counter!=!%2!"
+    SET "_function_env_!_function_counter!=!%3!"
+    SET "_function_params_!_function_counter!=!%4!"
+    SET "_function_body_!_function_counter!=!%5!"
     SET "%1=F!_function_counter!"
 EXIT /B 0
 
 :FUNCTION_TO_STR
     SET "_ref=_function_name_!%2:~1,8191!"
+    SET "%1=!%_ref%!"
+EXIT /B 0
+
+:FUNCTION_GET_ENV
+    SET "_ref=_function_env_!%2:~1,8191!"
+    SET "%1=!%_ref%!"
+EXIT /B 0
+
+:FUNCTION_GET_PARAMS
+    SET "_ref=_function_params_!%2:~1,8191!"
+    SET "%1=!%_ref%!"
+EXIT /B 0
+
+:FUNCTION_GET_BODY
+    SET "_ref=_function_body_!%2:~1,8191!"
     SET "%1=!%_ref%!"
 EXIT /B 0
 
@@ -426,7 +444,7 @@ EXIT /B 0
 :ERROR_NEW
     SET /a "_error_counter+=1"
     SET "_error_value!_error_counter!=!%2!"
-    SET "%1=E!_error_counter!"
+    SET "%1=R!_error_counter!"
 EXIT /B 0
 
 :ERROR_TO_STR
@@ -440,7 +458,7 @@ EXIT /B 0
 EXIT /B 0
 
 :ERROR?
-    IF "!%2:~0,1!"=="E" (
+    IF "!%2:~0,1!"=="R" (
         SET "%1=!TRUE!"
     ) ELSE (
         SET "%1=!FALSE!"

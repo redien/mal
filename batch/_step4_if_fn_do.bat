@@ -19,7 +19,7 @@ EXIT /B 0
 EXIT /B 0
 
 :DEFINE_FUN
-    CALL :FUNCTION_NEW DEFINE_FUN_value %3
+    CALL :FUNCTION_NEW DEFINE_FUN_value %3 NIL NIL NIL
     CALL :ATOM_NEW DEFINE_FUN_key %2
     CALL :ENV_SET %1 DEFINE_FUN_key DEFINE_FUN_value
 EXIT /B 0
@@ -145,6 +145,10 @@ EXIT /B 0
     SET /a "EVAL_DEF_VECTOR_recursion_count-=1"
 EXIT /B 0
 
+:MAL_LAMBDA_FUNCTION
+
+EXIT /B 0
+
 :EVAL
     SET /a "EVAL_recursion_count+=1"
 
@@ -161,6 +165,18 @@ EXIT /B 0
         CALL :ATOM? EVAL_is_atom EVAL_first_form
         IF "!EVAL_is_atom!"=="!TRUE!" (
             CALL :ATOM_TO_STR EVAL_first_atom_str EVAL_first_form
+            IF "!EVAL_first_atom_str!"=="fn^*" (
+                CALL :FIRST EVAL_args%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :FIRST EVAL_body%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :ENV_NEW EVAL_env
+                CALL :ENV_SET_OUTER EVAL_env %3
+                CALL :ENV_SET %3 EVAL_key%EVAL_recursion_count% EVAL_evaluated_value%EVAL_recursion_count%
+                SET "%1=!EVAL_evaluated_value%EVAL_recursion_count%!"
+                SET /a "EVAL_recursion_count-=1"
+                EXIT /B 0
+            )
+
             IF "!EVAL_first_atom_str!"=="def^!" (
                 CALL :FIRST EVAL_key%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
                 CALL :REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
@@ -259,18 +275,23 @@ EXIT /B 0
         )
 
         CALL :FIRST EVAL_function%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
-        CALL :FUNCTION_TO_STR EVAL_function_str%EVAL_recursion_count% EVAL_function%EVAL_recursion_count%
         CALL :REST EVAL_list%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
 
+        SET "EVAL_params%EVAL_recursion_count%=0"
 :EVAL_ARGUMENT_LOOP
         IF NOT "!EVAL_list%EVAL_recursion_count%!"=="!EMPTY_LIST!" (
             CALL :FIRST EVAL_argument%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
             CALL :REST EVAL_list%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
             CALL :CALL_STACK_PUSH EVAL_argument%EVAL_recursion_count%
+            SET /a "EVAL_params%EVAL_recursion_count%+=1"
             GOTO :EVAL_ARGUMENT_LOOP
         )
 
-        CALL !EVAL_function_str%EVAL_recursion_count%!
+        CALL :NUMBER_NEW EVAL_params_number%EVAL_recursion_count% EVAL_params%EVAL_recursion_count%
+        CALL :CALL_STACK_PUSH EVAL_params_number%EVAL_recursion_count%
+
+        CALL :FUNCTION_TO_STR EVAL_function_str%EVAL_recursion_count% EVAL_function%EVAL_recursion_count%
+        CALL !EVAL_function_str%EVAL_recursion_count%! EVAL_function%EVAL_recursion_count%
         CALL :CALL_STACK_POP %1
 
         SET /a "EVAL_recursion_count-=1"
