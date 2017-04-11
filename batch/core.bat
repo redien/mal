@@ -26,8 +26,8 @@ EXIT /B 0
         EXIT /B 0
     )
 
-    CALL :CALL_STACK_POP MAL_NUMBER_ADD_second
     CALL :CALL_STACK_POP MAL_NUMBER_ADD_first
+    CALL :CALL_STACK_POP MAL_NUMBER_ADD_second
     CALL :NUMBER_TO_STR MAL_NUMBER_ADD_first_str MAL_NUMBER_ADD_first
     CALL :NUMBER_TO_STR MAL_NUMBER_ADD_second_str MAL_NUMBER_ADD_second
     SET /a "MAL_NUMBER_ADD_value_str=!MAL_NUMBER_ADD_first_str!+!MAL_NUMBER_ADD_second_str!"
@@ -43,8 +43,8 @@ EXIT /B 0
         EXIT /B 0
     )
 
-    CALL :CALL_STACK_POP NUMBER_SUBTRACT_second
     CALL :CALL_STACK_POP NUMBER_SUBTRACT_first
+    CALL :CALL_STACK_POP NUMBER_SUBTRACT_second
     CALL :NUMBER_TO_STR NUMBER_SUBTRACT_first_str NUMBER_SUBTRACT_first
     CALL :NUMBER_TO_STR NUMBER_SUBTRACT_second_str NUMBER_SUBTRACT_second
     SET /a "NUMBER_SUBTRACT_value_str=!NUMBER_SUBTRACT_first_str!-!NUMBER_SUBTRACT_second_str!"
@@ -60,8 +60,8 @@ EXIT /B 0
         EXIT /B 0
     )
 
-    CALL :CALL_STACK_POP NUMBER_MULTIPLY_second
     CALL :CALL_STACK_POP NUMBER_MULTIPLY_first
+    CALL :CALL_STACK_POP NUMBER_MULTIPLY_second
     CALL :NUMBER_TO_STR NUMBER_MULTIPLY_first_str NUMBER_MULTIPLY_first
     CALL :NUMBER_TO_STR NUMBER_MULTIPLY_second_str NUMBER_MULTIPLY_second
     SET /a "NUMBER_MULTIPLY_value_str=!NUMBER_MULTIPLY_first_str!*!NUMBER_MULTIPLY_second_str!"
@@ -77,8 +77,8 @@ EXIT /B 0
         EXIT /B 0
     )
 
-    CALL :CALL_STACK_POP NUMBER_DIVIDE_second
     CALL :CALL_STACK_POP NUMBER_DIVIDE_first
+    CALL :CALL_STACK_POP NUMBER_DIVIDE_second
     CALL :NUMBER_TO_STR NUMBER_DIVIDE_first_str NUMBER_DIVIDE_first
     CALL :NUMBER_TO_STR NUMBER_DIVIDE_second_str NUMBER_DIVIDE_second
     SET /a "NUMBER_DIVIDE_value_str=!NUMBER_DIVIDE_first_str!/!NUMBER_DIVIDE_second_str!"
@@ -94,9 +94,9 @@ EXIT /B 0
     FOR /L %%G IN (0, 1, !MAL_PRN_args!) DO (
         CALL :CALL_STACK_POP MAL_PRN_argument
         CALL :PR_STR MAL_PRN_substring MAL_PRN_argument
-        SET "MAL_PRN_string=!MAL_PRN_substring! !MAL_PRN_string!"
+        SET "MAL_PRN_string=!MAL_PRN_string! !MAL_PRN_substring!"
     )
-    SET "MAL_PRN_string=!MAL_PRN_string:~0,-1!"
+    SET "MAL_PRN_string=!MAL_PRN_string:~1!"
     CALL :ECHO MAL_PRN_string
     CALL :CALL_STACK_PUSH NIL
 EXIT /B 0
@@ -149,8 +149,8 @@ EXIT /B 0
         EXIT /B 0
     )
 
-    CALL :CALL_STACK_POP MAL_GREATER_THAN_second
     CALL :CALL_STACK_POP MAL_GREATER_THAN_first
+    CALL :CALL_STACK_POP MAL_GREATER_THAN_second
     CALL :NUMBER_TO_STR MAL_GREATER_THAN_first_str MAL_GREATER_THAN_first
     CALL :NUMBER_TO_STR MAL_GREATER_THAN_second_str MAL_GREATER_THAN_second
     IF !MAL_GREATER_THAN_first_str! GTR !MAL_GREATER_THAN_second_str! (
@@ -168,8 +168,8 @@ EXIT /B 0
         EXIT /B 0
     )
 
-    CALL :CALL_STACK_POP MAL_LOWER_THAN_second
     CALL :CALL_STACK_POP MAL_LOWER_THAN_first
+    CALL :CALL_STACK_POP MAL_LOWER_THAN_second
     CALL :NUMBER_TO_STR MAL_LOWER_THAN_first_str MAL_LOWER_THAN_first
     CALL :NUMBER_TO_STR MAL_LOWER_THAN_second_str MAL_LOWER_THAN_second
     IF !MAL_LOWER_THAN_first_str! LSS !MAL_LOWER_THAN_second_str! (
@@ -187,8 +187,8 @@ EXIT /B 0
         EXIT /B 0
     )
 
-    CALL :CALL_STACK_POP MAL_GREATER_THAN_OR_EQUAL_second
     CALL :CALL_STACK_POP MAL_GREATER_THAN_OR_EQUAL_first
+    CALL :CALL_STACK_POP MAL_GREATER_THAN_OR_EQUAL_second
     CALL :NUMBER_TO_STR MAL_GREATER_THAN_OR_EQUAL_first_str MAL_GREATER_THAN_OR_EQUAL_first
     CALL :NUMBER_TO_STR MAL_GREATER_THAN_OR_EQUAL_second_str MAL_GREATER_THAN_OR_EQUAL_second
     IF !MAL_GREATER_THAN_OR_EQUAL_first_str! GEQ !MAL_GREATER_THAN_OR_EQUAL_second_str! (
@@ -206,8 +206,8 @@ EXIT /B 0
         EXIT /B 0
     )
 
-    CALL :CALL_STACK_POP MAL_LOWER_THAN_OR_EQUAL_second
     CALL :CALL_STACK_POP MAL_LOWER_THAN_OR_EQUAL_first
+    CALL :CALL_STACK_POP MAL_LOWER_THAN_OR_EQUAL_second
     CALL :NUMBER_TO_STR MAL_LOWER_THAN_OR_EQUAL_first_str MAL_LOWER_THAN_OR_EQUAL_first
     CALL :NUMBER_TO_STR MAL_LOWER_THAN_OR_EQUAL_second_str MAL_LOWER_THAN_OR_EQUAL_second
     IF !MAL_LOWER_THAN_OR_EQUAL_first_str! LEQ !MAL_LOWER_THAN_OR_EQUAL_second_str! (
@@ -225,8 +225,8 @@ EXIT /B 0
         EXIT /B 0
     )
 
-    CALL :CALL_STACK_POP MAL_EQUAL_second
     CALL :CALL_STACK_POP MAL_EQUAL_first
+    CALL :CALL_STACK_POP MAL_EQUAL_second
     CALL :EQUAL? MAL_EQUAL_result MAL_EQUAL_first MAL_EQUAL_second
     CALL :CALL_STACK_PUSH MAL_EQUAL_result
 EXIT /B 0
@@ -240,39 +240,51 @@ EXIT /B 0
         CALL :CALL_STACK_POP MAL_LIST_argument
         CALL :CONS MAL_LIST_list MAL_LIST_argument MAL_LIST_list
     )
+    CALL :LIST_REVERSE MAL_LIST_list MAL_LIST_list
     CALL :CALL_STACK_PUSH MAL_LIST_list
 EXIT /B 0
 
 :MAL_LAMBDA
     SET /a "MAL_LAMBDA_recursion_count+=1"
 
-    CALL :FUNCTION_GET_PARAMS MAL_LAMBDA_params%MAL_LAMBDA_recursion_count% %1
-    CALL :FUNCTION_GET_ENV MAL_LAMBDA_env_outer%MAL_LAMBDA_recursion_count% %1
+    CALL :FUNCTION_GET_PARAMS MAL_LAMBDA_params %1
+    CALL :FUNCTION_GET_ENV MAL_LAMBDA_env_outer %1
     CALL :FUNCTION_GET_BODY MAL_LAMBDA_body%MAL_LAMBDA_recursion_count% %1
 
     CALL :ENV_NEW MAL_LAMBDA_env%MAL_LAMBDA_recursion_count%
-    CALL :ENV_SET_OUTER MAL_LAMBDA_env%MAL_LAMBDA_recursion_count% MAL_LAMBDA_env_outer%MAL_LAMBDA_recursion_count%
+    CALL :ENV_SET_OUTER MAL_LAMBDA_env%MAL_LAMBDA_recursion_count% MAL_LAMBDA_env_outer
 
-    CALL :VECTOR_LENGTH MAL_LAMBDA_params_length%MAL_LAMBDA_recursion_count% MAL_LAMBDA_params%MAL_LAMBDA_recursion_count%
-    CALL :NUMBER_OF_ARGS_OR_ERROR MAL_LAMBDA_args%MAL_LAMBDA_recursion_count% !MAL_LAMBDA_params_length%MAL_LAMBDA_recursion_count%!
-    CALL :ERROR? MAL_LAMBDA_args_is_error MAL_LAMBDA_args%MAL_LAMBDA_recursion_count%
+    CALL :VECTOR? MAL_LAMBDA_params_is_vector MAL_LAMBDA_params
+    IF "!MAL_LAMBDA_params_is_vector!"=="!TRUE!" (
+        CALL :VECTOR_LENGTH MAL_LAMBDA_params_length MAL_LAMBDA_params
+    ) ELSE (
+        CALL :LIST_COUNT MAL_LAMBDA_params_length MAL_LAMBDA_params
+    )
+
+    CALL :NUMBER_OF_ARGS_OR_ERROR MAL_LAMBDA_args !MAL_LAMBDA_params_length!
+    CALL :ERROR? MAL_LAMBDA_args_is_error MAL_LAMBDA_args
     IF "!MAL_LAMBDA_args_is_error!"=="!TRUE!" (
-        CALL :CALL_STACK_PUSH MAL_LAMBDA_args%MAL_LAMBDA_recursion_count%
+        CALL :CALL_STACK_PUSH MAL_LAMBDA_args
         SET /a "MAL_LAMBDA_recursion_count-=1"
         EXIT /B 0
     )
 
-    CALL :NUMBER_TO_STR MAL_LAMBDA_args_length%MAL_LAMBDA_recursion_count% MAL_LAMBDA_args%MAL_LAMBDA_recursion_count%
-    SET /a "MAL_LAMBDA_args_length%MAL_LAMBDA_recursion_count%-=1"
-    FOR /L %%G IN (0, 1, !MAL_LAMBDA_args_length%MAL_LAMBDA_recursion_count%!) DO (
+    CALL :NUMBER_TO_STR MAL_LAMBDA_args_length MAL_LAMBDA_args
+    SET /a "MAL_LAMBDA_args_length-=1"
+    FOR /L %%G IN (0, 1, !MAL_LAMBDA_args_length!) DO (
         SET "MAL_LAMBDA_args_index=%%G"
-        CALL :VECTOR_GET MAL_LAMBDA_param MAL_LAMBDA_params%MAL_LAMBDA_recursion_count% MAL_LAMBDA_args_index
+        IF "!MAL_LAMBDA_params_is_vector!"=="!TRUE!" (
+            CALL :VECTOR_GET MAL_LAMBDA_param MAL_LAMBDA_params MAL_LAMBDA_args_index
+        ) ELSE (
+            CALL :FIRST MAL_LAMBDA_param MAL_LAMBDA_params
+            CALL :REST MAL_LAMBDA_params MAL_LAMBDA_params
+        )
         CALL :CALL_STACK_POP MAL_LAMBDA_argument
         CALL :ENV_SET MAL_LAMBDA_env%MAL_LAMBDA_recursion_count% MAL_LAMBDA_param MAL_LAMBDA_argument
     )
 
-    CALL :EVAL MAL_LAMBDA_result%MAL_LAMBDA_recursion_count% MAL_LAMBDA_body%MAL_LAMBDA_recursion_count% MAL_LAMBDA_env%MAL_LAMBDA_recursion_count%
-    CALL :CALL_STACK_PUSH MAL_LAMBDA_result%MAL_LAMBDA_recursion_count%
+    CALL :EVAL MAL_LAMBDA_result MAL_LAMBDA_body%MAL_LAMBDA_recursion_count% MAL_LAMBDA_env%MAL_LAMBDA_recursion_count%
+    CALL :CALL_STACK_PUSH MAL_LAMBDA_result
 
     SET /a "MAL_LAMBDA_recursion_count-=1"
 EXIT /B 0

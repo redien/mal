@@ -276,6 +276,7 @@ EXIT /B 0
 
         CALL :FIRST EVAL_function%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
         CALL :REST EVAL_list%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
+        CALL :LIST_REVERSE EVAL_list%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
 
         SET "EVAL_params%EVAL_recursion_count%=0"
 :EVAL_ARGUMENT_LOOP
