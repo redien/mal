@@ -44,7 +44,11 @@ SET _newline=^
 GOTO :START
 
 :ECHO
-    IF NOT "!%1!"=="" echo !%1!
+    IF NOT "!%1!"=="" (
+        echo !%1!
+    ) ELSE (
+        echo[
+    )
 EXIT /B 0
 
 :ABORT
@@ -712,13 +716,12 @@ EXIT /B 0
 
     :: If there is a double-quote, read a quoted string
     IF "!%2:~0,1!"=="!_doublequote!" (
+        SET "%1=!%1!!%2:~0,1!"
+        SET "%2=!%2:~1,8191!"
 :READ_DOUBLEQUOTED_STRING_CONTINUE
         IF "!%2!"=="" (
             EXIT /B 0
         )
-
-        SET "%1=!%1!!%2:~0,1!"
-        SET "%2=!%2:~1,8191!"
 
         CALL :READ_WHILE READ_DOUBLEQUOTED_STRING_match %2 :IS_NOT_DOUBLEQUOTE_OR_BACKSLASH
         SET "%1=!%1!!READ_DOUBLEQUOTED_STRING_match!"
@@ -1146,7 +1149,7 @@ EXIT /B 0
             CALL :FIRST _PR_STR_form _PR_STR_tail%PR_STR_recursion_count%
             CALL :REST _PR_STR_tail%PR_STR_recursion_count% _PR_STR_tail%PR_STR_recursion_count%
 
-            CALL :_PR_STR PR_STR_str%PR_STR_recursion_count% _PR_STR_form
+            CALL :_PR_STR PR_STR_str%PR_STR_recursion_count% _PR_STR_form %3
 
             SET "%1=!%1!!PR_STR_str%PR_STR_recursion_count%!"
             CALL :LIST_EMPTY? _PR_STR_is_empty _PR_STR_tail%PR_STR_recursion_count%
@@ -1169,7 +1172,7 @@ EXIT /B 0
         FOR /L %%G IN (0, 1, !PR_STR_length!) DO (
             SET "PR_STR_index=%%G"
             CALL :VECTOR_GET PR_STR_item%PR_STR_recursion_count% %2 PR_STR_index
-            CALL :_PR_STR PR_STR_str%PR_STR_recursion_count% PR_STR_item%PR_STR_recursion_count%
+            CALL :_PR_STR PR_STR_str%PR_STR_recursion_count% PR_STR_item%PR_STR_recursion_count% %3
             IF %%G NEQ 0 (
                 SET "%1=!%1! "
             )
@@ -1191,7 +1194,7 @@ EXIT /B 0
             SET "PR_STR_index=%%G"
             CALL :VECTOR_GET PR_STR_key%PR_STR_recursion_count% PR_STR_keys%PR_STR_recursion_count% PR_STR_index
             CALL :HASHMAP_GET PR_STR_value%PR_STR_recursion_count% %2 PR_STR_key%PR_STR_recursion_count%
-            CALL :_PR_STR PR_STR_str%PR_STR_recursion_count% PR_STR_value%PR_STR_recursion_count%
+            CALL :_PR_STR PR_STR_str%PR_STR_recursion_count% PR_STR_value%PR_STR_recursion_count% %3
             IF %%G NEQ 0 (
                 SET "%1=!%1! "
             )

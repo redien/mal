@@ -43,7 +43,11 @@ SET _newline=^
 GOTO :START
 
 :ECHO
-    IF NOT "!%1!"=="" echo !%1!
+    IF NOT "!%1!"=="" (
+        echo !%1!
+    ) ELSE (
+        echo[
+    )
 EXIT /B 0
 
 :ABORT

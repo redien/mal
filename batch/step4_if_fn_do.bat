@@ -44,7 +44,11 @@ SET _newline=^
 GOTO :START
 
 :ECHO
-    IF NOT "!%1!"=="" echo !%1!
+    IF NOT "!%1!"=="" (
+        echo !%1!
+    ) ELSE (
+        echo[
+    )
 EXIT /B 0
 
 :ABORT
@@ -712,13 +716,12 @@ EXIT /B 0
 
     :: If there is a double-quote, read a quoted string
     IF "!%2:~0,1!"=="!_doublequote!" (
+        SET "%1=!%1!!%2:~0,1!"
+        SET "%2=!%2:~1,8191!"
 :READ_DOUBLEQUOTED_STRING_CONTINUE
         IF "!%2!"=="" (
             EXIT /B 0
         )
-
-        SET "%1=!%1!!%2:~0,1!"
-        SET "%2=!%2:~1,8191!"
 
         CALL :READ_WHILE READ_DOUBLEQUOTED_STRING_match %2 :IS_NOT_DOUBLEQUOTE_OR_BACKSLASH
         SET "%1=!%1!!READ_DOUBLEQUOTED_STRING_match!"
@@ -1146,7 +1149,7 @@ EXIT /B 0
             CALL :FIRST _PR_STR_form _PR_STR_tail%PR_STR_recursion_count%
             CALL :REST _PR_STR_tail%PR_STR_recursion_count% _PR_STR_tail%PR_STR_recursion_count%
 
-            CALL :_PR_STR PR_STR_str%PR_STR_recursion_count% _PR_STR_form
+            CALL :_PR_STR PR_STR_str%PR_STR_recursion_count% _PR_STR_form %3
 
             SET "%1=!%1!!PR_STR_str%PR_STR_recursion_count%!"
             CALL :LIST_EMPTY? _PR_STR_is_empty _PR_STR_tail%PR_STR_recursion_count%
@@ -1169,7 +1172,7 @@ EXIT /B 0
         FOR /L %%G IN (0, 1, !PR_STR_length!) DO (
             SET "PR_STR_index=%%G"
             CALL :VECTOR_GET PR_STR_item%PR_STR_recursion_count% %2 PR_STR_index
-            CALL :_PR_STR PR_STR_str%PR_STR_recursion_count% PR_STR_item%PR_STR_recursion_count%
+            CALL :_PR_STR PR_STR_str%PR_STR_recursion_count% PR_STR_item%PR_STR_recursion_count% %3
             IF %%G NEQ 0 (
                 SET "%1=!%1! "
             )
@@ -1191,7 +1194,7 @@ EXIT /B 0
             SET "PR_STR_index=%%G"
             CALL :VECTOR_GET PR_STR_key%PR_STR_recursion_count% PR_STR_keys%PR_STR_recursion_count% PR_STR_index
             CALL :HASHMAP_GET PR_STR_value%PR_STR_recursion_count% %2 PR_STR_key%PR_STR_recursion_count%
-            CALL :_PR_STR PR_STR_str%PR_STR_recursion_count% PR_STR_value%PR_STR_recursion_count%
+            CALL :_PR_STR PR_STR_str%PR_STR_recursion_count% PR_STR_value%PR_STR_recursion_count% %3
             IF %%G NEQ 0 (
                 SET "%1=!%1! "
             )
@@ -1323,18 +1326,54 @@ EXIT /B 0
     CALL :CALL_STACK_PUSH NUMBER_DIVIDE_value
 EXIT /B 0
 
-:MAL_PRN
-    SET "MAL_PRN_string="
-    CALL :CALL_STACK_POP MAL_PRN_args_number
-    CALL :NUMBER_TO_STR MAL_PRN_args MAL_PRN_args_number
-    SET /a "MAL_PRN_args-=1"
-    FOR /L %%G IN (0, 1, !MAL_PRN_args!) DO (
-        CALL :CALL_STACK_POP MAL_PRN_argument
-        CALL :PR_STR MAL_PRN_substring MAL_PRN_argument
-        SET "MAL_PRN_string=!MAL_PRN_string! !MAL_PRN_substring!"
+:MAL_STR
+    SET "MAL_STR_str="
+    CALL :CALL_STACK_POP MAL_STR_args_number
+    CALL :NUMBER_TO_STR MAL_STR_args MAL_STR_args_number
+    SET /a "MAL_STR_args-=1"
+    FOR /L %%G IN (0, 1, !MAL_STR_args!) DO (
+        CALL :CALL_STACK_POP MAL_STR_argument
+        CALL :PR_STR MAL_STR_substring MAL_STR_argument FALSE
+        SET "MAL_STR_str=!MAL_STR_str!!MAL_STR_substring!"
     )
-    SET "MAL_PRN_string=!MAL_PRN_string:~1!"
-    CALL :ECHO MAL_PRN_string
+    CALL :STRING_NEW MAL_STR_string MAL_STR_str
+    CALL :CALL_STACK_PUSH MAL_STR_string
+EXIT /B 0
+
+:_MAL_PR_STR
+    SET "_MAL_PR_STR_str="
+    CALL :CALL_STACK_POP _MAL_PR_STR_args_number
+    CALL :NUMBER_TO_STR _MAL_PR_STR_args _MAL_PR_STR_args_number
+    SET /a "_MAL_PR_STR_args-=1"
+    FOR /L %%G IN (0, 1, !_MAL_PR_STR_args!) DO (
+        CALL :CALL_STACK_POP _MAL_PR_STR_argument
+        CALL :PR_STR _MAL_PR_STR_substring _MAL_PR_STR_argument %1
+        SET "_MAL_PR_STR_str=!_MAL_PR_STR_str! !_MAL_PR_STR_substring!"
+    )
+    IF NOT "!_MAL_PR_STR_str!"=="" (
+        SET "_MAL_PR_STR_str=!_MAL_PR_STR_str:~1!"
+    )
+    CALL :STRING_NEW _MAL_PR_STR_string _MAL_PR_STR_str
+    CALL :CALL_STACK_PUSH _MAL_PR_STR_string
+EXIT /B 0
+
+:MAL_PR_STR
+    CALL :_MAL_PR_STR TRUE
+EXIT /B 0
+
+:MAL_PRN
+    CALL :_MAL_PR_STR TRUE
+    CALL :CALL_STACK_POP MAL_PRN_string
+    CALL :STRING_TO_STR MAL_PRN_str MAL_PRN_string
+    CALL :ECHO MAL_PRN_str
+    CALL :CALL_STACK_PUSH NIL
+EXIT /B 0
+
+:MAL_PRINTLN
+    CALL :_MAL_PR_STR FALSE
+    CALL :CALL_STACK_POP MAL_PRINTLN_string
+    CALL :STRING_TO_STR MAL_PRINTLN_str MAL_PRINTLN_string
+    CALL :ECHO MAL_PRINTLN_str
     CALL :CALL_STACK_PUSH NIL
 EXIT /B 0
 
@@ -1539,8 +1578,14 @@ CALL :DEFINE_FUN REPL_env _plus :MAL_NUMBER_ADD
 CALL :DEFINE_FUN REPL_env _minus :MAL_NUMBER_SUBTRACT
 CALL :DEFINE_FUN REPL_env _asterisk :MAL_NUMBER_MULTIPLY
 CALL :DEFINE_FUN REPL_env _slash :MAL_NUMBER_DIVIDE
+SET "_name=str"
+CALL :DEFINE_FUN REPL_env _name :MAL_STR
 SET "_name=prn"
 CALL :DEFINE_FUN REPL_env _name :MAL_PRN
+SET "_name=pr-str"
+CALL :DEFINE_FUN REPL_env _name :MAL_PR_STR
+SET "_name=println"
+CALL :DEFINE_FUN REPL_env _name :MAL_PRINTLN
 SET "_name=list"
 CALL :DEFINE_FUN REPL_env _name :MAL_LIST
 SET "_name=list?"

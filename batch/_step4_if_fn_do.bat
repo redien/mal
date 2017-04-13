@@ -12,8 +12,14 @@ CALL :DEFINE_FUN REPL_env _plus :MAL_NUMBER_ADD
 CALL :DEFINE_FUN REPL_env _minus :MAL_NUMBER_SUBTRACT
 CALL :DEFINE_FUN REPL_env _asterisk :MAL_NUMBER_MULTIPLY
 CALL :DEFINE_FUN REPL_env _slash :MAL_NUMBER_DIVIDE
+SET "_name=str"
+CALL :DEFINE_FUN REPL_env _name :MAL_STR
 SET "_name=prn"
 CALL :DEFINE_FUN REPL_env _name :MAL_PRN
+SET "_name=pr-str"
+CALL :DEFINE_FUN REPL_env _name :MAL_PR_STR
+SET "_name=println"
+CALL :DEFINE_FUN REPL_env _name :MAL_PRINTLN
 SET "_name=list"
 CALL :DEFINE_FUN REPL_env _name :MAL_LIST
 SET "_name=list?"

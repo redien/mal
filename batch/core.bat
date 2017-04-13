@@ -86,18 +86,54 @@ EXIT /B 0
     CALL :CALL_STACK_PUSH NUMBER_DIVIDE_value
 EXIT /B 0
 
-:MAL_PRN
-    SET "MAL_PRN_string="
-    CALL :CALL_STACK_POP MAL_PRN_args_number
-    CALL :NUMBER_TO_STR MAL_PRN_args MAL_PRN_args_number
-    SET /a "MAL_PRN_args-=1"
-    FOR /L %%G IN (0, 1, !MAL_PRN_args!) DO (
-        CALL :CALL_STACK_POP MAL_PRN_argument
-        CALL :PR_STR MAL_PRN_substring MAL_PRN_argument
-        SET "MAL_PRN_string=!MAL_PRN_string! !MAL_PRN_substring!"
+:MAL_STR
+    SET "MAL_STR_str="
+    CALL :CALL_STACK_POP MAL_STR_args_number
+    CALL :NUMBER_TO_STR MAL_STR_args MAL_STR_args_number
+    SET /a "MAL_STR_args-=1"
+    FOR /L %%G IN (0, 1, !MAL_STR_args!) DO (
+        CALL :CALL_STACK_POP MAL_STR_argument
+        CALL :PR_STR MAL_STR_substring MAL_STR_argument FALSE
+        SET "MAL_STR_str=!MAL_STR_str!!MAL_STR_substring!"
     )
-    SET "MAL_PRN_string=!MAL_PRN_string:~1!"
-    CALL :ECHO MAL_PRN_string
+    CALL :STRING_NEW MAL_STR_string MAL_STR_str
+    CALL :CALL_STACK_PUSH MAL_STR_string
+EXIT /B 0
+
+:_MAL_PR_STR
+    SET "_MAL_PR_STR_str="
+    CALL :CALL_STACK_POP _MAL_PR_STR_args_number
+    CALL :NUMBER_TO_STR _MAL_PR_STR_args _MAL_PR_STR_args_number
+    SET /a "_MAL_PR_STR_args-=1"
+    FOR /L %%G IN (0, 1, !_MAL_PR_STR_args!) DO (
+        CALL :CALL_STACK_POP _MAL_PR_STR_argument
+        CALL :PR_STR _MAL_PR_STR_substring _MAL_PR_STR_argument %1
+        SET "_MAL_PR_STR_str=!_MAL_PR_STR_str! !_MAL_PR_STR_substring!"
+    )
+    IF NOT "!_MAL_PR_STR_str!"=="" (
+        SET "_MAL_PR_STR_str=!_MAL_PR_STR_str:~1!"
+    )
+    CALL :STRING_NEW _MAL_PR_STR_string _MAL_PR_STR_str
+    CALL :CALL_STACK_PUSH _MAL_PR_STR_string
+EXIT /B 0
+
+:MAL_PR_STR
+    CALL :_MAL_PR_STR TRUE
+EXIT /B 0
+
+:MAL_PRN
+    CALL :_MAL_PR_STR TRUE
+    CALL :CALL_STACK_POP MAL_PRN_string
+    CALL :STRING_TO_STR MAL_PRN_str MAL_PRN_string
+    CALL :ECHO MAL_PRN_str
+    CALL :CALL_STACK_PUSH NIL
+EXIT /B 0
+
+:MAL_PRINTLN
+    CALL :_MAL_PR_STR FALSE
+    CALL :CALL_STACK_POP MAL_PRINTLN_string
+    CALL :STRING_TO_STR MAL_PRINTLN_str MAL_PRINTLN_string
+    CALL :ECHO MAL_PRINTLN_str
     CALL :CALL_STACK_PUSH NIL
 EXIT /B 0
 

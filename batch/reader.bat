@@ -103,13 +103,12 @@ EXIT /B 0
 
     :: If there is a double-quote, read a quoted string
     IF "!%2:~0,1!"=="!_doublequote!" (
+        SET "%1=!%1!!%2:~0,1!"
+        SET "%2=!%2:~1,8191!"
 :READ_DOUBLEQUOTED_STRING_CONTINUE
         IF "!%2!"=="" (
             EXIT /B 0
         )
-
-        SET "%1=!%1!!%2:~0,1!"
-        SET "%2=!%2:~1,8191!"
 
         CALL :READ_WHILE READ_DOUBLEQUOTED_STRING_match %2 :IS_NOT_DOUBLEQUOTE_OR_BACKSLASH
         SET "%1=!%1!!READ_DOUBLEQUOTED_STRING_match!"
