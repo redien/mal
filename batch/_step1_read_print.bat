@@ -29,5 +29,5 @@ EXIT /B 0
 EXIT /B 0
 
 :PRINT
-    CALL :PR_STR %1 %2
+    CALL :PR_STR %1 %2 TRUE
 EXIT /B 0

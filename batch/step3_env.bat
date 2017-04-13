@@ -16,6 +16,10 @@ SET "EMPTY_LIST=l"
 SET "TRUE=t"
 SET "FALSE=f"
 
+SET _newline_escape=\n
+SET _doublequote_escape=\"
+SET _backslash_escape=\\
+
 SET _doublequote=^"
 SET _backslash=^\
 SET _singlequote=^'
@@ -32,6 +36,10 @@ SET _plus=^+
 SET _minus=^-
 SET _slash=^/
 SET _asterisk=^*
+SET _newline=^
+
+
+:: Do not remove the empty lines above
 
 GOTO :START
 
@@ -578,6 +586,28 @@ EXIT /B 0
     SET "%1=%STRLEN_length%"
 EXIT /B 0
 
+:STRING_REPLACE_CHAR
+    SET "STRING_REPLACE_CHAR_dest="
+    SET "STRING_REPLACE_CHAR_source=!%2!"
+
+:STRING_REPLACE_CHAR_LOOP
+    IF "!STRING_REPLACE_CHAR_source!"=="" (
+        SET "%1=!STRING_REPLACE_CHAR_dest!"
+        EXIT /B 0
+    )
+
+    SET "STRING_REPLACE_CHAR_char=!STRING_REPLACE_CHAR_source:~0,1!"
+    SET "STRING_REPLACE_CHAR_source=!STRING_REPLACE_CHAR_source:~1,8191!"
+
+    IF "!STRING_REPLACE_CHAR_char!"=="!%3!" (
+        SET "STRING_REPLACE_CHAR_dest=!STRING_REPLACE_CHAR_dest!!%4!"
+        GOTO :STRING_REPLACE_CHAR_LOOP
+    )
+
+    SET "STRING_REPLACE_CHAR_dest=!STRING_REPLACE_CHAR_dest!!STRING_REPLACE_CHAR_char!"
+    GOTO :STRING_REPLACE_CHAR_LOOP
+EXIT /B 0
+
 :READ_WHILE
     SET "%1="
 :READ_WHILE_LOOP
@@ -699,11 +729,30 @@ EXIT /B 0
 
         SET "READ_DOUBLEQUOTED_STRING_terminator=!%2:~0,1!"
         SET "%2=!%2:~1,8191!"
-        SET "%1=!%1!!READ_DOUBLEQUOTED_STRING_terminator!"
 
         :: If the last character was a back-slash, we continue reading the string.
         IF "!READ_DOUBLEQUOTED_STRING_terminator!"=="!_backslash!" (
+            SET "READ_DOUBLEQUOTED_STRING_escape=!%2:~0,1!"
+            SET "%2=!%2:~1,8191!"
+
+            IF "!READ_DOUBLEQUOTED_STRING_escape!"=="n" (
+                SET "%1=!%1!!_newline!"
+                GOTO :READ_DOUBLEQUOTED_STRING_CONTINUE
+            )
+
+            IF "!READ_DOUBLEQUOTED_STRING_escape!"=="!_doublequote!" (
+                SET "%1=!%1!!_doublequote!"
+                GOTO :READ_DOUBLEQUOTED_STRING_CONTINUE
+            )
+
+            IF "!READ_DOUBLEQUOTED_STRING_escape!"=="!_backslash!" (
+                SET "%1=!%1!!_backslash!"
+                GOTO :READ_DOUBLEQUOTED_STRING_CONTINUE
+            )
+
             GOTO :READ_DOUBLEQUOTED_STRING_CONTINUE
+        ) ELSE (
+            SET "%1=!%1!!_doublequote!"
         )
     )
 EXIT /B 0
@@ -1013,7 +1062,7 @@ EXIT /B 0
 
 :: This can be solved better in the future by making them tail-recursive
     SET "PR_STR_recursion_count=0"
-    CALL :_PR_STR %1 %2
+    CALL :_PR_STR %1 %2 %3
 EXIT /B 0
 
 :_PR_STR
@@ -1044,7 +1093,14 @@ EXIT /B 0
     CALL :STRING? PR_STR_is_string %2
     IF "!PR_STR_is_string!"=="!TRUE!" (
         CALL :STRING_TO_STR PR_STR_string %2
-        SET "%1=!_doublequote!!PR_STR_string!!_doublequote!"
+        IF "!%3!"=="!TRUE!" (
+            CALL :STRING_REPLACE_CHAR PR_STR_string PR_STR_string _backslash _backslash_escape
+            CALL :STRING_REPLACE_CHAR PR_STR_string PR_STR_string _newline _newline_escape
+            CALL :STRING_REPLACE_CHAR PR_STR_string PR_STR_string _doublequote _doublequote_escape
+            SET "%1=!_doublequote!!PR_STR_string!!_doublequote!"
+        ) ELSE (
+            SET "%1=!PR_STR_string!"
+        )
         SET /a "PR_STR_recursion_count-=1"
         EXIT /B 0
     )
@@ -1290,7 +1346,7 @@ EXIT /B 0
 EXIT /B 0
 
 :PRINT
-    CALL :PR_STR %1 %2
+    CALL :PR_STR %1 %2 TRUE
 EXIT /B 0
 
 :EVAL_AST

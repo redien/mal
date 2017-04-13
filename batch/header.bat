@@ -15,6 +15,10 @@ SET "EMPTY_LIST=l"
 SET "TRUE=t"
 SET "FALSE=f"
 
+SET _newline_escape=\n
+SET _doublequote_escape=\"
+SET _backslash_escape=\\
+
 SET _doublequote=^"
 SET _backslash=^\
 SET _singlequote=^'
@@ -31,6 +35,10 @@ SET _plus=^+
 SET _minus=^-
 SET _slash=^/
 SET _asterisk=^*
+SET _newline=^
+
+
+:: Do not remove the empty lines above
 
 GOTO :START
 

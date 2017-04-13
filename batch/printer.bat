@@ -6,7 +6,7 @@
 
 :: This can be solved better in the future by making them tail-recursive
     SET "PR_STR_recursion_count=0"
-    CALL :_PR_STR %1 %2
+    CALL :_PR_STR %1 %2 %3
 EXIT /B 0
 
 :_PR_STR
@@ -37,7 +37,14 @@ EXIT /B 0
     CALL :STRING? PR_STR_is_string %2
     IF "!PR_STR_is_string!"=="!TRUE!" (
         CALL :STRING_TO_STR PR_STR_string %2
-        SET "%1=!_doublequote!!PR_STR_string!!_doublequote!"
+        IF "!%3!"=="!TRUE!" (
+            CALL :STRING_REPLACE_CHAR PR_STR_string PR_STR_string _backslash _backslash_escape
+            CALL :STRING_REPLACE_CHAR PR_STR_string PR_STR_string _newline _newline_escape
+            CALL :STRING_REPLACE_CHAR PR_STR_string PR_STR_string _doublequote _doublequote_escape
+            SET "%1=!_doublequote!!PR_STR_string!!_doublequote!"
+        ) ELSE (
+            SET "%1=!PR_STR_string!"
+        )
         SET /a "PR_STR_recursion_count-=1"
         EXIT /B 0
     )

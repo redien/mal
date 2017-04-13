@@ -120,11 +120,30 @@ EXIT /B 0
 
         SET "READ_DOUBLEQUOTED_STRING_terminator=!%2:~0,1!"
         SET "%2=!%2:~1,8191!"
-        SET "%1=!%1!!READ_DOUBLEQUOTED_STRING_terminator!"
 
         :: If the last character was a back-slash, we continue reading the string.
         IF "!READ_DOUBLEQUOTED_STRING_terminator!"=="!_backslash!" (
+            SET "READ_DOUBLEQUOTED_STRING_escape=!%2:~0,1!"
+            SET "%2=!%2:~1,8191!"
+
+            IF "!READ_DOUBLEQUOTED_STRING_escape!"=="n" (
+                SET "%1=!%1!!_newline!"
+                GOTO :READ_DOUBLEQUOTED_STRING_CONTINUE
+            )
+
+            IF "!READ_DOUBLEQUOTED_STRING_escape!"=="!_doublequote!" (
+                SET "%1=!%1!!_doublequote!"
+                GOTO :READ_DOUBLEQUOTED_STRING_CONTINUE
+            )
+
+            IF "!READ_DOUBLEQUOTED_STRING_escape!"=="!_backslash!" (
+                SET "%1=!%1!!_backslash!"
+                GOTO :READ_DOUBLEQUOTED_STRING_CONTINUE
+            )
+
             GOTO :READ_DOUBLEQUOTED_STRING_CONTINUE
+        ) ELSE (
+            SET "%1=!%1!!_doublequote!"
         )
     )
 EXIT /B 0
