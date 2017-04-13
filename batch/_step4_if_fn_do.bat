@@ -27,6 +27,8 @@ CALL :DEFINE_FUN REPL_env _lower_than :MAL_LOWER_THAN
 CALL :DEFINE_FUN REPL_env _greater_than_equal :MAL_GREATER_THAN_OR_EQUAL
 CALL :DEFINE_FUN REPL_env _lower_than_equal :MAL_LOWER_THAN_OR_EQUAL
 CALL :DEFINE_FUN REPL_env _equal :MAL_EQUAL
+SET "_script=(def^! not (fn* (a) (if a false true)))"
+CALL :REP _ _script REPL_env
 
 :REPL
     SET "_input="
