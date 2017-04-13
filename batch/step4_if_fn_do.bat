@@ -1501,26 +1501,30 @@ CALL :DEFINE_FUN REPL_env _equal :MAL_EQUAL
 
 :REPL
     SET "_input="
-    CALL :READ REPL_form
-    SET "REPL_result=!NIL!"
-    CALL :EVAL REPL_result REPL_form REPL_env
-    CALL :PRINT REPL_result
-GOTO :REPL
-
-:READ
     :: prompt the user and assign the user's input to _input.
     SET /p "_input=user> "
     :: If nothing is written, empty the input and reSET the error level
     IF  errorlevel 1 SET "_input=" & verify>nul
+    :: Exit command used for testing purposes
+    IF "!_input!"=="exit" EXIT
 
-    IF "!_input!"=="exit" EXIT :: Exit command used for testing purposes
+    CALL :REP _result _input REPL_env
 
-    CALL :READ_STR %1 _input
+    CALL :ECHO _result
+GOTO :REPL
+
+:REP
+    CALL :READ REP_read %2
+    CALL :EVAL REP_evaled REP_read %3
+    CALL :PRINT %1 REP_evaled
+EXIT /B 0
+
+:READ
+    CALL :READ_STR %1 %2
 EXIT /B 0
 
 :PRINT
-    CALL :PR_STR PRINT_output %1
-    CALL :ECHO PRINT_output
+    CALL :PR_STR %1 %2
 EXIT /B 0
 
 :EVAL_AST
