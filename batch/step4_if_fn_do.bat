@@ -1481,14 +1481,6 @@ EXIT /B 0
     SET /a "_call_stack_size-=1"
 EXIT /B 0
 
-:CALL_STACK_SIZE
-    SET "%1=!_call_stack_size!"
-EXIT /B 0
-
-:CALL_STACK_CLEAR
-    SET "_call_stack_size=0"
-EXIT /B 0
-
 :DEFINE_FUN
     CALL :FUNCTION_NEW DEFINE_FUN_value %3 NIL NIL NIL
     CALL :ATOM_NEW DEFINE_FUN_key %2
@@ -1616,10 +1608,6 @@ EXIT /B 0
     SET /a "EVAL_DEF_VECTOR_recursion_count-=1"
 EXIT /B 0
 
-:MAL_LAMBDA_FUNCTION
-
-EXIT /B 0
-
 :EVAL
     SET /a "EVAL_recursion_count+=1"
 
@@ -1627,8 +1615,7 @@ EXIT /B 0
     IF "!EVAL_is_list!"=="!TRUE!" (
         IF "!%2!"=="!EMPTY_LIST!" (
             SET "%1=!%2!"
-            SET /a "EVAL_recursion_count-=1"
-            EXIT /B 0
+            GOTO :EVAL_EXIT
         )
 
         CALL :FIRST EVAL_first_form %2
@@ -1644,8 +1631,7 @@ EXIT /B 0
                 SET "EVAL_lambda_function=:MAL_LAMBDA"
                 CALL :FUNCTION_NEW %1 EVAL_lambda_function %3 EVAL_params%EVAL_recursion_count% EVAL_body%EVAL_recursion_count%
 
-                SET /a "EVAL_recursion_count-=1"
-                EXIT /B 0
+                GOTO :EVAL_EXIT
             )
 
             IF "!EVAL_first_atom_str!"=="def^!" (
@@ -1655,8 +1641,7 @@ EXIT /B 0
                 CALL :EVAL EVAL_evaluated_value%EVAL_recursion_count% EVAL_value%EVAL_recursion_count% %3
                 CALL :ENV_SET %3 EVAL_key%EVAL_recursion_count% EVAL_evaluated_value%EVAL_recursion_count%
                 SET "%1=!EVAL_evaluated_value%EVAL_recursion_count%!"
-                SET /a "EVAL_recursion_count-=1"
-                EXIT /B 0
+                GOTO :EVAL_EXIT
             )
 
             IF "!EVAL_first_atom_str!"=="do" (
@@ -1665,14 +1650,12 @@ EXIT /B 0
                 CALL :LIST_FIND EVAL_error%EVAL_recursion_count% EVAL_evaluated_list%EVAL_recursion_count% :ERROR?
                 IF NOT "!EVAL_error%EVAL_recursion_count%!"=="!NIL!" (
                     SET "%1=!EVAL_error%EVAL_recursion_count%!"
-                    SET /a "EVAL_recursion_count-=1"
-                    EXIT /B 0
+                    GOTO :EVAL_EXIT
                 )
 
                 CALL :LIST_LAST EVAL_evaluated_value%EVAL_recursion_count% EVAL_evaluated_list%EVAL_recursion_count%
                 SET "%1=!EVAL_evaluated_value%EVAL_recursion_count%!"
-                SET /a "EVAL_recursion_count-=1"
-                EXIT /B 0
+                GOTO :EVAL_EXIT
             )
 
             IF "!EVAL_first_atom_str!"=="if" (
@@ -1684,8 +1667,7 @@ EXIT /B 0
                 CALL :ERROR? EVAL_evaluated_predicate_is_error%EVAL_recursion_count% EVAL_evaluated_predicate%EVAL_recursion_count%
                 IF "!EVAL_evaluated_predicate_is_error%EVAL_recursion_count%!"=="!TRUE!" (
                     SET "%1=!EVAL_evaluated_predicate%EVAL_recursion_count%!"
-                    SET /a "EVAL_recursion_count-=1"
-                    EXIT /B 0
+                    GOTO :EVAL_EXIT
                 )
 
                 SET "EVAL_is_falsey%EVAL_recursion_count%=!FALSE!"
@@ -1709,8 +1691,7 @@ EXIT /B 0
                 )
 
                 SET "%1=!EVAL_evaluated_value%EVAL_recursion_count%!"
-                SET /a "EVAL_recursion_count-=1"
-                EXIT /B 0
+                GOTO :EVAL_EXIT
             )
 
             IF "!EVAL_first_atom_str!"=="let*" (
@@ -1732,8 +1713,7 @@ EXIT /B 0
                 CALL :EVAL EVAL_evaluated_value%EVAL_recursion_count% EVAL_value%EVAL_recursion_count% EVAL_env%EVAL_recursion_count%
 
                 SET "%1=!EVAL_evaluated_value%EVAL_recursion_count%!"
-                SET /a "EVAL_recursion_count-=1"
-                EXIT /B 0
+                GOTO :EVAL_EXIT
             )
         )
 
@@ -1741,8 +1721,7 @@ EXIT /B 0
         CALL :LIST_FIND EVAL_error%EVAL_recursion_count% EVAL_list%EVAL_recursion_count% :ERROR?
         IF NOT "!EVAL_error%EVAL_recursion_count%!"=="!NIL!" (
             SET "%1=!EVAL_error%EVAL_recursion_count%!"
-            SET /a "EVAL_recursion_count-=1"
-            EXIT /B 0
+            GOTO :EVAL_EXIT
         )
 
         CALL :FIRST EVAL_function%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
@@ -1766,11 +1745,11 @@ EXIT /B 0
         CALL !EVAL_function_str%EVAL_recursion_count%! EVAL_function%EVAL_recursion_count%
         CALL :CALL_STACK_POP %1
 
-        SET /a "EVAL_recursion_count-=1"
-        EXIT /B 0
+        GOTO :EVAL_EXIT
     )
 
     CALL :EVAL_AST %1 %2 %3
 
+:EVAL_EXIT
     SET /a "EVAL_recursion_count-=1"
 EXIT /B 0
