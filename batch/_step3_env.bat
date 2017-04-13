@@ -10,6 +10,25 @@ EXIT /B 0
     SET /a "_call_stack_size-=1"
 EXIT /B 0
 
+:NUMBER_OF_ARGS_OR_ERROR
+    CALL :CALL_STACK_POP NUMBER_OF_ARGS_OR_ERROR_size_number
+    CALL :NUMBER_TO_STR NUMBER_OF_ARGS_OR_ERROR_size NUMBER_OF_ARGS_OR_ERROR_size_number
+    IF NOT "!NUMBER_OF_ARGS_OR_ERROR_size!"=="%2" (
+        SET "NUMBER_OF_ARGS_OR_ERROR_error_message=Wrong number of arguments: got !NUMBER_OF_ARGS_OR_ERROR_size! expected %2!"
+        CALL :ERROR_NEW %1 NUMBER_OF_ARGS_OR_ERROR_error_message
+
+        :: We clean up the stack on error.
+        SET /a "NUMBER_OF_ARGS_OR_ERROR_size-=1"
+        FOR /L %%G IN (0, 1, !NUMBER_OF_ARGS_OR_ERROR_size!) DO (
+            SET "NUMBER_OF_ARGS_OR_ERROR_index=%%G"
+            CALL :CALL_STACK_POP _
+        )
+
+    ) ELSE (
+        SET "%1=!NUMBER_OF_ARGS_OR_ERROR_size_number!"
+    )
+EXIT /B 0
+
 :MAL_NUMBER_ADD
     CALL :CALL_STACK_POP NUMBER_ADD_first
     CALL :CALL_STACK_POP NUMBER_ADD_second
