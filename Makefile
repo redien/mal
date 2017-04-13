@@ -64,6 +64,7 @@ OPTIONAL=1
 mal_TEST_OPTS = --start-timeout 60 --test-timeout 120
 miniMAL_TEST_OPTS = --start-timeout 60 --test-timeout 120
 plpgsql_TEST_OPTS = --start-timeout 60 --test-timeout 180
+batch_TEST_OPTS = --start-timeout 60 --test-timeout 180
 
 DOCKERIZE=
 

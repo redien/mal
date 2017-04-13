@@ -1470,17 +1470,6 @@ EXIT /B 0
     SET /a "MAL_LAMBDA_recursion_count-=1"
 EXIT /B 0
 
-:CALL_STACK_PUSH
-    SET /a "_call_stack_size+=1"
-    SET "_call_stack_value!_call_stack_size!=!%1!"
-EXIT /B 0
-
-:CALL_STACK_POP
-    SET "CALL_STACK_POP_ref=_call_stack_value!_call_stack_size!"
-    SET "%1=!%CALL_STACK_POP_ref%!"
-    SET /a "_call_stack_size-=1"
-EXIT /B 0
-
 :DEFINE_FUN
     CALL :FUNCTION_NEW DEFINE_FUN_value %3 NIL NIL NIL
     CALL :ATOM_NEW DEFINE_FUN_key %2
@@ -1752,4 +1741,15 @@ EXIT /B 0
 
 :EVAL_EXIT
     SET /a "EVAL_recursion_count-=1"
+EXIT /B 0
+
+:CALL_STACK_PUSH
+    SET /a "_call_stack_size+=1"
+    SET "_call_stack_value!_call_stack_size!=!%1!"
+EXIT /B 0
+
+:CALL_STACK_POP
+    SET "CALL_STACK_POP_ref=_call_stack_value!_call_stack_size!"
+    SET "%1=!%CALL_STACK_POP_ref%!"
+    SET /a "_call_stack_size-=1"
 EXIT /B 0
