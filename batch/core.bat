@@ -172,7 +172,12 @@ EXIT /B 0
     )
 
     CALL :CALL_STACK_POP MAL_COUNT_first
-    CALL :LIST_COUNT MAL_COUNT_count MAL_COUNT_first
+    CALL :VECTOR? MAL_COUNT_is_vector MAL_COUNT_first
+    IF "!MAL_COUNT_is_vector!"=="!TRUE!" (
+        CALL :VECTOR_LENGTH MAL_COUNT_count MAL_COUNT_first
+    ) ELSE (
+        CALL :LIST_COUNT MAL_COUNT_count MAL_COUNT_first
+    )
     CALL :NUMBER_NEW MAL_COUNT_count_number MAL_COUNT_count
     CALL :CALL_STACK_PUSH MAL_COUNT_count_number
 EXIT /B 0
