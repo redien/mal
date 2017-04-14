@@ -249,6 +249,15 @@ EXIT /B 0
     SET "%1=!%_length%!"
 EXIT /B 0
 
+:VECTOR_EMPTY?
+    SET "_length=_vector_length_!%2:~1,8191!"
+    IF "!%_length%!"=="0" (
+        SET "%1=!TRUE!"
+    ) ELSE (
+        SET "%1=!FALSE!"
+    )
+EXIT /B 0
+
 :VECTOR_GET
     SET "_ref=_vector_!%2:~1,8191!_!%3!"
     SET "%1=!%_ref%!"
@@ -1399,7 +1408,12 @@ EXIT /B 0
     )
 
     CALL :CALL_STACK_POP MAL_EMPTY?_first
-    CALL :LIST_EMPTY? MAL_EMPTY?_is_empty MAL_EMPTY?_first
+    CALL :VECTOR? MAL_EMPTY?_is_vector MAL_EMPTY?_first
+    IF "!MAL_EMPTY?_is_vector!"=="!TRUE!" (
+        CALL :VECTOR_EMPTY? MAL_EMPTY?_is_empty MAL_EMPTY?_first
+    ) ELSE (
+        CALL :LIST_EMPTY? MAL_EMPTY?_is_empty MAL_EMPTY?_first
+    )
     CALL :CALL_STACK_PUSH MAL_EMPTY?_is_empty
 EXIT /B 0
 

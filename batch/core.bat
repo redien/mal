@@ -159,7 +159,12 @@ EXIT /B 0
     )
 
     CALL :CALL_STACK_POP MAL_EMPTY?_first
-    CALL :LIST_EMPTY? MAL_EMPTY?_is_empty MAL_EMPTY?_first
+    CALL :VECTOR? MAL_EMPTY?_is_vector MAL_EMPTY?_first
+    IF "!MAL_EMPTY?_is_vector!"=="!TRUE!" (
+        CALL :VECTOR_EMPTY? MAL_EMPTY?_is_empty MAL_EMPTY?_first
+    ) ELSE (
+        CALL :LIST_EMPTY? MAL_EMPTY?_is_empty MAL_EMPTY?_first
+    )
     CALL :CALL_STACK_PUSH MAL_EMPTY?_is_empty
 EXIT /B 0
 

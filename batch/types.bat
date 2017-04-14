@@ -190,6 +190,15 @@ EXIT /B 0
     SET "%1=!%_length%!"
 EXIT /B 0
 
+:VECTOR_EMPTY?
+    SET "_length=_vector_length_!%2:~1,8191!"
+    IF "!%_length%!"=="0" (
+        SET "%1=!TRUE!"
+    ) ELSE (
+        SET "%1=!FALSE!"
+    )
+EXIT /B 0
+
 :VECTOR_GET
     SET "_ref=_vector_!%2:~1,8191!_!%3!"
     SET "%1=!%_ref%!"
