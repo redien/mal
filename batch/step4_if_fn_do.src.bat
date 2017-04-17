@@ -85,13 +85,16 @@ EXIT /B 0
 
     CALL :ATOM? EVAL_AST_is_atom %2
     IF "!EVAL_AST_is_atom!"=="!TRUE!" (
-        CALL :ENV_GET %1 %3 %2
-        IF "!%1!"=="!NIL!" (
-            CALL :ATOM_TO_STR EVAL_AST_atom_str %2
-            SET "EVAL_AST_error=Not defined: !EVAL_AST_atom_str!"
-            CALL :ERROR_NEW %1 EVAL_AST_error
+        CALL :ATOM_TO_STR EVAL_AST_atom_str %2
+        IF NOT "!EVAL_AST_atom_str:~0,1!"=="!_colon!" (
+            CALL :ENV_GET %1 %3 %2
+            IF "!%1!"=="!NIL!" (
+                CALL :ATOM_TO_STR EVAL_AST_atom_str %2
+                SET "EVAL_AST_error=Not defined: !EVAL_AST_atom_str!"
+                CALL :ERROR_NEW %1 EVAL_AST_error
+            )
+            EXIT /B 0
         )
-        EXIT /B 0
     )
 
     SET "%1=!%2!"

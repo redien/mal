@@ -338,25 +338,35 @@ EXIT /B 0
 
 
 :ATOM_NEW
-    SET /a "_symbol_counter+=1"
-    SET "_length=_symbol_length_!_symbol_counter!"
+    SET /a "_atom_counter+=1"
+    SET "_length=_atom_length_!_atom_counter!"
     CALL :STRLEN %_length% %2
-    SET "_symbol_contents_!_symbol_counter!=!%2!"
-    SET "%1=Y!_symbol_counter!"
+    SET "_atom_contents_!_atom_counter!=!%2!"
+    SET "%1=A!_atom_counter!"
 EXIT /B 0
 
 :ATOM_LENGTH
-    SET "_length=_symbol_length_!%2:~1,8191!"
+    SET "_length=_atom_length_!%2:~1,8191!"
     SET "%1=!%_length%!"
 EXIT /B 0
 
 :ATOM_TO_STR
-    SET "_ref=_symbol_contents_!%2:~1,8191!"
+    SET "_ref=_atom_contents_!%2:~1,8191!"
     SET "%1=!%_ref%!"
 EXIT /B 0
 
+:ATOM_EQUAL
+    SET "ATOM_EQUAL_first=_atom_contents_!%2:~1,8191!"
+    SET "ATOM_EQUAL_second=_atom_contents_!%3:~1,8191!"
+    IF "!%ATOM_EQUAL_first%!"=="!%ATOM_EQUAL_second%!" (
+        SET "%1=!TRUE!"
+    ) ELSE (
+        SET "%1=!FALSE!"
+    )
+EXIT /B 0
+
 :ATOM?
-    IF "!%2:~0,1!"=="Y" (
+    IF "!%2:~0,1!"=="A" (
         SET "%1=!TRUE!"
     ) ELSE (
         SET "%1=!FALSE!"
@@ -543,6 +553,10 @@ EXIT /B 0
     ) ELSE (
         IF "!%2:~0,1!"=="!%3:~0,1!" (
             :: Types are the same
+            IF "!%2:~0,1!"=="A" (
+                CALL :ATOM_EQUAL %1 %2 %3
+                EXIT /B 0
+            )
             IF "!%2:~0,1!"=="N" (
                 CALL :NUMBER_EQUAL %1 %2 %3
                 EXIT /B 0
@@ -1027,12 +1041,6 @@ EXIT /B 0
     CALL :IS_NUMERIC READ_FORM_is_numeric READ_FORM_token
     IF "!READ_FORM_is_numeric!"=="!TRUE!" (
         CALL :READ_NUMBER READ_FORM_form%READ_FORM_recursion_count% %2 %3
-        GOTO :READ_FORM_EXIT
-    )
-
-    IF "!READ_FORM_token:~0,1!"=="!_colon!" (
-        CALL :ATOM_NEW READ_FORM_form%READ_FORM_recursion_count% READ_FORM_token
-        SET /a "%3+=1"
         GOTO :READ_FORM_EXIT
     )
 
@@ -1677,13 +1685,16 @@ EXIT /B 0
 
     CALL :ATOM? EVAL_AST_is_atom %2
     IF "!EVAL_AST_is_atom!"=="!TRUE!" (
-        CALL :ENV_GET %1 %3 %2
-        IF "!%1!"=="!NIL!" (
-            CALL :ATOM_TO_STR EVAL_AST_atom_str %2
-            SET "EVAL_AST_error=Not defined: !EVAL_AST_atom_str!"
-            CALL :ERROR_NEW %1 EVAL_AST_error
+        CALL :ATOM_TO_STR EVAL_AST_atom_str %2
+        IF NOT "!EVAL_AST_atom_str:~0,1!"=="!_colon!" (
+            CALL :ENV_GET %1 %3 %2
+            IF "!%1!"=="!NIL!" (
+                CALL :ATOM_TO_STR EVAL_AST_atom_str %2
+                SET "EVAL_AST_error=Not defined: !EVAL_AST_atom_str!"
+                CALL :ERROR_NEW %1 EVAL_AST_error
+            )
+            EXIT /B 0
         )
-        EXIT /B 0
     )
 
     SET "%1=!%2!"
