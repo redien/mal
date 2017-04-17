@@ -259,20 +259,7 @@ EXIT /B 0
 
         CALL :FIRST EVAL_function%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
         CALL :REST EVAL_list%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
-        CALL :LIST_REVERSE EVAL_list%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
-
-        SET "EVAL_params%EVAL_recursion_count%=0"
-:EVAL_ARGUMENT_LOOP
-        IF NOT "!EVAL_list%EVAL_recursion_count%!"=="!EMPTY_LIST!" (
-            CALL :FIRST EVAL_argument%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
-            CALL :REST EVAL_list%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
-            CALL :CALL_STACK_PUSH EVAL_argument%EVAL_recursion_count%
-            SET /a "EVAL_params%EVAL_recursion_count%+=1"
-            GOTO :EVAL_ARGUMENT_LOOP
-        )
-
-        CALL :NUMBER_NEW EVAL_params_number%EVAL_recursion_count% EVAL_params%EVAL_recursion_count%
-        CALL :CALL_STACK_PUSH EVAL_params_number%EVAL_recursion_count%
+        CALL :CALL_STACK_PUSH EVAL_list%EVAL_recursion_count%
 
         CALL :FUNCTION_TO_STR EVAL_function_str%EVAL_recursion_count% EVAL_function%EVAL_recursion_count%
         CALL !EVAL_function_str%EVAL_recursion_count%! EVAL_function%EVAL_recursion_count%
