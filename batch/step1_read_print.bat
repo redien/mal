@@ -315,7 +315,7 @@ EXIT /B 0
 EXIT /B 0
 
 
-:SYMBOL_NEW
+:ATOM_NEW
     SET /a "_atom_counter+=1"
     SET "_length=_atom_length_!_atom_counter!"
     CALL :STRLEN %_length% %2
@@ -323,12 +323,12 @@ EXIT /B 0
     SET "%1=A!_atom_counter!"
 EXIT /B 0
 
-:SYMBOL_LENGTH
+:ATOM_LENGTH
     SET "_length=_atom_length_!%2:~1,8191!"
     SET "%1=!%_length%!"
 EXIT /B 0
 
-:SYMBOL_TO_STR
+:ATOM_TO_STR
     SET "_ref=_atom_contents_!%2:~1,8191!"
     SET "%1=!%_ref%!"
 EXIT /B 0
@@ -835,7 +835,7 @@ EXIT /B 0
 
 :READ_ATOM
     CALL :VECTOR_GET READ_ATOM_token %2 %3
-    CALL :SYMBOL_NEW %1 READ_ATOM_token
+    CALL :ATOM_NEW %1 READ_ATOM_token
     SET /a "%3+=1"
 EXIT /B 0
 
@@ -872,7 +872,7 @@ EXIT /B 0
     SET /a "%3+=1"
 
     SET "%1=!EMPTY_LIST!"
-    CALL :SYMBOL_NEW READ_PREFIX_atom%READ_PREFIX_recursion_count% %4
+    CALL :ATOM_NEW READ_PREFIX_atom%READ_PREFIX_recursion_count% %4
     CALL :READ_FORM READ_PREFIX_form%READ_PREFIX_recursion_count% %2 %3
     CALL :CONS %1 READ_PREFIX_form%READ_PREFIX_recursion_count% %1
     CALL :CONS %1 READ_PREFIX_atom%READ_PREFIX_recursion_count% %1
@@ -886,7 +886,7 @@ EXIT /B 0
     SET /a "%3+=1"
 
     SET "%1=!EMPTY_LIST!"
-    CALL :SYMBOL_NEW READ_PREFIX_atom%READ_PREFIX2_recursion_count% %4
+    CALL :ATOM_NEW READ_PREFIX_atom%READ_PREFIX2_recursion_count% %4
     CALL :READ_FORM READ_PREFIX_form%READ_PREFIX2_recursion_count% %2 %3
     CALL :READ_FORM READ_PREFIX_form2%READ_PREFIX2_recursion_count% %2 %3
     CALL :CONS %1 READ_PREFIX_form%READ_PREFIX2_recursion_count% %1
@@ -1029,7 +1029,7 @@ EXIT /B 0
 
     CALL :ATOM? PR_STR_is_atom %2
     IF "!PR_STR_is_atom!"=="!TRUE!" (
-        CALL :SYMBOL_TO_STR %1 %2
+        CALL :ATOM_TO_STR %1 %2
         SET /a "PR_STR_recursion_count-=1"
         EXIT /B 0
     )
@@ -1165,13 +1165,13 @@ EXIT /B 0
 
 :ENV_SET
     SET "ENV_SET_id=!%1:~1,8191!"
-    CALL :SYMBOL_TO_STR ENV_SET_key %2
+    CALL :ATOM_TO_STR ENV_SET_key %2
     CALL :HASHMAP_INSERT _env_data!ENV_SET_id! ENV_SET_key %3
 EXIT /B 0
 
 :ENV_GET
     SET "ENV_GET_id=!%2:~1,8191!"
-    CALL :SYMBOL_TO_STR ENV_GET_key %3
+    CALL :ATOM_TO_STR ENV_GET_key %3
     CALL :HASHMAP_GET %1 _env_data!ENV_GET_id! ENV_GET_key
     IF "!%1!"=="!NIL!" (
         IF NOT "!_env_outer%ENV_GET_id%!"=="!NIL!" (

@@ -277,7 +277,7 @@ EXIT /B 0
 EXIT /B 0
 
 
-:SYMBOL_NEW
+:ATOM_NEW
     SET /a "_symbol_counter+=1"
     SET "_length=_symbol_length_!_symbol_counter!"
     CALL :STRLEN %_length% %2
@@ -285,12 +285,12 @@ EXIT /B 0
     SET "%1=Y!_symbol_counter!"
 EXIT /B 0
 
-:SYMBOL_LENGTH
+:ATOM_LENGTH
     SET "_length=_symbol_length_!%2:~1,8191!"
     SET "%1=!%_length%!"
 EXIT /B 0
 
-:SYMBOL_TO_STR
+:ATOM_TO_STR
     SET "_ref=_symbol_contents_!%2:~1,8191!"
     SET "%1=!%_ref%!"
 EXIT /B 0

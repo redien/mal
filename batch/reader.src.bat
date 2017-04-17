@@ -274,7 +274,7 @@ EXIT /B 0
 
 :READ_ATOM
     CALL :VECTOR_GET READ_ATOM_token %2 %3
-    CALL :SYMBOL_NEW %1 READ_ATOM_token
+    CALL :ATOM_NEW %1 READ_ATOM_token
     SET /a "%3+=1"
 EXIT /B 0
 
@@ -311,7 +311,7 @@ EXIT /B 0
     SET /a "%3+=1"
 
     SET "%1=!EMPTY_LIST!"
-    CALL :SYMBOL_NEW READ_PREFIX_atom%READ_PREFIX_recursion_count% %4
+    CALL :ATOM_NEW READ_PREFIX_atom%READ_PREFIX_recursion_count% %4
     CALL :READ_FORM READ_PREFIX_form%READ_PREFIX_recursion_count% %2 %3
     CALL :CONS %1 READ_PREFIX_form%READ_PREFIX_recursion_count% %1
     CALL :CONS %1 READ_PREFIX_atom%READ_PREFIX_recursion_count% %1
@@ -325,7 +325,7 @@ EXIT /B 0
     SET /a "%3+=1"
 
     SET "%1=!EMPTY_LIST!"
-    CALL :SYMBOL_NEW READ_PREFIX_atom%READ_PREFIX2_recursion_count% %4
+    CALL :ATOM_NEW READ_PREFIX_atom%READ_PREFIX2_recursion_count% %4
     CALL :READ_FORM READ_PREFIX_form%READ_PREFIX2_recursion_count% %2 %3
     CALL :READ_FORM READ_PREFIX_form2%READ_PREFIX2_recursion_count% %2 %3
     CALL :CONS %1 READ_PREFIX_form%READ_PREFIX2_recursion_count% %1
