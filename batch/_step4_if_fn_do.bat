@@ -1,7 +1,7 @@
 
 :DEFINE_FUN
     CALL :FUNCTION_NEW DEFINE_FUN_value %3 NIL NIL NIL
-    CALL :ATOM_NEW DEFINE_FUN_key %2
+    CALL :SYMBOL_NEW DEFINE_FUN_key %2
     CALL :ENV_SET %1 DEFINE_FUN_key DEFINE_FUN_value
 EXIT /B 0
 
@@ -87,7 +87,7 @@ EXIT /B 0
     IF "!EVAL_AST_is_atom!"=="!TRUE!" (
         CALL :ENV_GET %1 %3 %2
         IF "!%1!"=="!NIL!" (
-            CALL :ATOM_TO_STR EVAL_AST_atom_str %2
+            CALL :SYMBOL_TO_STR EVAL_AST_atom_str %2
             SET "EVAL_AST_error=Not defined: !EVAL_AST_atom_str!"
             CALL :ERROR_NEW %1 EVAL_AST_error
         )
@@ -152,7 +152,7 @@ EXIT /B 0
         CALL :REST EVAL_rest%EVAL_recursion_count% %2
         CALL :ATOM? EVAL_is_atom EVAL_first_form
         IF "!EVAL_is_atom!"=="!TRUE!" (
-            CALL :ATOM_TO_STR EVAL_first_atom_str EVAL_first_form
+            CALL :SYMBOL_TO_STR EVAL_first_atom_str EVAL_first_form
             IF "!EVAL_first_atom_str!"=="fn*" (
                 CALL :FIRST EVAL_params%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
                 CALL :REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%

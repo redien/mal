@@ -22,7 +22,7 @@ EXIT /B 0
 
     CALL :ATOM? PR_STR_is_atom %2
     IF "!PR_STR_is_atom!"=="!TRUE!" (
-        CALL :ATOM_TO_STR %1 %2
+        CALL :SYMBOL_TO_STR %1 %2
         SET /a "PR_STR_recursion_count-=1"
         EXIT /B 0
     )
