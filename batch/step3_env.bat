@@ -37,6 +37,7 @@ SET _minus=^-
 SET _slash=^/
 SET _asterisk=^*
 SET _colon=^:
+SET _ampersand=^&
 SET _newline=^
 
 
