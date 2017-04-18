@@ -136,10 +136,10 @@ EXIT /B 0
         EXIT /B 0
     )
 
-    CALL :ATOM? EVAL_AST_is_atom %2
-    IF "!EVAL_AST_is_atom!"=="!TRUE!" (
-        CALL :ATOM_TO_STR EVAL_AST_atom_str%EVAL_AST_recursion_count% %2
-        CALL :HASHMAP_GET %1 %3 EVAL_AST_atom_str%EVAL_AST_recursion_count%
+    CALL :SYMBOL? EVAL_AST_is_symbol %2
+    IF "!EVAL_AST_is_symbol!"=="!TRUE!" (
+        CALL :SYMBOL_TO_STR EVAL_AST_symbol_str%EVAL_AST_recursion_count% %2
+        CALL :HASHMAP_GET %1 %3 EVAL_AST_symbol_str%EVAL_AST_recursion_count%
         SET /a "EVAL_AST_recursion_count-=1"
         EXIT /B 0
     )

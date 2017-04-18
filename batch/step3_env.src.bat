@@ -53,7 +53,7 @@ EXIT /B 0
 :DEFINE_FUN
     CALL :FUNCTION_NEW DEFINE_FUN_value %3 NIL NIL NIL
     set "DEFINE_FUN_key_str=%2"
-    CALL :ATOM_NEW DEFINE_FUN_key DEFINE_FUN_key_str
+    CALL :SYMBOL_NEW DEFINE_FUN_key DEFINE_FUN_key_str
     CALL :ENV_SET %1 DEFINE_FUN_key DEFINE_FUN_value
 EXIT /B 0
 
@@ -137,12 +137,12 @@ EXIT /B 0
         EXIT /B 0
     )
 
-    CALL :ATOM? EVAL_AST_is_atom %2
-    IF "!EVAL_AST_is_atom!"=="!TRUE!" (
+    CALL :SYMBOL? EVAL_AST_is_symbol %2
+    IF "!EVAL_AST_is_symbol!"=="!TRUE!" (
         CALL :ENV_GET %1 %3 %2
         IF "!%1!"=="!NIL!" (
-            CALL :ATOM_TO_STR EVAL_AST_atom_str %2
-            set "EVAL_AST_error=Not defined: !EVAL_AST_atom_str!"
+            CALL :SYMBOL_TO_STR EVAL_AST_symbol_str %2
+            set "EVAL_AST_error=Not defined: !EVAL_AST_symbol_str!"
             CALL :ABORT "!EVAL_AST_error!"
         )
         SET /a "EVAL_AST_recursion_count-=1"
@@ -186,10 +186,10 @@ EXIT /B 0
 
         CALL :FIRST EVAL_first_form %2
         CALL :REST EVAL_rest%EVAL_recursion_count% %2
-        CALL :ATOM? EVAL_is_atom EVAL_first_form
-        IF "!EVAL_is_atom!"=="!TRUE!" (
-            CALL :ATOM_TO_STR EVAL_first_atom_str EVAL_first_form
-            IF "!EVAL_first_atom_str!"=="def^!" (
+        CALL :SYMBOL? EVAL_is_symbol EVAL_first_form
+        IF "!EVAL_is_symbol!"=="!TRUE!" (
+            CALL :SYMBOL_TO_STR EVAL_first_symbol_str EVAL_first_form
+            IF "!EVAL_first_symbol_str!"=="def^!" (
                 CALL :FIRST EVAL_key%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
                 CALL :REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
                 CALL :FIRST EVAL_value%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
@@ -200,7 +200,7 @@ EXIT /B 0
                 EXIT /B 0
             )
 
-            IF "!EVAL_first_atom_str!"=="let*" (
+            IF "!EVAL_first_symbol_str!"=="let*" (
                 CALL :ENV_NEW EVAL_env%EVAL_recursion_count%
                 CALL :ENV_SET_OUTER EVAL_env%EVAL_recursion_count% %3
 

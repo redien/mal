@@ -356,35 +356,35 @@ EXIT /B 0
 EXIT /B 0
 
 
-:ATOM_NEW
-    SET /a "_atom_counter+=1"
-    SET "_length=_atom_length_!_atom_counter!"
+:SYMBOL_NEW
+    SET /a "_symbol_counter+=1"
+    SET "_length=_symbol_length_!_symbol_counter!"
     CALL :STRLEN %_length% %2
-    SET "_atom_contents_!_atom_counter!=!%2!"
-    SET "%1=A!_atom_counter!"
+    SET "_symbol_contents_!_symbol_counter!=!%2!"
+    SET "%1=A!_symbol_counter!"
 EXIT /B 0
 
-:ATOM_LENGTH
-    SET "_length=_atom_length_!%2:~1,8191!"
+:SYMBOL_LENGTH
+    SET "_length=_symbol_length_!%2:~1,8191!"
     SET "%1=!%_length%!"
 EXIT /B 0
 
-:ATOM_TO_STR
-    SET "_ref=_atom_contents_!%2:~1,8191!"
+:SYMBOL_TO_STR
+    SET "_ref=_symbol_contents_!%2:~1,8191!"
     SET "%1=!%_ref%!"
 EXIT /B 0
 
-:ATOM_EQUAL
-    SET "ATOM_EQUAL_first=_atom_contents_!%2:~1,8191!"
-    SET "ATOM_EQUAL_second=_atom_contents_!%3:~1,8191!"
-    IF "!%ATOM_EQUAL_first%!"=="!%ATOM_EQUAL_second%!" (
+:SYMBOL_EQUAL
+    SET "SYMBOL_EQUAL_first=_symbol_contents_!%2:~1,8191!"
+    SET "SYMBOL_EQUAL_second=_symbol_contents_!%3:~1,8191!"
+    IF "!%SYMBOL_EQUAL_first%!"=="!%SYMBOL_EQUAL_second%!" (
         SET "%1=!TRUE!"
     ) ELSE (
         SET "%1=!FALSE!"
     )
 EXIT /B 0
 
-:ATOM?
+:SYMBOL?
     IF "!%2:~0,1!"=="A" (
         SET "%1=!TRUE!"
     ) ELSE (
@@ -394,24 +394,24 @@ EXIT /B 0
 
 
 
-:MAL_ATOM_NEW
-    SET /a "_mal_atom_counter+=1"
-    SET "_mal_atom_value_!_mal_atom_counter!=!%2!"
-    SET "%1=T!_mal_atom_counter!"
+:ATOM_NEW
+    SET /a "_atom_counter+=1"
+    SET "_atom_value_!_atom_counter!=!%2!"
+    SET "%1=T!_atom_counter!"
 EXIT /B 0
 
-:MAL_ATOM_DEREF
-    SET "_ref=_mal_atom_value_!%2:~1,8191!"
+:ATOM_DEREF
+    SET "_ref=_atom_value_!%2:~1,8191!"
     SET "%1=!%_ref%!"
 EXIT /B 0
 
-:MAL_ATOM_RESET
-    SET "_ref=_mal_atom_value_!%2:~1,8191!"
+:ATOM_RESET
+    SET "_ref=_atom_value_!%2:~1,8191!"
     SET "%_ref%=!%3!"
     SET "%1=!%3!"
 EXIT /B 0
 
-:MAL_ATOM?
+:ATOM?
     IF "!%2:~0,1!"=="T" (
         SET "%1=!TRUE!"
     ) ELSE (
@@ -610,7 +610,7 @@ EXIT /B 0
         IF "!EQUAL?_first:~0,1!"=="!EQUAL?_second:~0,1!" (
             :: Types are the same
             IF "!EQUAL?_first:~0,1!"=="A" (
-                CALL :ATOM_EQUAL %1 EQUAL?_first EQUAL?_second
+                CALL :SYMBOL_EQUAL %1 EQUAL?_first EQUAL?_second
                 EXIT /B 0
             )
             IF "!EQUAL?_first:~0,1!"=="N" (
@@ -758,7 +758,7 @@ EXIT /B 0
     IF "!%2!"=="!_backslash!" (SET "%1=!FALSE!" & EXIT /B 0)
 EXIT /B 0
 
-:IS_ATOM_CHARACTER
+:IS_SYMBOL_CHARACTER
     SET "%1=!TRUE!"
     IF "!%2!"=="[" (SET "%1=!FALSE!" & EXIT /B 0)
     IF "!%2!"=="]" (SET "%1=!FALSE!" & EXIT /B 0)
@@ -891,7 +891,7 @@ EXIT /B 0
         GOTO :TOKENIZER_LOOP
     )
 
-    CALL :READ_WHILE TOKENIZER_token TOKENIZER_buffer :IS_ATOM_CHARACTER
+    CALL :READ_WHILE TOKENIZER_token TOKENIZER_buffer :IS_SYMBOL_CHARACTER
     IF NOT "!TOKENIZER_token!"=="" (
         CALL :VECTOR_PUSH TOKENIZER_list TOKENIZER_token
         GOTO :TOKENIZER_LOOP
@@ -978,13 +978,13 @@ EXIT /B 0
 
 :READ_ATOM
     CALL :VECTOR_GET READ_ATOM_token %2 %3
-    CALL :ATOM_NEW %1 READ_ATOM_token
+    CALL :SYMBOL_NEW %1 READ_ATOM_token
     SET /a "%3+=1"
 EXIT /B 0
 
 :READ_NUMBER
-    CALL :VECTOR_GET READ_ATOM_token %2 %3
-    CALL :NUMBER_NEW %1 READ_ATOM_token
+    CALL :VECTOR_GET READ_NUMBER_token %2 %3
+    CALL :NUMBER_NEW %1 READ_NUMBER_token
     SET /a "%3+=1"
 EXIT /B 0
 
@@ -1015,10 +1015,10 @@ EXIT /B 0
     SET /a "%3+=1"
 
     SET "%1=!EMPTY_LIST!"
-    CALL :ATOM_NEW READ_PREFIX_atom%READ_PREFIX_recursion_count% %4
+    CALL :SYMBOL_NEW READ_PREFIX_symbol%READ_PREFIX_recursion_count% %4
     CALL :READ_FORM READ_PREFIX_form%READ_PREFIX_recursion_count% %2 %3
     CALL :CONS %1 READ_PREFIX_form%READ_PREFIX_recursion_count% %1
-    CALL :CONS %1 READ_PREFIX_atom%READ_PREFIX_recursion_count% %1
+    CALL :CONS %1 READ_PREFIX_symbol%READ_PREFIX_recursion_count% %1
 
     SET /a "READ_PREFIX_recursion_count-=1"
 EXIT /B 0
@@ -1029,12 +1029,12 @@ EXIT /B 0
     SET /a "%3+=1"
 
     SET "%1=!EMPTY_LIST!"
-    CALL :ATOM_NEW READ_PREFIX_atom%READ_PREFIX2_recursion_count% %4
+    CALL :SYMBOL_NEW READ_PREFIX_symbol%READ_PREFIX2_recursion_count% %4
     CALL :READ_FORM READ_PREFIX_form%READ_PREFIX2_recursion_count% %2 %3
     CALL :READ_FORM READ_PREFIX_form2%READ_PREFIX2_recursion_count% %2 %3
     CALL :CONS %1 READ_PREFIX_form%READ_PREFIX2_recursion_count% %1
     CALL :CONS %1 READ_PREFIX_form2%READ_PREFIX2_recursion_count% %1
-    CALL :CONS %1 READ_PREFIX_atom%READ_PREFIX2_recursion_count% %1
+    CALL :CONS %1 READ_PREFIX_symbol%READ_PREFIX2_recursion_count% %1
 
     SET /a "READ_PREFIX2_recursion_count-=1"
 EXIT /B 0
@@ -1170,18 +1170,18 @@ EXIT /B 0
         EXIT /B 0
     )
 
-    CALL :ATOM? PR_STR_is_atom %2
-    IF "!PR_STR_is_atom!"=="!TRUE!" (
-        CALL :ATOM_TO_STR %1 %2
+    CALL :SYMBOL? PR_STR_is_symbol %2
+    IF "!PR_STR_is_symbol!"=="!TRUE!" (
+        CALL :SYMBOL_TO_STR %1 %2
         SET /a "PR_STR_recursion_count-=1"
         EXIT /B 0
     )
 
-    CALL :MAL_ATOM? PR_STR_is_mal_atom %2
-    IF "!PR_STR_is_mal_atom!"=="!TRUE!" (
-        CALL :MAL_ATOM_DEREF _PR_STR_ast%PR_STR_recursion_count% %2
+    CALL :ATOM? PR_STR_is_atom %2
+    IF "!PR_STR_is_atom!"=="!TRUE!" (
+        CALL :ATOM_DEREF _PR_STR_ast%PR_STR_recursion_count% %2
         CALL :_PR_STR _PR_STR_str%PR_STR_recursion_count% _PR_STR_ast%PR_STR_recursion_count%
-        SET "%1=(atom !_PR_STR_str%PR_STR_recursion_count%!)"
+        SET "%1=(symbol !_PR_STR_str%PR_STR_recursion_count%!)"
         SET /a "PR_STR_recursion_count-=1"
         EXIT /B 0
     )
@@ -1447,10 +1447,10 @@ EXIT /B 0
         EXIT /B 0
     )
 
-    CALL :ATOM? EVAL_AST_is_atom %2
-    IF "!EVAL_AST_is_atom!"=="!TRUE!" (
-        CALL :ATOM_TO_STR EVAL_AST_atom_str%EVAL_AST_recursion_count% %2
-        CALL :HASHMAP_GET %1 %3 EVAL_AST_atom_str%EVAL_AST_recursion_count%
+    CALL :SYMBOL? EVAL_AST_is_symbol %2
+    IF "!EVAL_AST_is_symbol!"=="!TRUE!" (
+        CALL :SYMBOL_TO_STR EVAL_AST_symbol_str%EVAL_AST_recursion_count% %2
+        CALL :HASHMAP_GET %1 %3 EVAL_AST_symbol_str%EVAL_AST_recursion_count%
         SET /a "EVAL_AST_recursion_count-=1"
         EXIT /B 0
     )

@@ -315,25 +315,25 @@ EXIT /B 0
 EXIT /B 0
 
 
-:ATOM_NEW
-    SET /a "_atom_counter+=1"
-    SET "_length=_atom_length_!_atom_counter!"
+:SYMBOL_NEW
+    SET /a "_symbol_counter+=1"
+    SET "_length=_symbol_length_!_symbol_counter!"
     CALL :STRLEN %_length% %2
-    SET "_atom_contents_!_atom_counter!=!%2!"
-    SET "%1=A!_atom_counter!"
+    SET "_symbol_contents_!_symbol_counter!=!%2!"
+    SET "%1=A!_symbol_counter!"
 EXIT /B 0
 
-:ATOM_LENGTH
-    SET "_length=_atom_length_!%2:~1,8191!"
+:SYMBOL_LENGTH
+    SET "_length=_symbol_length_!%2:~1,8191!"
     SET "%1=!%_length%!"
 EXIT /B 0
 
-:ATOM_TO_STR
-    SET "_ref=_atom_contents_!%2:~1,8191!"
+:SYMBOL_TO_STR
+    SET "_ref=_symbol_contents_!%2:~1,8191!"
     SET "%1=!%_ref%!"
 EXIT /B 0
 
-:ATOM?
+:SYMBOL?
     IF "!%2:~0,1!"=="A" (
         SET "%1=!TRUE!"
     ) ELSE (
@@ -643,7 +643,7 @@ EXIT /B 0
     IF "!%2!"=="!_backslash!" (SET "%1=!FALSE!" & EXIT /B 0)
 EXIT /B 0
 
-:IS_ATOM_CHARACTER
+:IS_SYMBOL_CHARACTER
     SET "%1=!TRUE!"
     IF "!%2!"=="[" (SET "%1=!FALSE!" & EXIT /B 0)
     IF "!%2!"=="]" (SET "%1=!FALSE!" & EXIT /B 0)
@@ -748,7 +748,7 @@ EXIT /B 0
 
     CALL :SKIP_COMMENT TOKENIZER_buffer
 
-    CALL :READ_WHILE TOKENIZER_token TOKENIZER_buffer :IS_ATOM_CHARACTER
+    CALL :READ_WHILE TOKENIZER_token TOKENIZER_buffer :IS_SYMBOL_CHARACTER
     IF NOT "!TOKENIZER_token!"=="" (
         CALL :VECTOR_PUSH TOKENIZER_list TOKENIZER_token
         GOTO :TOKENIZER_LOOP
@@ -833,15 +833,15 @@ EXIT /B 0
     IF "!%2:~0,2!"=="-0" (SET "%1=!TRUE!" & EXIT /B 0)
 EXIT /B 0
 
-:READ_ATOM
-    CALL :VECTOR_GET READ_ATOM_token %2 %3
-    CALL :ATOM_NEW %1 READ_ATOM_token
+:READ_SYMBOL
+    CALL :VECTOR_GET READ_SYMBOL_token %2 %3
+    CALL :SYMBOL_NEW %1 READ_SYMBOL_token
     SET /a "%3+=1"
 EXIT /B 0
 
 :READ_NUMBER
-    CALL :VECTOR_GET READ_ATOM_token %2 %3
-    CALL :NUMBER_NEW %1 READ_ATOM_token
+    CALL :VECTOR_GET READ_SYMBOL_token %2 %3
+    CALL :NUMBER_NEW %1 READ_SYMBOL_token
     SET /a "%3+=1"
 EXIT /B 0
 
@@ -872,10 +872,10 @@ EXIT /B 0
     SET /a "%3+=1"
 
     SET "%1=!EMPTY_LIST!"
-    CALL :ATOM_NEW READ_PREFIX_atom%READ_PREFIX_recursion_count% %4
+    CALL :SYMBOL_NEW READ_PREFIX_symbol%READ_PREFIX_recursion_count% %4
     CALL :READ_FORM READ_PREFIX_form%READ_PREFIX_recursion_count% %2 %3
     CALL :CONS %1 READ_PREFIX_form%READ_PREFIX_recursion_count% %1
-    CALL :CONS %1 READ_PREFIX_atom%READ_PREFIX_recursion_count% %1
+    CALL :CONS %1 READ_PREFIX_symbol%READ_PREFIX_recursion_count% %1
 
     SET /a "READ_PREFIX_recursion_count-=1"
 EXIT /B 0
@@ -886,12 +886,12 @@ EXIT /B 0
     SET /a "%3+=1"
 
     SET "%1=!EMPTY_LIST!"
-    CALL :ATOM_NEW READ_PREFIX_atom%READ_PREFIX2_recursion_count% %4
+    CALL :SYMBOL_NEW READ_PREFIX_symbol%READ_PREFIX2_recursion_count% %4
     CALL :READ_FORM READ_PREFIX_form%READ_PREFIX2_recursion_count% %2 %3
     CALL :READ_FORM READ_PREFIX_form2%READ_PREFIX2_recursion_count% %2 %3
     CALL :CONS %1 READ_PREFIX_form%READ_PREFIX2_recursion_count% %1
     CALL :CONS %1 READ_PREFIX_form2%READ_PREFIX2_recursion_count% %1
-    CALL :CONS %1 READ_PREFIX_atom%READ_PREFIX2_recursion_count% %1
+    CALL :CONS %1 READ_PREFIX_symbol%READ_PREFIX2_recursion_count% %1
 
     SET /a "READ_PREFIX2_recursion_count-=1"
 EXIT /B 0
@@ -993,7 +993,7 @@ EXIT /B 0
         GOTO :READ_FORM_EXIT
     )
 
-    CALL :READ_ATOM READ_FORM_form%READ_FORM_recursion_count% %2 %3
+    CALL :READ_SYMBOL READ_FORM_form%READ_FORM_recursion_count% %2 %3
 
 :READ_FORM_EXIT
     SET "%1=!READ_FORM_form%READ_FORM_recursion_count%!"
@@ -1027,9 +1027,9 @@ EXIT /B 0
         EXIT /B 0
     )
 
-    CALL :ATOM? PR_STR_is_atom %2
-    IF "!PR_STR_is_atom!"=="!TRUE!" (
-        CALL :ATOM_TO_STR %1 %2
+    CALL :SYMBOL? PR_STR_is_symbol %2
+    IF "!PR_STR_is_symbol!"=="!TRUE!" (
+        CALL :SYMBOL_TO_STR %1 %2
         SET /a "PR_STR_recursion_count-=1"
         EXIT /B 0
     )
@@ -1165,13 +1165,13 @@ EXIT /B 0
 
 :ENV_SET
     SET "ENV_SET_id=!%1:~1,8191!"
-    CALL :ATOM_TO_STR ENV_SET_key %2
+    CALL :SYMBOL_TO_STR ENV_SET_key %2
     CALL :HASHMAP_INSERT _env_data!ENV_SET_id! ENV_SET_key %3
 EXIT /B 0
 
 :ENV_GET
     SET "ENV_GET_id=!%2:~1,8191!"
-    CALL :ATOM_TO_STR ENV_GET_key %3
+    CALL :SYMBOL_TO_STR ENV_GET_key %3
     CALL :HASHMAP_GET %1 _env_data!ENV_GET_id! ENV_GET_key
     IF "!%1!"=="!NIL!" (
         IF NOT "!_env_outer%ENV_GET_id%!"=="!NIL!" (

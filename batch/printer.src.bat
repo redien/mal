@@ -20,18 +20,18 @@ EXIT /B 0
         EXIT /B 0
     )
 
-    CALL :ATOM? PR_STR_is_atom %2
-    IF "!PR_STR_is_atom!"=="!TRUE!" (
-        CALL :ATOM_TO_STR %1 %2
+    CALL :SYMBOL? PR_STR_is_symbol %2
+    IF "!PR_STR_is_symbol!"=="!TRUE!" (
+        CALL :SYMBOL_TO_STR %1 %2
         SET /a "PR_STR_recursion_count-=1"
         EXIT /B 0
     )
 
-    CALL :MAL_ATOM? PR_STR_is_mal_atom %2
-    IF "!PR_STR_is_mal_atom!"=="!TRUE!" (
-        CALL :MAL_ATOM_DEREF _PR_STR_ast%PR_STR_recursion_count% %2
+    CALL :ATOM? PR_STR_is_atom %2
+    IF "!PR_STR_is_atom!"=="!TRUE!" (
+        CALL :ATOM_DEREF _PR_STR_ast%PR_STR_recursion_count% %2
         CALL :_PR_STR _PR_STR_str%PR_STR_recursion_count% _PR_STR_ast%PR_STR_recursion_count%
-        SET "%1=(atom !_PR_STR_str%PR_STR_recursion_count%!)"
+        SET "%1=(symbol !_PR_STR_str%PR_STR_recursion_count%!)"
         SET /a "PR_STR_recursion_count-=1"
         EXIT /B 0
     )
