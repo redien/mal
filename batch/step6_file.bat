@@ -1814,6 +1814,19 @@ CALL :REP _ _script REPL_env
 SET "_script=(def^! swap^! (fn* (a f & more) (reset^! a (eval (cons f (cons (deref a) more))))))"
 CALL :REP _ _script REPL_env
 
+SET "argv=!EMPTY_LIST!"
+SET "argv_key=!_asterisk!ARGV!_asterisk!"
+SET "arg=!%5!"
+IF NOT "!arg!"=="" CALL :CONS argv arg argv
+SET "arg=!%4!"
+IF NOT "!arg!"=="" CALL :CONS argv arg argv
+SET "arg=!%3!"
+IF NOT "!arg!"=="" CALL :CONS argv arg argv
+SET "arg=!%2!"
+IF NOT "!arg!"=="" CALL :CONS argv arg argv
+CALL :ATOM_NEW argv_key_atom argv_key
+CALL :ENV_SET REPL_env argv_key_atom argv
+
 :REPL
     SET "_input="
     :: prompt the user and assign the user's input to _input.
