@@ -292,6 +292,19 @@ EXIT /B 0
     SET "%1=!VECTOR_MAP_new_vector%VECTOR_MAP_recursion_count%!"
 EXIT /B 0
 
+:VECTOR_TO_LIST
+    CALL :VECTOR_LENGTH VECTOR_TO_LIST_length %2
+    SET "VECTOR_TO_LIST_list=!EMPTY_LIST!"
+    SET /A "VECTOR_TO_LIST_length-=1"
+    FOR /L %%G IN (0, 1, !VECTOR_TO_LIST_length!) DO (
+        SET "VECTOR_TO_LIST_index=%%G"
+        CALL :VECTOR_GET VECTOR_TO_LIST_value %2 VECTOR_TO_LIST_index
+        CALL :CONS VECTOR_TO_LIST_list VECTOR_TO_LIST_value VECTOR_TO_LIST_list
+    )
+    CALL :LIST_REVERSE VECTOR_TO_LIST_list VECTOR_TO_LIST_list
+    SET "%1=!VECTOR_TO_LIST_list!"
+EXIT /B 0
+
 :VECTOR?
     IF "!%2:~0,1!"=="V" (
         SET "%1=!TRUE!"
@@ -548,26 +561,36 @@ EXIT /B 0
 
 
 :EQUAL?
-    IF "!%2!"=="!%3!" (
+    SET "EQUAL?_first=!%2!"
+    SET "EQUAL?_second=!%3!"
+
+    IF "!EQUAL?_first:~0,1!"=="V" (
+        CALL :VECTOR_TO_LIST EQUAL?_first EQUAL?_first
+    )
+    IF "!EQUAL?_second:~0,1!"=="V" (
+        CALL :VECTOR_TO_LIST EQUAL?_second EQUAL?_second
+    )
+
+    IF "!EQUAL?_first!"=="!EQUAL?_second!" (
         SET "%1=!TRUE!"
         EXIT /B 0
     ) ELSE (
-        IF "!%2:~0,1!"=="!%3:~0,1!" (
+        IF "!EQUAL?_first:~0,1!"=="!EQUAL?_second:~0,1!" (
             :: Types are the same
-            IF "!%2:~0,1!"=="A" (
-                CALL :ATOM_EQUAL %1 %2 %3
+            IF "!EQUAL?_first:~0,1!"=="A" (
+                CALL :ATOM_EQUAL %1 EQUAL?_first EQUAL?_second
                 EXIT /B 0
             )
-            IF "!%2:~0,1!"=="N" (
-                CALL :NUMBER_EQUAL %1 %2 %3
+            IF "!EQUAL?_first:~0,1!"=="N" (
+                CALL :NUMBER_EQUAL %1 EQUAL?_first EQUAL?_second
                 EXIT /B 0
             )
-            IF "!%2:~0,1!"=="S" (
-                CALL :STRING_EQUAL %1 %2 %3
+            IF "!EQUAL?_first:~0,1!"=="S" (
+                CALL :STRING_EQUAL %1 EQUAL?_first EQUAL?_second
                 EXIT /B 0
             )
-            IF "!%2:~0,1!"=="L" (
-                CALL :LIST_EQUAL %1 %2 %3
+            IF "!EQUAL?_first:~0,1!"=="L" (
+                CALL :LIST_EQUAL %1 EQUAL?_first EQUAL?_second
                 EXIT /B 0
             )
         )
