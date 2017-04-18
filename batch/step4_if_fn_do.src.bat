@@ -298,42 +298,28 @@ EXIT /B 0
     CALL :VECTOR? MAL_LAMBDA_params_is_vector MAL_LAMBDA_params
     IF "!MAL_LAMBDA_params_is_vector!"=="!TRUE!" (
         CALL :VECTOR_LENGTH MAL_LAMBDA_params_length MAL_LAMBDA_params
+        CALL :VECTOR_TO_LIST MAL_LAMBDA_params MAL_LAMBDA_params
     ) ELSE (
         CALL :LIST_COUNT MAL_LAMBDA_params_length MAL_LAMBDA_params
     )
 
     CALL :CALL_STACK_POP MAL_LAMBDA_args
-    CALL :LIST_COUNT MAL_LAMBDA_args_length MAL_LAMBDA_args
-    SET "MAL_LAMBDA_args_index=0"
 :_MAL_LAMBDA_NEXT_ARG
-    IF !MAL_LAMBDA_args_index! LEQ !MAL_LAMBDA_args_length! (
-        IF "!MAL_LAMBDA_params_is_vector!"=="!TRUE!" (
-            CALL :VECTOR_GET MAL_LAMBDA_param MAL_LAMBDA_params MAL_LAMBDA_args_index
-        ) ELSE (
-            CALL :FIRST MAL_LAMBDA_param MAL_LAMBDA_params
-            CALL :REST MAL_LAMBDA_params MAL_LAMBDA_params
-        )
+    IF NOT "!MAL_LAMBDA_params!"=="!EMPTY_LIST!" (
+        CALL :FIRST MAL_LAMBDA_param MAL_LAMBDA_params
+        CALL :REST MAL_LAMBDA_params MAL_LAMBDA_params
 
         CALL :ATOM_TO_STR MAL_LAMBDA_param_str MAL_LAMBDA_param
         IF "!MAL_LAMBDA_param_str!"=="!_ampersand!" (
-            SET /A "MAL_LAMBDA_args_index+=1"
-            IF "!MAL_LAMBDA_params_is_vector!"=="!TRUE!" (
-                CALL :VECTOR_GET MAL_LAMBDA_param MAL_LAMBDA_params MAL_LAMBDA_args_index
-            ) ELSE (
-                CALL :FIRST MAL_LAMBDA_param MAL_LAMBDA_params
-            )
-            SET "MAL_LAMBDA_argument=!MAL_LAMBDA_args!"
-            SET "MAL_LAMBDA_args_index=!MAL_LAMBDA_args_length!"
+            CALL :FIRST MAL_LAMBDA_param MAL_LAMBDA_params
+            CALL :ENV_SET MAL_LAMBDA_env%MAL_LAMBDA_recursion_count% MAL_LAMBDA_param MAL_LAMBDA_args
 
         ) ELSE (
             CALL :FIRST MAL_LAMBDA_argument MAL_LAMBDA_args
             CALL :REST MAL_LAMBDA_args MAL_LAMBDA_args
+            CALL :ENV_SET MAL_LAMBDA_env%MAL_LAMBDA_recursion_count% MAL_LAMBDA_param MAL_LAMBDA_argument
+            GOTO :_MAL_LAMBDA_NEXT_ARG
         )
-
-        CALL :ENV_SET MAL_LAMBDA_env%MAL_LAMBDA_recursion_count% MAL_LAMBDA_param MAL_LAMBDA_argument
-
-        SET /A "MAL_LAMBDA_args_index+=1"
-        GOTO :_MAL_LAMBDA_NEXT_ARG
     )
 
     CALL :EVAL MAL_LAMBDA_result MAL_LAMBDA_body%MAL_LAMBDA_recursion_count% MAL_LAMBDA_env%MAL_LAMBDA_recursion_count%
