@@ -81,6 +81,7 @@ EXIT /B 0
     IF "!%2!"=="," (SET "%1=!FALSE!" & EXIT /B 0)
     IF "!%2!"==" " (SET "%1=!FALSE!" & EXIT /B 0)
     IF "!%2!"==";" (SET "%1=!FALSE!" & EXIT /B 0)
+    IF "!%2!"=="!_newline!" (SET "%1=!FALSE!" & EXIT /B 0)
     IF "!%2!"=="!_doublequote!" (SET "%1=!FALSE!" & EXIT /B 0)
 EXIT /B 0
 
@@ -148,10 +149,15 @@ EXIT /B 0
     )
 EXIT /B 0
 
+:NOT_END_OF_LINE
+    SET "%1=!TRUE!"
+    IF "!%2!"=="!_newline!" (SET "%1=!FALSE!" & EXIT /B 0)
+EXIT /B 0
+
 :SKIP_COMMENT
-    :: If we encounter a comment, skip the rest by emptying the buffer
+    :: If we encounter a comment, skip the rest of the line
     IF "!%1:~0,1!"==";" (
-        SET "%1="
+        CALL :READ_WHILE _ %1 :NOT_END_OF_LINE
     )
 EXIT /B 0
 
@@ -186,7 +192,11 @@ EXIT /B 0
         GOTO :TOKENIZER_LOOP
     )
 
-    CALL :SKIP_COMMENT TOKENIZER_buffer
+    IF "!TOKENIZER_buffer:~0,1!"==";" (
+        :: If we encounter a comment, skip the rest of the line
+        CALL :READ_WHILE _ TOKENIZER_buffer :NOT_END_OF_LINE
+        GOTO :TOKENIZER_LOOP
+    )
 
     CALL :READ_WHILE TOKENIZER_token TOKENIZER_buffer :IS_ATOM_CHARACTER
     IF NOT "!TOKENIZER_token!"=="" (

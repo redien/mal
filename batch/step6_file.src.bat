@@ -55,9 +55,7 @@ SET "_script=(def^! not (fn* (a) (if a false true)))"
 CALL :REP _ _script REPL_env
 SET "_script=(def^! load-file (fn* (f) (eval (read-string (str ^"(do ^" (slurp f) ^")^")))))"
 CALL :REP _ _script REPL_env
-SET "_script=(def^! apply (fn* (f args) (eval (cons f args))))"
-CALL :REP _ _script REPL_env
-SET "_script=(def^! swap^! (fn* (a f & more) (reset^! a (apply f (cons (deref a) more)))))"
+SET "_script=(def^! swap^! (fn* (a f & more) (reset^! a (eval (cons f (cons (deref a) more))))))"
 CALL :REP _ _script REPL_env
 
 :REPL
