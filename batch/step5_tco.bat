@@ -393,6 +393,33 @@ EXIT /B 0
 EXIT /B 0
 
 
+
+:MAL_ATOM_NEW
+    SET /a "_mal_atom_counter+=1"
+    SET "_mal_atom_value_!_mal_atom_counter!=!%2!"
+    SET "%1=T!_mal_atom_counter!"
+EXIT /B 0
+
+:MAL_ATOM_DEREF
+    SET "_ref=_mal_atom_value_!%2:~1,8191!"
+    SET "%1=!%_ref%!"
+EXIT /B 0
+
+:MAL_ATOM_RESET
+    SET "_ref=_mal_atom_value_!%2:~1,8191!"
+    SET "%_ref%=!%3!"
+    SET "%1=!%3!"
+EXIT /B 0
+
+:MAL_ATOM?
+    IF "!%2:~0,1!"=="T" (
+        SET "%1=!TRUE!"
+    ) ELSE (
+        SET "%1=!FALSE!"
+    )
+EXIT /B 0
+
+
 :FUNCTION_NEW
     SET /a "_function_counter+=1"
     SET "_function_name_!_function_counter!=!%2!"
@@ -1140,6 +1167,15 @@ EXIT /B 0
         EXIT /B 0
     )
 
+    CALL :MAL_ATOM? PR_STR_is_mal_atom %2
+    IF "!PR_STR_is_mal_atom!"=="!TRUE!" (
+        CALL :MAL_ATOM_DEREF _PR_STR_ast%PR_STR_recursion_count% %2
+        CALL :_PR_STR _PR_STR_str%PR_STR_recursion_count% _PR_STR_ast%PR_STR_recursion_count%
+        SET "%1=(atom !_PR_STR_str%PR_STR_recursion_count%!)"
+        SET /a "PR_STR_recursion_count-=1"
+        EXIT /B 0
+    )
+
     CALL :NUMBER? PR_STR_is_number %2
     IF "!PR_STR_is_number!"=="!TRUE!" (
         CALL :NUMBER_TO_STR %1 %2
@@ -1302,6 +1338,23 @@ EXIT /B 0
     ) ELSE (
         SET "%1=!ARGS_OR_ERROR_args!"
     )
+EXIT /B 0
+
+:MAL_CONS
+    CALL :ARGS_OR_ERROR MAL_CONS_args 2
+    CALL :ERROR? MAL_CONS_args_is_error MAL_CONS_args
+    IF "!MAL_CONS_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH MAL_CONS_args
+        EXIT /B 0
+    )
+
+    CALL :FIRST MAL_CONS_first MAL_CONS_args
+    CALL :REST MAL_CONS_args MAL_CONS_args
+    CALL :FIRST MAL_CONS_second MAL_CONS_args
+
+    CALL :CONS MAL_CONS_list MAL_CONS_first MAL_CONS_second
+
+    CALL :CALL_STACK_PUSH MAL_CONS_list
 EXIT /B 0
 
 :MAL_NUMBER_ADD
@@ -1636,6 +1689,60 @@ EXIT /B 0
 
     CALL :STRING_NEW MAL_SLURP_string MAL_SLURP_str
     CALL :CALL_STACK_PUSH MAL_SLURP_string
+EXIT /B 0
+
+:MAL_MAL_ATOM
+    CALL :ARGS_OR_ERROR MAL_MAL_ATOM_args 1
+    CALL :ERROR? MAL_MAL_ATOM_args_is_error MAL_MAL_ATOM_args
+    IF "!MAL_MAL_ATOM_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH MAL_MAL_ATOM_args
+        EXIT /B 0
+    )
+
+    CALL :FIRST MAL_MAL_ATOM_first MAL_MAL_ATOM_args
+    CALL :MAL_ATOM_NEW MAL_MAL_ATOM_result MAL_MAL_ATOM_first
+    CALL :CALL_STACK_PUSH MAL_MAL_ATOM_result
+EXIT /B 0
+
+:MAL_MAL_ATOM?
+    CALL :ARGS_OR_ERROR MAL_MAL_ATOM?_args 1
+    CALL :ERROR? MAL_MAL_ATOM?_args_is_error MAL_MAL_ATOM?_args
+    IF "!MAL_MAL_ATOM?_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH MAL_MAL_ATOM?_args
+        EXIT /B 0
+    )
+
+    CALL :FIRST MAL_MAL_ATOM?_first MAL_MAL_ATOM?_args
+    CALL :MAL_ATOM? MAL_MAL_ATOM?_result MAL_MAL_ATOM?_first
+    CALL :CALL_STACK_PUSH MAL_MAL_ATOM?_result
+EXIT /B 0
+
+:MAL_MAL_ATOM_DEREF
+    CALL :ARGS_OR_ERROR MAL_MAL_ATOM_DEREF_args 1
+    CALL :ERROR? MAL_MAL_ATOM_DEREF_args_is_error MAL_MAL_ATOM_DEREF_args
+    IF "!MAL_MAL_ATOM_DEREF_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH MAL_MAL_ATOM_DEREF_args
+        EXIT /B 0
+    )
+
+    CALL :FIRST MAL_MAL_ATOM_DEREF_first MAL_MAL_ATOM_DEREF_args
+    CALL :MAL_ATOM_DEREF MAL_MAL_ATOM_DEREF_result MAL_MAL_ATOM_DEREF_first
+    CALL :CALL_STACK_PUSH MAL_MAL_ATOM_DEREF_result
+EXIT /B 0
+
+:MAL_MAL_ATOM_RESET
+    CALL :ARGS_OR_ERROR MAL_MAL_ATOM_RESET_args 2
+    CALL :ERROR? MAL_MAL_ATOM_RESET_args_is_error MAL_MAL_ATOM_RESET_args
+    IF "!MAL_MAL_ATOM_RESET_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH MAL_MAL_ATOM_RESET_args
+        EXIT /B 0
+    )
+
+    CALL :FIRST MAL_MAL_ATOM_RESET_first MAL_MAL_ATOM_RESET_args
+    CALL :REST MAL_MAL_ATOM_RESET_args MAL_MAL_ATOM_RESET_args
+    CALL :FIRST MAL_MAL_ATOM_RESET_second MAL_MAL_ATOM_RESET_args
+    CALL :MAL_ATOM_RESET MAL_MAL_ATOM_RESET_result MAL_MAL_ATOM_RESET_first MAL_MAL_ATOM_RESET_second
+    CALL :CALL_STACK_PUSH MAL_MAL_ATOM_RESET_result
 EXIT /B 0
 
 :DEFINE_FUN

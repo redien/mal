@@ -393,6 +393,33 @@ EXIT /B 0
 EXIT /B 0
 
 
+
+:MAL_ATOM_NEW
+    SET /a "_mal_atom_counter+=1"
+    SET "_mal_atom_value_!_mal_atom_counter!=!%2!"
+    SET "%1=T!_mal_atom_counter!"
+EXIT /B 0
+
+:MAL_ATOM_DEREF
+    SET "_ref=_mal_atom_value_!%2:~1,8191!"
+    SET "%1=!%_ref%!"
+EXIT /B 0
+
+:MAL_ATOM_RESET
+    SET "_ref=_mal_atom_value_!%2:~1,8191!"
+    SET "%_ref%=!%3!"
+    SET "%1=!%3!"
+EXIT /B 0
+
+:MAL_ATOM?
+    IF "!%2:~0,1!"=="T" (
+        SET "%1=!TRUE!"
+    ) ELSE (
+        SET "%1=!FALSE!"
+    )
+EXIT /B 0
+
+
 :FUNCTION_NEW
     SET /a "_function_counter+=1"
     SET "_function_name_!_function_counter!=!%2!"
@@ -1136,6 +1163,15 @@ EXIT /B 0
     CALL :ATOM? PR_STR_is_atom %2
     IF "!PR_STR_is_atom!"=="!TRUE!" (
         CALL :ATOM_TO_STR %1 %2
+        SET /a "PR_STR_recursion_count-=1"
+        EXIT /B 0
+    )
+
+    CALL :MAL_ATOM? PR_STR_is_mal_atom %2
+    IF "!PR_STR_is_mal_atom!"=="!TRUE!" (
+        CALL :MAL_ATOM_DEREF _PR_STR_ast%PR_STR_recursion_count% %2
+        CALL :_PR_STR _PR_STR_str%PR_STR_recursion_count% _PR_STR_ast%PR_STR_recursion_count%
+        SET "%1=(atom !_PR_STR_str%PR_STR_recursion_count%!)"
         SET /a "PR_STR_recursion_count-=1"
         EXIT /B 0
     )

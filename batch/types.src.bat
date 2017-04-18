@@ -332,6 +332,33 @@ EXIT /B 0
 EXIT /B 0
 
 
+
+:MAL_ATOM_NEW
+    SET /a "_mal_atom_counter+=1"
+    SET "_mal_atom_value_!_mal_atom_counter!=!%2!"
+    SET "%1=T!_mal_atom_counter!"
+EXIT /B 0
+
+:MAL_ATOM_DEREF
+    SET "_ref=_mal_atom_value_!%2:~1,8191!"
+    SET "%1=!%_ref%!"
+EXIT /B 0
+
+:MAL_ATOM_RESET
+    SET "_ref=_mal_atom_value_!%2:~1,8191!"
+    SET "%_ref%=!%3!"
+    SET "%1=!%3!"
+EXIT /B 0
+
+:MAL_ATOM?
+    IF "!%2:~0,1!"=="T" (
+        SET "%1=!TRUE!"
+    ) ELSE (
+        SET "%1=!FALSE!"
+    )
+EXIT /B 0
+
+
 :FUNCTION_NEW
     SET /a "_function_counter+=1"
     SET "_function_name_!_function_counter!=!%2!"

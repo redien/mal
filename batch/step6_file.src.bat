@@ -18,6 +18,8 @@ CALL :DEFINE_FUN REPL_env _greater_than_equal :MAL_GREATER_THAN_OR_EQUAL
 CALL :DEFINE_FUN REPL_env _lower_than_equal :MAL_LOWER_THAN_OR_EQUAL
 CALL :DEFINE_FUN REPL_env _equal :MAL_EQUAL
 
+SET "_name=cons"
+CALL :DEFINE_FUN REPL_env _name :MAL_CONS
 SET "_name=str"
 CALL :DEFINE_FUN REPL_env _name :MAL_STR
 SET "_name=prn"
@@ -40,10 +42,22 @@ SET "_name=eval"
 CALL :DEFINE_FUN REPL_env _name :MAL_EVAL
 SET "_name=slurp"
 CALL :DEFINE_FUN REPL_env _name :MAL_SLURP
+SET "_name=atom"
+CALL :DEFINE_FUN REPL_env _name :MAL_MAL_ATOM
+SET "_name=atom?"
+CALL :DEFINE_FUN REPL_env _name :MAL_MAL_ATOM?
+SET "_name=deref"
+CALL :DEFINE_FUN REPL_env _name :MAL_MAL_ATOM_DEREF
+SET "_name=reset^!"
+CALL :DEFINE_FUN REPL_env _name :MAL_MAL_ATOM_RESET
 
 SET "_script=(def^! not (fn* (a) (if a false true)))"
 CALL :REP _ _script REPL_env
 SET "_script=(def^! load-file (fn* (f) (eval (read-string (str ^"(do ^" (slurp f) ^")^")))))"
+CALL :REP _ _script REPL_env
+SET "_script=(def^! apply (fn* (f args) (eval (cons f args))))"
+CALL :REP _ _script REPL_env
+SET "_script=(def^! swap^! (fn* (a f & more) (reset^! a (apply f (cons (deref a) more)))))"
 CALL :REP _ _script REPL_env
 
 :REPL
