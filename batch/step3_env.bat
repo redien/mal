@@ -707,6 +707,7 @@ EXIT /B 0
     SET "%1=!FALSE!"
     IF "!%2!"=="," (SET "%1=!TRUE!" & EXIT /B 0)
     IF "!%2!"==" " (SET "%1=!TRUE!" & EXIT /B 0)
+    IF "!%2!"=="!_newline!" (SET "%1=!TRUE!" & EXIT /B 0)
 EXIT /B 0
 
 :IS_SPECIAL_CHARACTER

@@ -288,3 +288,58 @@ EXIT /B 0
 
 :MAL_LIST
 EXIT /B 0
+
+:MAL_READ_STRING
+    CALL :ARGS_OR_ERROR MAL_READ_STRING_args 1
+    CALL :ERROR? MAL_READ_STRING_args_is_error MAL_READ_STRING_args
+    IF "!MAL_READ_STRING_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH MAL_READ_STRING_args
+        EXIT /B 0
+    )
+
+    CALL :FIRST MAL_READ_STRING_first MAL_READ_STRING_args
+    CALL :STRING_TO_STR MAL_READ_STRING_str MAL_READ_STRING_first
+    CALL :READ_STR MAL_READ_STRING_result MAL_READ_STRING_str
+    CALL :CALL_STACK_PUSH MAL_READ_STRING_result
+EXIT /B 0
+
+:MAL_EVAL
+    CALL :ARGS_OR_ERROR MAL_EVAL_args 1
+    CALL :ERROR? MAL_EVAL_args_is_error MAL_EVAL_args
+    IF "!MAL_EVAL_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH MAL_EVAL_args
+        EXIT /B 0
+    )
+
+    CALL :FIRST MAL_EVAL_first MAL_EVAL_args
+    CALL :EVAL MAL_EVAL_result MAL_EVAL_first REPL_env
+    CALL :CALL_STACK_PUSH MAL_EVAL_result
+EXIT /B 0
+
+:MAL_SLURP
+    CALL :ARGS_OR_ERROR MAL_SLURP_args 1
+    CALL :ERROR? MAL_SLURP_args_is_error MAL_SLURP_args
+    IF "!MAL_SLURP_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH MAL_SLURP_args
+        EXIT /B 0
+    )
+
+    CALL :FIRST MAL_SLURP_first MAL_SLURP_args
+    CALL :STRING_TO_STR MAL_SLURP_filename MAL_SLURP_first
+    SET "MAL_SLURP_filename=!MAL_SLURP_filename:^/=^\!"
+    SET "MAL_SLURP_str="
+
+    for /f "delims=" %%n in ('cmd /c C:\Windows\System32\find.exe /C /V "" %MAL_SLURP_filename%') do set "len=%%n"
+    set "len=!len:*: =!"
+
+    <%MAL_SLURP_filename% (
+      for /l %%l in (1 1 !len!) do (
+        set "line="
+        set /p "line="
+        set "MAL_SLURP_str=!MAL_SLURP_str!!line!!_newline!"
+      )
+    )
+
+    CALL :STRING_NEW MAL_SLURP_string MAL_SLURP_str
+    CALL :CALL_STACK_PUSH MAL_SLURP_string
+EXIT /B 0
