@@ -6,4 +6,5 @@ copy /b tmp_comment.bat+header.src.bat+types.src.bat+strings.src.bat+reader.src.
 copy /b tmp_base.bat+step2_eval.src.bat step2_eval.bat > nul
 copy /b tmp_base.bat+env.src.bat+step3_env.src.bat step3_env.bat > nul
 copy /b tmp_base.bat+env.src.bat+core.src.bat+step4_if_fn_do.src.bat step4_if_fn_do.bat > nul
+copy /b tmp_base.bat+env.src.bat+core.src.bat+step5_tco.src.bat step5_tco.bat > nul
 del tmp*.bat > nul
