@@ -173,25 +173,6 @@ EXIT /B 0
     SET /a "EVAL_DEF_LIST_recursion_count-=1"
 EXIT /B 0
 
-:EVAL_DEF_VECTOR
-    SET /a "EVAL_DEF_VECTOR_recursion_count+=1"
-
-    CALL :VECTOR_LENGTH EVAL_DEF_VECTOR_vector_length %2
-    set /a "EVAL_DEF_VECTOR_vector_length-=1"
-    FOR /L %%G IN (0, 2, !EVAL_DEF_VECTOR_vector_length!) DO (
-        set "EVAL_DEF_VECTOR_index=%%G"
-        CALL :VECTOR_GET EVAL_DEF_VECTOR_key%EVAL_DEF_VECTOR_recursion_count% %2 EVAL_DEF_VECTOR_index
-        set /a "EVAL_DEF_VECTOR_index+=1"
-        CALL :VECTOR_GET EVAL_DEF_VECTOR_value%EVAL_DEF_VECTOR_recursion_count% %2 EVAL_DEF_VECTOR_index
-
-        CALL :EVAL EVAL_DEF_VECTOR_evaluated_value%EVAL_DEF_VECTOR_recursion_count% EVAL_DEF_VECTOR_value%EVAL_DEF_VECTOR_recursion_count% %1
-
-        CALL :ENV_SET %1 EVAL_DEF_VECTOR_key%EVAL_DEF_VECTOR_recursion_count% EVAL_DEF_VECTOR_evaluated_value%EVAL_DEF_VECTOR_recursion_count%
-    )
-
-    SET /a "EVAL_DEF_VECTOR_recursion_count-=1"
-EXIT /B 0
-
 :EVAL
     SET /a "EVAL_recursion_count+=1"
 
@@ -225,12 +206,12 @@ EXIT /B 0
 
                 CALL :FIRST EVAL_def_list%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
 
-                CALL :LIST? EVAL_is_list EVAL_def_list%EVAL_recursion_count%
-                IF "!EVAL_is_list!"=="!TRUE!" (
-                    CALL :EVAL_DEF_LIST EVAL_env%EVAL_recursion_count% EVAL_def_list%EVAL_recursion_count%
-                ) ELSE (
-                    CALL :EVAL_DEF_VECTOR EVAL_env%EVAL_recursion_count% EVAL_def_list%EVAL_recursion_count%
+                CALL :VECTOR? EVAL_is_vector EVAL_def_list%EVAL_recursion_count%
+                IF "!EVAL_is_vector!"=="!TRUE!" (
+                    CALL :VECTOR_TO_LIST EVAL_def_list%EVAL_recursion_count% EVAL_def_list%EVAL_recursion_count%
                 )
+
+                CALL :EVAL_DEF_LIST EVAL_env%EVAL_recursion_count% EVAL_def_list%EVAL_recursion_count%
 
                 CALL :REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
                 CALL :FIRST EVAL_value%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
