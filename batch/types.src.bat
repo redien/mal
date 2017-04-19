@@ -184,6 +184,23 @@ EXIT /B 0
     CALL :LIST_REVERSE %1 LIST_WITHOUT_LAST_list
 EXIT /B 0
 
+:LIST_CONCAT
+    CALL :LIST_REVERSE LIST_CONCAT_first %2
+    SET "LIST_CONCAT_second=!%3!"
+:LIST_CONCAT_RECUR
+    IF "!LIST_CONCAT_first!"=="!EMPTY_LIST!" (
+        SET "%1=!LIST_CONCAT_second!"
+        EXIT /B 0
+    )
+
+    CALL :FIRST LIST_CONCAT_item LIST_CONCAT_first
+    CALL :REST LIST_CONCAT_first LIST_CONCAT_first
+
+    CALL :CONS LIST_CONCAT_second LIST_CONCAT_item LIST_CONCAT_second
+
+    GOTO :LIST_CONCAT_RECUR
+EXIT /B 0
+
 :VECTOR_NEW
     SET /a "_vector_counter+=1"
     SET "_vector_length_!_vector_counter!=0"
