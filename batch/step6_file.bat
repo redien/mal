@@ -1379,6 +1379,11 @@ EXIT /B 0
     CALL :REST MAL_CONS_args MAL_CONS_args
     CALL :FIRST MAL_CONS_second MAL_CONS_args
 
+    CALL :VECTOR? MAL_CONS_is_vector MAL_CONS_second
+    IF "!MAL_CONS_is_vector!"=="!TRUE!" (
+        CALL :VECTOR_TO_LIST MAL_CONS_second MAL_CONS_second
+    )
+
     CALL :CONS MAL_CONS_list MAL_CONS_first MAL_CONS_second
 
     CALL :CALL_STACK_PUSH MAL_CONS_list
