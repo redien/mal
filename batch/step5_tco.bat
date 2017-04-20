@@ -1790,6 +1790,11 @@ EXIT /B 0
     CALL :FIRST MAL_CONCAT_partial_list MAL_CONCAT_args
     CALL :REST MAL_CONCAT_args MAL_CONCAT_args
 
+    CALL :VECTOR? MAL_CONCAT_is_vector MAL_CONCAT_partial_list
+    IF "!MAL_CONCAT_is_vector!"=="!TRUE!" (
+        CALL :VECTOR_TO_LIST MAL_CONCAT_partial_list MAL_CONCAT_partial_list
+    )
+
     CALL :LIST_CONCAT MAL_CONCAT_list MAL_CONCAT_list MAL_CONCAT_partial_list
     GOTO :MAL_CONCAT_RECUR
 EXIT /B 0
