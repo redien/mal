@@ -10,4 +10,5 @@ copy /b tmp_env_core.bat+step4_if_fn_do.src.bat step4_if_fn_do.bat > nul
 copy /b tmp_env_core.bat+step5_tco.src.bat step5_tco.bat > nul
 copy /b tmp_env_core.bat+step6_file.src.bat step6_file.bat > nul
 copy /b tmp_env_core.bat+step7_quote.src.bat step7_quote.bat > nul
+copy /b tmp_env_core.bat+step8_macros.src.bat step8_macros.bat > nul
 del tmp*.bat > nul

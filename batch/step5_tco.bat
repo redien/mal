@@ -443,6 +443,7 @@ EXIT /B 0
     SET "_function_env_!_function_counter!=!%3!"
     SET "_function_params_!_function_counter!=!%4!"
     SET "_function_body_!_function_counter!=!%5!"
+    SET "_function_is_macro_!_function_counter!=!FALSE!"
     SET "%1=F!_function_counter!"
 EXIT /B 0
 
@@ -454,6 +455,16 @@ EXIT /B 0
 :FUNCTION_GET_ENV
     SET "_ref=_function_env_!%2:~1,8191!"
     SET "%1=!%_ref%!"
+EXIT /B 0
+
+:FUNCTION_MACRO?
+    SET "_ref=_function_is_macro_!%2:~1,8191!"
+    SET "%1=!%_ref%!"
+EXIT /B 0
+
+:FUNCTION_SET_IS_MACRO
+    SET "_ref=_function_is_macro_!%1:~1,8191!"
+    SET "%_ref%=!%2!"
 EXIT /B 0
 
 :FUNCTION_GET_PARAMS
