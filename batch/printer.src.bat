@@ -96,8 +96,8 @@ EXIT /B 0
 :_PR_STR_LIST_LOOP
         CALL :LIST_EMPTY? _PR_STR_is_empty _PR_STR_tail%PR_STR_recursion_count%
         IF "!_PR_STR_is_empty!"=="!FALSE!" (
-            CALL :FIRST _PR_STR_form _PR_STR_tail%PR_STR_recursion_count%
-            CALL :REST _PR_STR_tail%PR_STR_recursion_count% _PR_STR_tail%PR_STR_recursion_count%
+            CALL :LIST_FIRST _PR_STR_form _PR_STR_tail%PR_STR_recursion_count%
+            CALL :LIST_REST _PR_STR_tail%PR_STR_recursion_count% _PR_STR_tail%PR_STR_recursion_count%
 
             CALL :_PR_STR PR_STR_str%PR_STR_recursion_count% _PR_STR_form %3
 

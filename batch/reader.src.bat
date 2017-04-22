@@ -229,7 +229,7 @@ EXIT /B 0
     )
 
     CALL :READ_FORM form%READ_LIST_recursion_count% %2 %3
-    CALL :CONS %1 form%READ_LIST_recursion_count% %1
+    CALL :LIST_CONS %1 form%READ_LIST_recursion_count% %1
 
     GOTO :READ_LIST_LOOP
 EXIT /B 0
@@ -324,8 +324,8 @@ EXIT /B 0
     SET "%1=!EMPTY_LIST!"
     CALL :SYMBOL_NEW READ_PREFIX_symbol%READ_PREFIX_recursion_count% %4
     CALL :READ_FORM READ_PREFIX_form%READ_PREFIX_recursion_count% %2 %3
-    CALL :CONS %1 READ_PREFIX_form%READ_PREFIX_recursion_count% %1
-    CALL :CONS %1 READ_PREFIX_symbol%READ_PREFIX_recursion_count% %1
+    CALL :LIST_CONS %1 READ_PREFIX_form%READ_PREFIX_recursion_count% %1
+    CALL :LIST_CONS %1 READ_PREFIX_symbol%READ_PREFIX_recursion_count% %1
 
     SET /a "READ_PREFIX_recursion_count-=1"
 EXIT /B 0
@@ -339,9 +339,9 @@ EXIT /B 0
     CALL :SYMBOL_NEW READ_PREFIX_symbol%READ_PREFIX2_recursion_count% %4
     CALL :READ_FORM READ_PREFIX_form%READ_PREFIX2_recursion_count% %2 %3
     CALL :READ_FORM READ_PREFIX_form2%READ_PREFIX2_recursion_count% %2 %3
-    CALL :CONS %1 READ_PREFIX_form%READ_PREFIX2_recursion_count% %1
-    CALL :CONS %1 READ_PREFIX_form2%READ_PREFIX2_recursion_count% %1
-    CALL :CONS %1 READ_PREFIX_symbol%READ_PREFIX2_recursion_count% %1
+    CALL :LIST_CONS %1 READ_PREFIX_form%READ_PREFIX2_recursion_count% %1
+    CALL :LIST_CONS %1 READ_PREFIX_form2%READ_PREFIX2_recursion_count% %1
+    CALL :LIST_CONS %1 READ_PREFIX_symbol%READ_PREFIX2_recursion_count% %1
 
     SET /a "READ_PREFIX2_recursion_count-=1"
 EXIT /B 0

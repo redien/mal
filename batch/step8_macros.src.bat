@@ -63,13 +63,13 @@ CALL :REP _ _script REPL_env
 SET "argv=!EMPTY_LIST!"
 SET "argv_key=!_asterisk!ARGV!_asterisk!"
 SET "arg=!%5!"
-IF NOT "!arg!"=="" CALL :CONS argv arg argv
+IF NOT "!arg!"=="" CALL :LIST_CONS argv arg argv
 SET "arg=!%4!"
-IF NOT "!arg!"=="" CALL :CONS argv arg argv
+IF NOT "!arg!"=="" CALL :LIST_CONS argv arg argv
 SET "arg=!%3!"
-IF NOT "!arg!"=="" CALL :CONS argv arg argv
+IF NOT "!arg!"=="" CALL :LIST_CONS argv arg argv
 SET "arg=!%2!"
-IF NOT "!arg!"=="" CALL :CONS argv arg argv
+IF NOT "!arg!"=="" CALL :LIST_CONS argv arg argv
 CALL :SYMBOL_NEW argv_key_symbol argv_key
 CALL :ENV_SET REPL_env argv_key_symbol argv
 
@@ -142,11 +142,11 @@ EXIT /B 0
 
     SET "EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%=!%2!"
 :_EVAL_DEF_LIST
-    CALL :FIRST EVAL_DEF_LIST_key%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%
-    CALL :REST EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%
+    CALL :LIST_FIRST EVAL_DEF_LIST_key%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%
+    CALL :LIST_REST EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%
 
-    CALL :FIRST EVAL_DEF_LIST_value%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%
-    CALL :REST EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%
+    CALL :LIST_FIRST EVAL_DEF_LIST_value%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%
+    CALL :LIST_REST EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%
 
     CALL :EVAL EVAL_DEF_LIST_evaluated_value%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_value%EVAL_DEF_LIST_recursion_count% %1
 
@@ -173,15 +173,15 @@ EXIT /B 0
             GOTO :EVAL_EXIT
         )
 
-        CALL :FIRST EVAL_first_form%EVAL_recursion_count% EVAL_ast%EVAL_recursion_count%
-        CALL :REST EVAL_rest%EVAL_recursion_count% EVAL_ast%EVAL_recursion_count%
+        CALL :LIST_FIRST EVAL_first_form%EVAL_recursion_count% EVAL_ast%EVAL_recursion_count%
+        CALL :LIST_REST EVAL_rest%EVAL_recursion_count% EVAL_ast%EVAL_recursion_count%
         CALL :SYMBOL? EVAL_is_symbol%EVAL_recursion_count% EVAL_first_form%EVAL_recursion_count%
         IF "!EVAL_is_symbol%EVAL_recursion_count%!"=="!TRUE!" (
             CALL :SYMBOL_TO_STR EVAL_first_symbol_str%EVAL_recursion_count% EVAL_first_form%EVAL_recursion_count%
             IF "!EVAL_first_symbol_str%EVAL_recursion_count%!"=="fn*" (
-                CALL :FIRST EVAL_params%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
-                CALL :REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
-                CALL :FIRST EVAL_body%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :LIST_FIRST EVAL_params%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :LIST_REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :LIST_FIRST EVAL_body%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
 
                 SET "EVAL_lambda_function%EVAL_recursion_count%=:MAL_LAMBDA"
                 CALL :FUNCTION_NEW %1 EVAL_lambda_function%EVAL_recursion_count% EVAL_env%EVAL_recursion_count% EVAL_params%EVAL_recursion_count% EVAL_body%EVAL_recursion_count%
@@ -198,9 +198,9 @@ EXIT /B 0
             )
 
             IF "!EVAL_function_or_macro%EVAL_recursion_count%!"=="!TRUE!" (
-                CALL :FIRST EVAL_key%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
-                CALL :REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
-                CALL :FIRST EVAL_value%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :LIST_FIRST EVAL_key%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :LIST_REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :LIST_FIRST EVAL_value%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
                 CALL :EVAL EVAL_evaluated_value%EVAL_recursion_count% EVAL_value%EVAL_recursion_count% EVAL_env%EVAL_recursion_count%
                 IF "!EVAL_first_symbol_str%EVAL_recursion_count%!"=="defmacro^!" (
                     CALL :FUNCTION_SET_IS_MACRO EVAL_evaluated_value%EVAL_recursion_count% TRUE
@@ -211,24 +211,24 @@ EXIT /B 0
             )
 
             IF "!EVAL_first_symbol_str%EVAL_recursion_count%!"=="quote" (
-                CALL :FIRST %1 EVAL_rest%EVAL_recursion_count%
+                CALL :LIST_FIRST %1 EVAL_rest%EVAL_recursion_count%
                 GOTO :EVAL_EXIT
             )
 
             IF "!EVAL_first_symbol_str%EVAL_recursion_count%!"=="quasiquote" (
-                CALL :FIRST EVAL_expression%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :LIST_FIRST EVAL_expression%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
                 CALL :QUASIQUOTE EVAL_ast%EVAL_recursion_count% EVAL_expression%EVAL_recursion_count%
                 GOTO :EVAL_RECUR
             )
 
             IF "!EVAL_first_symbol_str%EVAL_recursion_count%!"=="macroexpand" (
-                CALL :FIRST EVAL_expression%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :LIST_FIRST EVAL_expression%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
                 CALL :MACRO_EXPAND %1 EVAL_expression%EVAL_recursion_count% EVAL_env%EVAL_recursion_count%
                 GOTO :EVAL_EXIT
             )
 
             IF "!EVAL_first_symbol_str%EVAL_recursion_count%!"=="do" (
-                CALL :REST EVAL_list%EVAL_recursion_count% EVAL_ast%EVAL_recursion_count%
+                CALL :LIST_REST EVAL_list%EVAL_recursion_count% EVAL_ast%EVAL_recursion_count%
 
                 CALL :LIST_LAST EVAL_ast%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
                 CALL :LIST_WITHOUT_LAST EVAL_list%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
@@ -244,9 +244,9 @@ EXIT /B 0
             )
 
             IF "!EVAL_first_symbol_str%EVAL_recursion_count%!"=="if" (
-                CALL :FIRST EVAL_predicate%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
-                CALL :REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
-                CALL :FIRST EVAL_true_expression%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :LIST_FIRST EVAL_predicate%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :LIST_REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :LIST_FIRST EVAL_true_expression%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
 
                 CALL :EVAL EVAL_evaluated_predicate%EVAL_recursion_count% EVAL_predicate%EVAL_recursion_count% EVAL_env%EVAL_recursion_count%
                 CALL :ERROR? EVAL_evaluated_predicate_is_error%EVAL_recursion_count% EVAL_evaluated_predicate%EVAL_recursion_count%
@@ -264,9 +264,9 @@ EXIT /B 0
                 )
 
                 IF "!EVAL_is_falsey%EVAL_recursion_count%!"=="!TRUE!" (
-                    CALL :REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                    CALL :LIST_REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
                     IF NOT "!EVAL_rest%EVAL_recursion_count%!"=="!EMPTY_LIST!" (
-                        CALL :FIRST EVAL_ast%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                        CALL :LIST_FIRST EVAL_ast%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
                         GOTO :EVAL_RECUR
                     ) ELSE (
                         SET "%1=!NIL!"
@@ -282,7 +282,7 @@ EXIT /B 0
                 CALL :ENV_NEW EVAL_let_env%EVAL_recursion_count%
                 CALL :ENV_SET_OUTER EVAL_let_env%EVAL_recursion_count% EVAL_env%EVAL_recursion_count%
 
-                CALL :FIRST EVAL_def_list%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :LIST_FIRST EVAL_def_list%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
 
                 CALL :VECTOR? EVAL_is_vector%EVAL_recursion_count% EVAL_def_list%EVAL_recursion_count%
                 IF "!EVAL_is_vector%EVAL_recursion_count%!"=="!TRUE!" (
@@ -291,8 +291,8 @@ EXIT /B 0
 
                 CALL :EVAL_DEF_LIST EVAL_let_env%EVAL_recursion_count% EVAL_def_list%EVAL_recursion_count%
 
-                CALL :REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
-                CALL :FIRST EVAL_ast%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :LIST_REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :LIST_FIRST EVAL_ast%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
                 SET "EVAL_env%EVAL_recursion_count%=!EVAL_let_env%EVAL_recursion_count%!"
                 GOTO :EVAL_RECUR
             )
@@ -305,8 +305,8 @@ EXIT /B 0
             GOTO :EVAL_EXIT
         )
 
-        CALL :FIRST EVAL_function%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
-        CALL :REST EVAL_lambda_args%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
+        CALL :LIST_FIRST EVAL_function%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
+        CALL :LIST_REST EVAL_lambda_args%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
 
         CALL :FUNCTION_TO_STR EVAL_function_str%EVAL_recursion_count% EVAL_function%EVAL_recursion_count%
         IF "!EVAL_function_str%EVAL_recursion_count%!"==":MAL_LAMBDA" (
@@ -359,19 +359,19 @@ EXIT /B 0
     IF "!QUASIQUOTE_is_pair%QUASIQUOTE_recursion_count%!"=="!FALSE!" (
         SET "QUASIQUOTE_symbol_str%QUASIQUOTE_recursion_count%=quote"
         CALL :SYMBOL_NEW QUASIQUOTE_symbol%QUASIQUOTE_recursion_count% QUASIQUOTE_symbol_str%QUASIQUOTE_recursion_count%
-        CALL :CONS QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_ast%QUASIQUOTE_recursion_count% EMPTY_LIST
-        CALL :CONS %1 QUASIQUOTE_symbol%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count%
+        CALL :LIST_CONS QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_ast%QUASIQUOTE_recursion_count% EMPTY_LIST
+        CALL :LIST_CONS %1 QUASIQUOTE_symbol%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count%
         GOTO :QUASIQUOTE_EXIT
     )
 
-    CALL :FIRST QUASIQUOTE_first0%QUASIQUOTE_recursion_count% QUASIQUOTE_ast%QUASIQUOTE_recursion_count%
-    CALL :REST QUASIQUOTE_rest0%QUASIQUOTE_recursion_count% QUASIQUOTE_ast%QUASIQUOTE_recursion_count%
+    CALL :LIST_FIRST QUASIQUOTE_first0%QUASIQUOTE_recursion_count% QUASIQUOTE_ast%QUASIQUOTE_recursion_count%
+    CALL :LIST_REST QUASIQUOTE_rest0%QUASIQUOTE_recursion_count% QUASIQUOTE_ast%QUASIQUOTE_recursion_count%
 
     CALL :SYMBOL? QUASIQUOTE_is_symbol%QUASIQUOTE_recursion_count% QUASIQUOTE_first0%QUASIQUOTE_recursion_count%
     IF "!QUASIQUOTE_is_symbol%QUASIQUOTE_recursion_count%!"=="!TRUE!" (
         CALL :SYMBOL_TO_STR QUASIQUOTE_first_str%QUASIQUOTE_recursion_count% QUASIQUOTE_first0%QUASIQUOTE_recursion_count%
         IF "!QUASIQUOTE_first_str%QUASIQUOTE_recursion_count%!"=="unquote" (
-            CALL :FIRST QUASIQUOTE_second0%QUASIQUOTE_recursion_count% QUASIQUOTE_rest0%QUASIQUOTE_recursion_count%
+            CALL :LIST_FIRST QUASIQUOTE_second0%QUASIQUOTE_recursion_count% QUASIQUOTE_rest0%QUASIQUOTE_recursion_count%
             SET "%1=!QUASIQUOTE_second0%QUASIQUOTE_recursion_count%!"
             GOTO :QUASIQUOTE_EXIT
         )
@@ -379,7 +379,7 @@ EXIT /B 0
 
     CALL :IS_PAIR QUASIQUOTE_is_pair%QUASIQUOTE_recursion_count% QUASIQUOTE_first0%QUASIQUOTE_recursion_count%
     IF "!QUASIQUOTE_is_pair%QUASIQUOTE_recursion_count%!"=="!TRUE!" (
-        CALL :FIRST QUASIQUOTE_first1%QUASIQUOTE_recursion_count% QUASIQUOTE_first0%QUASIQUOTE_recursion_count%
+        CALL :LIST_FIRST QUASIQUOTE_first1%QUASIQUOTE_recursion_count% QUASIQUOTE_first0%QUASIQUOTE_recursion_count%
         CALL :SYMBOL? QUASIQUOTE_is_symbol%QUASIQUOTE_recursion_count% QUASIQUOTE_first1%QUASIQUOTE_recursion_count%
         IF "!QUASIQUOTE_is_symbol%QUASIQUOTE_recursion_count%!"=="!TRUE!" (
             CALL :SYMBOL_TO_STR QUASIQUOTE_first_str%QUASIQUOTE_recursion_count% QUASIQUOTE_first1%QUASIQUOTE_recursion_count%
@@ -387,14 +387,14 @@ EXIT /B 0
                 SET "QUASIQUOTE_symbol_str%QUASIQUOTE_recursion_count%=concat"
                 CALL :SYMBOL_NEW QUASIQUOTE_symbol%QUASIQUOTE_recursion_count% QUASIQUOTE_symbol_str%QUASIQUOTE_recursion_count%
 
-                CALL :REST QUASIQUOTE_rest1%QUASIQUOTE_recursion_count% QUASIQUOTE_first0%QUASIQUOTE_recursion_count%
-                CALL :FIRST QUASIQUOTE_second1%QUASIQUOTE_recursion_count% QUASIQUOTE_rest1%QUASIQUOTE_recursion_count%
+                CALL :LIST_REST QUASIQUOTE_rest1%QUASIQUOTE_recursion_count% QUASIQUOTE_first0%QUASIQUOTE_recursion_count%
+                CALL :LIST_FIRST QUASIQUOTE_second1%QUASIQUOTE_recursion_count% QUASIQUOTE_rest1%QUASIQUOTE_recursion_count%
 
                 CALL :QUASIQUOTE QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_rest0%QUASIQUOTE_recursion_count%
 
-                CALL :CONS QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count% EMPTY_LIST
-                CALL :CONS QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_second1%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count%
-                CALL :CONS %1 QUASIQUOTE_symbol%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count%
+                CALL :LIST_CONS QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count% EMPTY_LIST
+                CALL :LIST_CONS QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_second1%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count%
+                CALL :LIST_CONS %1 QUASIQUOTE_symbol%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count%
 
                 GOTO :QUASIQUOTE_EXIT
             )
@@ -405,9 +405,9 @@ EXIT /B 0
     CALL :SYMBOL_NEW QUASIQUOTE_symbol%QUASIQUOTE_recursion_count% QUASIQUOTE_symbol_str%QUASIQUOTE_recursion_count%
     CALL :QUASIQUOTE QUASIQUOTE_result_first%QUASIQUOTE_recursion_count% QUASIQUOTE_first0%QUASIQUOTE_recursion_count%
     CALL :QUASIQUOTE QUASIQUOTE_result_rest%QUASIQUOTE_recursion_count% QUASIQUOTE_rest0%QUASIQUOTE_recursion_count%
-    CALL :CONS QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_result_rest%QUASIQUOTE_recursion_count% EMPTY_LIST
-    CALL :CONS QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_result_first%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count%
-    CALL :CONS %1 QUASIQUOTE_symbol%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count%
+    CALL :LIST_CONS QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_result_rest%QUASIQUOTE_recursion_count% EMPTY_LIST
+    CALL :LIST_CONS QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_result_first%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count%
+    CALL :LIST_CONS %1 QUASIQUOTE_symbol%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count%
 
 :QUASIQUOTE_EXIT
     SET /A "QUASIQUOTE_recursion_count-=1"
@@ -416,7 +416,7 @@ EXIT /B 0
 :IS_MACRO_CALL
     CALL :IS_PAIR IS_MACRO_CALL_is_pair %2
     IF "!IS_MACRO_CALL_is_pair!"=="!TRUE!" (
-        CALL :FIRST IS_MACRO_CALL_symbol %2
+        CALL :LIST_FIRST IS_MACRO_CALL_symbol %2
         CALL :SYMBOL? IS_MACRO_CALL_is_symbol IS_MACRO_CALL_symbol
         IF "!IS_MACRO_CALL_is_symbol!"=="!TRUE!" (
             CALL :ENV_GET IS_MACRO_CALL_function %3 IS_MACRO_CALL_symbol
@@ -439,8 +439,8 @@ EXIT /B 0
 :MACRO_EXPAND_RECUR
     CALL :IS_MACRO_CALL MACRO_EXPAND_ast_is_macro%MACRO_EXPAND_recursion_count% MACRO_EXPAND_ast%MACRO_EXPAND_recursion_count% MACRO_EXPAND_env%MACRO_EXPAND_recursion_count%
     IF "!MACRO_EXPAND_ast_is_macro%MACRO_EXPAND_recursion_count%!"=="!TRUE!" (
-        CALL :FIRST MACRO_EXPAND_symbol%MACRO_EXPAND_recursion_count% %2
-        CALL :REST MACRO_EXPAND_arguments%MACRO_EXPAND_recursion_count% %2
+        CALL :LIST_FIRST MACRO_EXPAND_symbol%MACRO_EXPAND_recursion_count% %2
+        CALL :LIST_REST MACRO_EXPAND_arguments%MACRO_EXPAND_recursion_count% %2
         CALL :ENV_GET MACRO_EXPAND_function%MACRO_EXPAND_recursion_count% MACRO_EXPAND_env%MACRO_EXPAND_recursion_count% MACRO_EXPAND_symbol%MACRO_EXPAND_recursion_count%
         CALL :PREPARE_FUNCTION_FOR_EVAL MACRO_EXPAND_ast%MACRO_EXPAND_recursion_count% MACRO_EXPAND_env%MACRO_EXPAND_recursion_count% MACRO_EXPAND_function%MACRO_EXPAND_recursion_count% MACRO_EXPAND_arguments%MACRO_EXPAND_recursion_count%
         CALL :EVAL MACRO_EXPAND_ast%MACRO_EXPAND_recursion_count% MACRO_EXPAND_ast%MACRO_EXPAND_recursion_count% MACRO_EXPAND_env%MACRO_EXPAND_recursion_count%
@@ -467,17 +467,17 @@ EXIT /B 0
 
 :PREPARE_FUNCTION_FOR_EVAL_NEXT_ARG
     IF NOT "!PREPARE_FUNCTION_FOR_EVAL_lambda_params!"=="!EMPTY_LIST!" (
-        CALL :FIRST PREPARE_FUNCTION_FOR_EVAL_lambda_param PREPARE_FUNCTION_FOR_EVAL_lambda_params
-        CALL :REST PREPARE_FUNCTION_FOR_EVAL_lambda_params PREPARE_FUNCTION_FOR_EVAL_lambda_params
+        CALL :LIST_FIRST PREPARE_FUNCTION_FOR_EVAL_lambda_param PREPARE_FUNCTION_FOR_EVAL_lambda_params
+        CALL :LIST_REST PREPARE_FUNCTION_FOR_EVAL_lambda_params PREPARE_FUNCTION_FOR_EVAL_lambda_params
 
         CALL :SYMBOL_TO_STR PREPARE_FUNCTION_FOR_EVAL_lambda_param_str PREPARE_FUNCTION_FOR_EVAL_lambda_param
         IF "!PREPARE_FUNCTION_FOR_EVAL_lambda_param_str!"=="!_ampersand!" (
-            CALL :FIRST PREPARE_FUNCTION_FOR_EVAL_lambda_param PREPARE_FUNCTION_FOR_EVAL_lambda_params
+            CALL :LIST_FIRST PREPARE_FUNCTION_FOR_EVAL_lambda_param PREPARE_FUNCTION_FOR_EVAL_lambda_params
             CALL :ENV_SET PREPARE_FUNCTION_FOR_EVAL_lambda_env PREPARE_FUNCTION_FOR_EVAL_lambda_param PREPARE_FUNCTION_FOR_EVAL_lambda_args
 
         ) ELSE (
-            CALL :FIRST PREPARE_FUNCTION_FOR_EVAL_lambda_argument PREPARE_FUNCTION_FOR_EVAL_lambda_args
-            CALL :REST PREPARE_FUNCTION_FOR_EVAL_lambda_args PREPARE_FUNCTION_FOR_EVAL_lambda_args
+            CALL :LIST_FIRST PREPARE_FUNCTION_FOR_EVAL_lambda_argument PREPARE_FUNCTION_FOR_EVAL_lambda_args
+            CALL :LIST_REST PREPARE_FUNCTION_FOR_EVAL_lambda_args PREPARE_FUNCTION_FOR_EVAL_lambda_args
             CALL :ENV_SET PREPARE_FUNCTION_FOR_EVAL_lambda_env PREPARE_FUNCTION_FOR_EVAL_lambda_param PREPARE_FUNCTION_FOR_EVAL_lambda_argument
             GOTO :PREPARE_FUNCTION_FOR_EVAL_NEXT_ARG
         )

@@ -161,14 +161,14 @@ EXIT /B 0
 
         CALL :EVAL_AST EVAL_list%EVAL_recursion_count% %2 %3
 
-        CALL :FIRST EVAL_function%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
+        CALL :LIST_FIRST EVAL_function%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
         CALL :FUNCTION_TO_STR EVAL_function_str%EVAL_recursion_count% EVAL_function%EVAL_recursion_count%
 
-        CALL :REST EVAL_list%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
-        CALL :FIRST EVAL_a%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
+        CALL :LIST_REST EVAL_list%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
+        CALL :LIST_FIRST EVAL_a%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
 
-        CALL :REST EVAL_list%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
-        CALL :FIRST EVAL_b%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
+        CALL :LIST_REST EVAL_list%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
+        CALL :LIST_FIRST EVAL_b%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
 
         CALL :CALL_STACK_PUSH EVAL_b%EVAL_recursion_count%
         CALL :CALL_STACK_PUSH EVAL_a%EVAL_recursion_count%

@@ -157,11 +157,11 @@ EXIT /B 0
     SET /a "EVAL_DEF_LIST_recursion_count+=1"
     set "EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%=!%2!"
 :_EVAL_DEF_LIST
-    CALL :FIRST EVAL_DEF_LIST_key%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%
-    CALL :REST EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%
+    CALL :LIST_FIRST EVAL_DEF_LIST_key%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%
+    CALL :LIST_REST EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%
 
-    CALL :FIRST EVAL_DEF_LIST_value%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%
-    CALL :REST EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%
+    CALL :LIST_FIRST EVAL_DEF_LIST_value%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%
+    CALL :LIST_REST EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_list%EVAL_DEF_LIST_recursion_count%
 
     CALL :EVAL EVAL_DEF_LIST_evaluated_value%EVAL_DEF_LIST_recursion_count% EVAL_DEF_LIST_value%EVAL_DEF_LIST_recursion_count% %1
 
@@ -184,15 +184,15 @@ EXIT /B 0
             EXIT /B 0
         )
 
-        CALL :FIRST EVAL_first_form %2
-        CALL :REST EVAL_rest%EVAL_recursion_count% %2
+        CALL :LIST_FIRST EVAL_first_form %2
+        CALL :LIST_REST EVAL_rest%EVAL_recursion_count% %2
         CALL :SYMBOL? EVAL_is_symbol EVAL_first_form
         IF "!EVAL_is_symbol!"=="!TRUE!" (
             CALL :SYMBOL_TO_STR EVAL_first_symbol_str EVAL_first_form
             IF "!EVAL_first_symbol_str!"=="def^!" (
-                CALL :FIRST EVAL_key%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
-                CALL :REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
-                CALL :FIRST EVAL_value%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :LIST_FIRST EVAL_key%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :LIST_REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :LIST_FIRST EVAL_value%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
                 CALL :EVAL EVAL_evaluated_value%EVAL_recursion_count% EVAL_value%EVAL_recursion_count% %3
                 CALL :ENV_SET %3 EVAL_key%EVAL_recursion_count% EVAL_evaluated_value%EVAL_recursion_count%
                 set "%1=!EVAL_evaluated_value%EVAL_recursion_count%!"
@@ -204,7 +204,7 @@ EXIT /B 0
                 CALL :ENV_NEW EVAL_env%EVAL_recursion_count%
                 CALL :ENV_SET_OUTER EVAL_env%EVAL_recursion_count% %3
 
-                CALL :FIRST EVAL_def_list%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :LIST_FIRST EVAL_def_list%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
 
                 CALL :VECTOR? EVAL_is_vector EVAL_def_list%EVAL_recursion_count%
                 IF "!EVAL_is_vector!"=="!TRUE!" (
@@ -213,8 +213,8 @@ EXIT /B 0
 
                 CALL :EVAL_DEF_LIST EVAL_env%EVAL_recursion_count% EVAL_def_list%EVAL_recursion_count%
 
-                CALL :REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
-                CALL :FIRST EVAL_value%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :LIST_REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
+                CALL :LIST_FIRST EVAL_value%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
 
                 CALL :EVAL EVAL_evaluated_value%EVAL_recursion_count% EVAL_value%EVAL_recursion_count% EVAL_env%EVAL_recursion_count%
 
@@ -226,14 +226,14 @@ EXIT /B 0
 
         CALL :EVAL_AST EVAL_list%EVAL_recursion_count% %2 %3
 
-        CALL :FIRST EVAL_function%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
+        CALL :LIST_FIRST EVAL_function%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
         CALL :FUNCTION_TO_STR EVAL_function_str%EVAL_recursion_count% EVAL_function%EVAL_recursion_count%
 
-        CALL :REST EVAL_list%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
-        CALL :FIRST EVAL_a%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
+        CALL :LIST_REST EVAL_list%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
+        CALL :LIST_FIRST EVAL_a%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
 
-        CALL :REST EVAL_list%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
-        CALL :FIRST EVAL_b%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
+        CALL :LIST_REST EVAL_list%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
+        CALL :LIST_FIRST EVAL_b%EVAL_recursion_count% EVAL_list%EVAL_recursion_count%
 
         CALL :CALL_STACK_PUSH EVAL_b%EVAL_recursion_count%
         CALL :CALL_STACK_PUSH EVAL_a%EVAL_recursion_count%

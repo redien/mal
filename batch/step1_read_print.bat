@@ -54,19 +54,19 @@ EXIT
     )
 EXIT /B 0
 
-:CONS
+:LIST_CONS
     SET /a "_list_counter+=1"
     SET "_list_first_!_list_counter!=!%~2!"
     SET "_list_rest_!_list_counter!=!%~3!"
     SET "%~1=L!_list_counter!"
 EXIT /B 0
 
-:FIRST
+:LIST_FIRST
     SET "ref=_list_first_!%~2:~1,8191!"
     SET "%1=!%ref%!"
 EXIT /B 0
 
-:REST
+:LIST_REST
     SET "ref=_list_rest_!%~2:~1,8191!"
     SET "%1=!%ref%!"
 EXIT /B 0
@@ -102,7 +102,7 @@ EXIT /B 0
 
 :LIST_COUNT_LOOP
     IF NOT "!LIST_COUNT_list!"=="!EMPTY_LIST!" (
-        CALL :REST LIST_COUNT_list LIST_COUNT_list
+        CALL :LIST_REST LIST_COUNT_list LIST_COUNT_list
         SET /a "%1+=1"
         GOTO :LIST_COUNT_LOOP
     )
@@ -119,10 +119,10 @@ EXIT /B 0
         EXIT /B 0
     )
 
-    CALL :FIRST LIST_REVERSE_first %2
-    CALL :REST LIST_REVERSE_rest %2
+    CALL :LIST_FIRST LIST_REVERSE_first %2
+    CALL :LIST_REST LIST_REVERSE_rest %2
 
-    CALL :CONS %1 LIST_REVERSE_first %1
+    CALL :LIST_CONS %1 LIST_REVERSE_first %1
 
     CALL :_LIST_REVERSE %1 LIST_REVERSE_rest
 EXIT /B 0
@@ -140,12 +140,12 @@ EXIT /B 0
         EXIT /B 0
     )
 
-    CALL :FIRST LIST_MAP_first%LIST_MAP_recursion_count% %2
-    CALL :REST LIST_MAP_rest%LIST_MAP_recursion_count% %2
+    CALL :LIST_FIRST LIST_MAP_first%LIST_MAP_recursion_count% %2
+    CALL :LIST_REST LIST_MAP_rest%LIST_MAP_recursion_count% %2
 
     CALL %3 LIST_MAP_mapped%LIST_MAP_recursion_count% LIST_MAP_first%LIST_MAP_recursion_count% %4
 
-    CALL :CONS %1 LIST_MAP_mapped%LIST_MAP_recursion_count% %1
+    CALL :LIST_CONS %1 LIST_MAP_mapped%LIST_MAP_recursion_count% %1
 
     CALL :_LIST_MAP %1 LIST_MAP_rest%LIST_MAP_recursion_count% %3 %4
 EXIT /B 0
@@ -162,8 +162,8 @@ EXIT /B 0
         EXIT /B 0
     )
 
-    CALL :FIRST LIST_FIND_first%LIST_FIND_recursion_count% %2
-    CALL :REST LIST_FIND_rest%LIST_FIND_recursion_count% %2
+    CALL :LIST_FIRST LIST_FIND_first%LIST_FIND_recursion_count% %2
+    CALL :LIST_REST LIST_FIND_rest%LIST_FIND_recursion_count% %2
 
     CALL %3 LIST_FIND_predicate%LIST_FIND_recursion_count% LIST_FIND_first%LIST_FIND_recursion_count% %4
 
@@ -193,11 +193,11 @@ EXIT /B 0
         EXIT /B 0
     )
 
-    CALL :FIRST LIST_EQUAL_first_left%LIST_EQUAL_recursion_count% LIST_EQUAL_rest_left%LIST_EQUAL_recursion_count%
-    CALL :REST LIST_EQUAL_rest_left%LIST_EQUAL_recursion_count% LIST_EQUAL_rest_left%LIST_EQUAL_recursion_count%
+    CALL :LIST_FIRST LIST_EQUAL_first_left%LIST_EQUAL_recursion_count% LIST_EQUAL_rest_left%LIST_EQUAL_recursion_count%
+    CALL :LIST_REST LIST_EQUAL_rest_left%LIST_EQUAL_recursion_count% LIST_EQUAL_rest_left%LIST_EQUAL_recursion_count%
 
-    CALL :FIRST LIST_EQUAL_first_right%LIST_EQUAL_recursion_count% LIST_EQUAL_rest_right%LIST_EQUAL_recursion_count%
-    CALL :REST LIST_EQUAL_rest_right%LIST_EQUAL_recursion_count% LIST_EQUAL_rest_right%LIST_EQUAL_recursion_count%
+    CALL :LIST_FIRST LIST_EQUAL_first_right%LIST_EQUAL_recursion_count% LIST_EQUAL_rest_right%LIST_EQUAL_recursion_count%
+    CALL :LIST_REST LIST_EQUAL_rest_right%LIST_EQUAL_recursion_count% LIST_EQUAL_rest_right%LIST_EQUAL_recursion_count%
 
     CALL :EQUAL? %1 LIST_EQUAL_first_left%LIST_EQUAL_recursion_count% LIST_EQUAL_first_right%LIST_EQUAL_recursion_count%
 
@@ -214,10 +214,10 @@ EXIT /B 0
     SET "LIST_LAST_list=!%2!"
 :LIST_LAST_LOOP
 
-    CALL :REST LIST_LAST_rest LIST_LAST_list
+    CALL :LIST_REST LIST_LAST_rest LIST_LAST_list
 
     IF "!LIST_LAST_rest!"=="!EMPTY_LIST!" (
-        CALL :FIRST %1 LIST_LAST_list
+        CALL :LIST_FIRST %1 LIST_LAST_list
         EXIT /B 0
     )
 
@@ -779,7 +779,7 @@ EXIT /B 0
     )
 
     CALL :READ_FORM form%READ_LIST_recursion_count% %2 %3
-    CALL :CONS %1 form%READ_LIST_recursion_count% %1
+    CALL :LIST_CONS %1 form%READ_LIST_recursion_count% %1
 
     GOTO :READ_LIST_LOOP
 EXIT /B 0
@@ -874,8 +874,8 @@ EXIT /B 0
     SET "%1=!EMPTY_LIST!"
     CALL :SYMBOL_NEW READ_PREFIX_symbol%READ_PREFIX_recursion_count% %4
     CALL :READ_FORM READ_PREFIX_form%READ_PREFIX_recursion_count% %2 %3
-    CALL :CONS %1 READ_PREFIX_form%READ_PREFIX_recursion_count% %1
-    CALL :CONS %1 READ_PREFIX_symbol%READ_PREFIX_recursion_count% %1
+    CALL :LIST_CONS %1 READ_PREFIX_form%READ_PREFIX_recursion_count% %1
+    CALL :LIST_CONS %1 READ_PREFIX_symbol%READ_PREFIX_recursion_count% %1
 
     SET /a "READ_PREFIX_recursion_count-=1"
 EXIT /B 0
@@ -889,9 +889,9 @@ EXIT /B 0
     CALL :SYMBOL_NEW READ_PREFIX_symbol%READ_PREFIX2_recursion_count% %4
     CALL :READ_FORM READ_PREFIX_form%READ_PREFIX2_recursion_count% %2 %3
     CALL :READ_FORM READ_PREFIX_form2%READ_PREFIX2_recursion_count% %2 %3
-    CALL :CONS %1 READ_PREFIX_form%READ_PREFIX2_recursion_count% %1
-    CALL :CONS %1 READ_PREFIX_form2%READ_PREFIX2_recursion_count% %1
-    CALL :CONS %1 READ_PREFIX_symbol%READ_PREFIX2_recursion_count% %1
+    CALL :LIST_CONS %1 READ_PREFIX_form%READ_PREFIX2_recursion_count% %1
+    CALL :LIST_CONS %1 READ_PREFIX_form2%READ_PREFIX2_recursion_count% %1
+    CALL :LIST_CONS %1 READ_PREFIX_symbol%READ_PREFIX2_recursion_count% %1
 
     SET /a "READ_PREFIX2_recursion_count-=1"
 EXIT /B 0
@@ -1087,8 +1087,8 @@ EXIT /B 0
 :_PR_STR_LIST_LOOP
         CALL :LIST_EMPTY? _PR_STR_is_empty _PR_STR_tail%PR_STR_recursion_count%
         IF "!_PR_STR_is_empty!"=="!FALSE!" (
-            CALL :FIRST _PR_STR_form _PR_STR_tail%PR_STR_recursion_count%
-            CALL :REST _PR_STR_tail%PR_STR_recursion_count% _PR_STR_tail%PR_STR_recursion_count%
+            CALL :LIST_FIRST _PR_STR_form _PR_STR_tail%PR_STR_recursion_count%
+            CALL :LIST_REST _PR_STR_tail%PR_STR_recursion_count% _PR_STR_tail%PR_STR_recursion_count%
 
             CALL :_PR_STR PR_STR_str%PR_STR_recursion_count% _PR_STR_form
 
@@ -1419,7 +1419,7 @@ EXIT /B 0
     SET /a "MAL_LIST_args-=1"
     FOR /L %%G IN (0, 1, !MAL_LIST_args!) DO (
         CALL :CALL_STACK_POP MAL_LIST_argument
-        CALL :CONS MAL_LIST_list MAL_LIST_argument MAL_LIST_list
+        CALL :LIST_CONS MAL_LIST_list MAL_LIST_argument MAL_LIST_list
     )
     CALL :LIST_REVERSE MAL_LIST_list MAL_LIST_list
     CALL :CALL_STACK_PUSH MAL_LIST_list
@@ -1457,8 +1457,8 @@ EXIT /B 0
         IF "!MAL_LAMBDA_params_is_vector!"=="!TRUE!" (
             CALL :VECTOR_GET MAL_LAMBDA_param MAL_LAMBDA_params MAL_LAMBDA_args_index
         ) ELSE (
-            CALL :FIRST MAL_LAMBDA_param MAL_LAMBDA_params
-            CALL :REST MAL_LAMBDA_params MAL_LAMBDA_params
+            CALL :LIST_FIRST MAL_LAMBDA_param MAL_LAMBDA_params
+            CALL :LIST_REST MAL_LAMBDA_params MAL_LAMBDA_params
         )
         CALL :CALL_STACK_POP MAL_LAMBDA_argument
         CALL :ENV_SET MAL_LAMBDA_env%MAL_LAMBDA_recursion_count% MAL_LAMBDA_param MAL_LAMBDA_argument
