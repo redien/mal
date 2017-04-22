@@ -7,6 +7,87 @@
     )
 EXIT /B 0
 
+:FIRST
+    IF "!%2!"=="!NIL!" (
+        SET "%1=!%2!"
+        EXIT /B 0
+    )
+
+    CALL :EMPTY? FIRST_is_empty %2
+    IF "!FIRST_is_empty!"=="!TRUE!" (
+        SET "%1=!NIL!"
+        EXIT /B 0
+    )
+
+    CALL :VECTOR? FIRST_is_vector %2
+    IF "!FIRST_is_vector!"=="!TRUE!" (
+        SET "FIRST_first_index=0"
+        CALL :VECTOR_GET %1 %2 FIRST_first_index
+    ) ELSE (
+        CALL :LIST_FIRST %1 %2
+    )
+EXIT /B 0
+
+:REST
+    IF "!%2!"=="!NIL!" (
+        SET "%1=!%2!"
+        EXIT /B 0
+    )
+
+    CALL :EMPTY? REST_is_empty %2
+    IF "!REST_is_empty!"=="!TRUE!" (
+        SET "%1=!%2!"
+        EXIT /B 0
+    )
+
+    CALL :VECTOR? REST_is_vector %2
+    IF "!REST_is_vector!"=="!TRUE!" (
+        SET "REST_first_index=1"
+        SET "REST_last_index=0"
+        CALL :VECTOR_LENGTH REST_last_index %2
+        CALL :VECTOR_SLICE %1 %2 REST_first_index REST_last_index
+    ) ELSE (
+        CALL :LIST_REST %1 %2
+    )
+EXIT /B 0
+
+:EMPTY?
+    CALL :VECTOR? EMPTY?_is_vector %2
+    IF "!EMPTY?_is_vector!"=="!TRUE!" (
+        CALL :VECTOR_EMPTY? %1 %2
+    ) ELSE (
+        CALL :LIST_EMPTY? %1 %2
+    )
+EXIT /B 0
+
+:COUNT
+    CALL :VECTOR? COUNT_is_vector %2
+    IF "!COUNT_is_vector!"=="!TRUE!" (
+        CALL :VECTOR_LENGTH %1 %2
+    ) ELSE (
+        CALL :LIST_COUNT %1 %2
+    )
+EXIT /B 0
+
+:MAP
+    CALL :VECTOR? MAP_is_vector %2
+    IF "!MAP_is_vector!"=="!TRUE!" (
+        CALL :VECTOR_MAP %1 %2 %3 %4
+    ) ELSE (
+        CALL :LIST_MAP %1 %2 %3 %4
+    )
+EXIT /B 0
+
+:NTH
+    CALL :VECTOR? NTH_is_vector %2
+    IF "!NTH_is_vector!"=="!TRUE!" (
+        CALL :VECTOR_GET %1 %2 %3
+    ) ELSE (
+        CALL :LIST_NTH %1 %2 %3
+    )
+EXIT /B 0
+
+
 :LIST_CONS
     SET /a "_list_counter+=1"
     SET "_list_first_!_list_counter!=!%~2!"
@@ -201,6 +282,25 @@ EXIT /B 0
     GOTO :LIST_CONCAT_RECUR
 EXIT /B 0
 
+:LIST_NTH
+    SET "%1=!NIL!"
+    SET "LIST_NTH_list=!%2!"
+    SET "LIST_NTH_countdown=!%3!"
+
+:LIST_NTH_LOOP
+    IF NOT "!LIST_NTH_list!"=="!EMPTY_LIST!" (
+        IF "!LIST_NTH_countdown!"=="0" (
+            CALL :LIST_FIRST %1 LIST_NTH_list
+            EXIT /B 0
+        )
+
+        CALL :LIST_REST LIST_NTH_list LIST_NTH_list
+        SET /A "LIST_NTH_countdown-=1"
+        GOTO :LIST_NTH_LOOP
+    )
+EXIT /B 0
+
+
 :VECTOR_NEW
     SET /a "_vector_counter+=1"
     SET "_vector_length_!_vector_counter!=0"
@@ -224,6 +324,19 @@ EXIT /B 0
 :VECTOR_GET
     SET "_ref=_vector_!%2:~1,8191!_!%3!"
     SET "%1=!%_ref%!"
+EXIT /B 0
+
+:VECTOR_SLICE
+    CALL :VECTOR_NEW VECTOR_SLICE_new_vector
+    SET /A "VECTOR_SLICE_end=!%4!-1"
+
+    FOR /L %%G IN (!%3!, 1, !VECTOR_SLICE_end!) DO (
+        SET "_ref=_vector_!%2:~1,8191!_!%%G!"
+        SET "_vector_!VECTOR_SLICE_new_vector:~1,8191!_!%%G!=!%_ref%!"
+    )
+
+    SET /A "_vector_length_!VECTOR_SLICE_new_vector:~1,8191!=!%4!-!%3!"
+    SET "%1=!VECTOR_SLICE_new_vector!"
 EXIT /B 0
 
 :VECTOR_PUSH

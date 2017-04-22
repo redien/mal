@@ -32,6 +32,52 @@ EXIT /B 0
     CALL :CALL_STACK_PUSH MAL_CONS_list
 EXIT /B 0
 
+:MAL_FIRST
+    CALL :ARGS_OR_ERROR MAL_FIRST_args 1
+    CALL :ERROR? MAL_FIRST_args_is_error MAL_FIRST_args
+    IF "!MAL_FIRST_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH MAL_FIRST_args
+        EXIT /B 0
+    )
+
+    CALL :LIST_FIRST MAL_FIRST_list MAL_FIRST_args
+    CALL :FIRST MAL_FIRST_first MAL_FIRST_list
+
+    CALL :CALL_STACK_PUSH MAL_FIRST_first
+EXIT /B 0
+
+:MAL_REST
+    CALL :ARGS_OR_ERROR MAL_REST_args 1
+    CALL :ERROR? MAL_REST_args_is_error MAL_REST_args
+    IF "!MAL_REST_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH MAL_REST_args
+        EXIT /B 0
+    )
+
+    CALL :LIST_FIRST MAL_REST_list MAL_REST_args
+    CALL :REST MAL_REST_rest MAL_REST_list
+
+    CALL :CALL_STACK_PUSH MAL_REST_rest
+EXIT /B 0
+
+:MAL_NTH
+    CALL :ARGS_OR_ERROR MAL_NTH_args 2
+    CALL :ERROR? MAL_NTH_args_is_error MAL_NTH_args
+    IF "!MAL_NTH_args_is_error!"=="!TRUE!" (
+        CALL :CALL_STACK_PUSH MAL_NTH_args
+        EXIT /B 0
+    )
+
+    CALL :LIST_FIRST MAL_NTH_list MAL_NTH_args
+    CALL :LIST_REST MAL_NTH_args MAL_NTH_args
+    CALL :LIST_FIRST MAL_NTH_index MAL_NTH_args
+    CALL :NUMBER_TO_STR MAL_NTH_index_str MAL_NTH_index
+
+    CALL :NTH MAL_NTH_result MAL_NTH_list MAL_NTH_index_str
+
+    CALL :CALL_STACK_PUSH MAL_NTH_result
+EXIT /B 0
+
 :MAL_LIST?
     CALL :ARGS_OR_ERROR MAL_LIST?_args 1
     CALL :ERROR? MAL_LIST?_args_is_error MAL_LIST?_args
@@ -54,12 +100,8 @@ EXIT /B 0
     )
 
     CALL :LIST_FIRST MAL_EMPTY?_first MAL_EMPTY?_args
-    CALL :VECTOR? MAL_EMPTY?_is_vector MAL_EMPTY?_first
-    IF "!MAL_EMPTY?_is_vector!"=="!TRUE!" (
-        CALL :VECTOR_EMPTY? MAL_EMPTY?_is_empty MAL_EMPTY?_first
-    ) ELSE (
-        CALL :LIST_EMPTY? MAL_EMPTY?_is_empty MAL_EMPTY?_first
-    )
+    CALL :EMPTY? MAL_EMPTY?_is_empty MAL_EMPTY?_first
+
     CALL :CALL_STACK_PUSH MAL_EMPTY?_is_empty
 EXIT /B 0
 
@@ -72,12 +114,8 @@ EXIT /B 0
     )
 
     CALL :LIST_FIRST MAL_COUNT_first MAL_COUNT_args
-    CALL :VECTOR? MAL_COUNT_is_vector MAL_COUNT_first
-    IF "!MAL_COUNT_is_vector!"=="!TRUE!" (
-        CALL :VECTOR_LENGTH MAL_COUNT_count MAL_COUNT_first
-    ) ELSE (
-        CALL :LIST_COUNT MAL_COUNT_count MAL_COUNT_first
-    )
+    CALL :COUNT MAL_COUNT_count MAL_COUNT_first
+
     CALL :NUMBER_NEW MAL_COUNT_count_number MAL_COUNT_count
     CALL :CALL_STACK_PUSH MAL_COUNT_count_number
 EXIT /B 0

@@ -20,6 +20,12 @@ CALL :DEFINE_FUN REPL_env _equal :MAL_EQUAL
 
 SET "_name=cons"
 CALL :DEFINE_FUN REPL_env _name :MAL_CONS
+SET "_name=first"
+CALL :DEFINE_FUN REPL_env _name :MAL_FIRST
+SET "_name=rest"
+CALL :DEFINE_FUN REPL_env _name :MAL_REST
+SET "_name=nth"
+CALL :DEFINE_FUN REPL_env _name :MAL_NTH
 SET "_name=concat"
 CALL :DEFINE_FUN REPL_env _name :MAL_CONCAT
 SET "_name=str"
