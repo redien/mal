@@ -20,10 +20,18 @@ EXIT /B 0
 :ENV_GET
     SET "ENV_GET_id=!%2:~1,8191!"
     CALL :SYMBOL_TO_STR ENV_GET_key %3
-    CALL :HASHMAP_GET %1 _env_data!ENV_GET_id! ENV_GET_key
-    IF "!%1!"=="!NIL!" (
+
+    CALL :HASHMAP_HAS_KEY? ENV_GET_has_key _env_data!ENV_GET_id! ENV_GET_key
+    IF "!ENV_GET_has_key!"=="!FALSE!" (
         IF NOT "!_env_outer%ENV_GET_id%!"=="!NIL!" (
-            CALL :ENV_GET %1 _env_outer%ENV_GET_id% %3
+            CALL :ENV_GET %1 _env_outer!ENV_GET_id! %3
+            EXIT /B 0
         )
+
+        SET "ENV_GET_error=Not defined: !ENV_GET_key!"
+        CALL :ERROR_NEW %1 ENV_GET_error
+        EXIT /B 0
     )
+
+    CALL :HASHMAP_GET %1 _env_data!ENV_GET_id! ENV_GET_key
 EXIT /B 0

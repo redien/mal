@@ -135,11 +135,6 @@ EXIT /B 0
         CALL :SYMBOL_TO_STR EVAL_AST_symbol_str %2
         IF NOT "!EVAL_AST_symbol_str:~0,1!"=="!_colon!" (
             CALL :ENV_GET %1 %3 %2
-            IF "!%1!"=="!NIL!" (
-                CALL :SYMBOL_TO_STR EVAL_AST_symbol_str %2
-                SET "EVAL_AST_error=Not defined: !EVAL_AST_symbol_str!"
-                CALL :ERROR_NEW %1 EVAL_AST_error
-            )
             EXIT /B 0
         )
     )

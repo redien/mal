@@ -661,6 +661,17 @@ EXIT /B 0
     )
 EXIT /B 0
 
+:HASHMAP_HAS_KEY?
+    SET "HASHMAP_GET_id=!%2:~1,8191!"
+    CALL :_HASHMAP_INDEX_OF_KEY HASHMAP_GET_key_index %2 %3
+    IF "!HASHMAP_GET_key_index!"=="!NIL!" (
+        SET "%1=!FALSE!"
+        EXIT /B 0
+    )
+
+    SET "%1=!TRUE!"
+EXIT /B 0
+
 :HASHMAP_GET
     SET "HASHMAP_GET_id=!%2:~1,8191!"
     CALL :_HASHMAP_INDEX_OF_KEY HASHMAP_GET_key_index %2 %3

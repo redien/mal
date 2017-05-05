@@ -661,6 +661,17 @@ EXIT /B 0
     )
 EXIT /B 0
 
+:HASHMAP_HAS_KEY?
+    SET "HASHMAP_GET_id=!%2:~1,8191!"
+    CALL :_HASHMAP_INDEX_OF_KEY HASHMAP_GET_key_index %2 %3
+    IF "!HASHMAP_GET_key_index!"=="!NIL!" (
+        SET "%1=!FALSE!"
+        EXIT /B 0
+    )
+
+    SET "%1=!TRUE!"
+EXIT /B 0
+
 :HASHMAP_GET
     SET "HASHMAP_GET_id=!%2:~1,8191!"
     CALL :_HASHMAP_INDEX_OF_KEY HASHMAP_GET_key_index %2 %3
@@ -1472,12 +1483,20 @@ EXIT /B 0
 :ENV_GET
     SET "ENV_GET_id=!%2:~1,8191!"
     CALL :SYMBOL_TO_STR ENV_GET_key %3
-    CALL :HASHMAP_GET %1 _env_data!ENV_GET_id! ENV_GET_key
-    IF "!%1!"=="!NIL!" (
+
+    CALL :HASHMAP_HAS_KEY? ENV_GET_has_key _env_data!ENV_GET_id! ENV_GET_key
+    IF "!ENV_GET_has_key!"=="!FALSE!" (
         IF NOT "!_env_outer%ENV_GET_id%!"=="!NIL!" (
-            CALL :ENV_GET %1 _env_outer%ENV_GET_id% %3
+            CALL :ENV_GET %1 _env_outer!ENV_GET_id! %3
+            EXIT /B 0
         )
+
+        SET "ENV_GET_error=Not defined: !ENV_GET_key!"
+        CALL :ERROR_NEW %1 ENV_GET_error
+        EXIT /B 0
     )
+
+    CALL :HASHMAP_GET %1 _env_data!ENV_GET_id! ENV_GET_key
 EXIT /B 0
 
 :ARGS_OR_ERROR
@@ -2021,6 +2040,8 @@ CALL :DEFINE_FUN REPL_env _name :MAL_ATOM_DEREF
 SET "_name=reset^!"
 CALL :DEFINE_FUN REPL_env _name :MAL_ATOM_RESET
 
+SET "_script=(defmacro^! testing (fn* (x) x))"
+CALL :REP _ _script REPL_env
 SET "_script=(def^! not (fn* (a) (if a false true)))"
 CALL :REP _ _script REPL_env
 SET "_script=(def^! load-file (fn* (f) (eval (read-string (str ^"(do ^" (slurp f) ^")^")))))"
@@ -2097,11 +2118,6 @@ EXIT /B 0
         CALL :SYMBOL_TO_STR EVAL_AST_symbol_str %2
         IF NOT "!EVAL_AST_symbol_str:~0,1!"=="!_colon!" (
             CALL :ENV_GET %1 %3 %2
-            IF "!%1!"=="!NIL!" (
-                CALL :SYMBOL_TO_STR EVAL_AST_symbol_str %2
-                SET "EVAL_AST_error=Not defined: !EVAL_AST_symbol_str!"
-                CALL :ERROR_NEW %1 EVAL_AST_error
-            )
             EXIT /B 0
         )
     )
