@@ -2027,6 +2027,10 @@ SET "_script=(def^! load-file (fn* (f) (eval (read-string (str ^"(do ^" (slurp f
 CALL :REP _ _script REPL_env
 SET "_script=(def^! swap^! (fn* (a f & more) (reset^! a (eval (cons f (cons (deref a) more))))))"
 CALL :REP _ _script REPL_env
+SET "_script=(defmacro^! cond (fn* (& xs) (if (> (count xs) 0) (list 'if (first xs) (if (> (count xs) 1) (nth xs 1) (throw "odd number of forms to cond")) (cons 'cond (rest (rest xs)))))))"
+CALL :REP _ _script REPL_env
+SET "_script=(defmacro^! or (fn* (& xs) (if (empty? xs) nil (if (= 1 (count xs)) (first xs) `(let* (or_FIXME ~(first xs)) (if or_FIXME or_FIXME (or ~@(rest xs))))))))"
+CALL :REP _ _script REPL_env
 
 SET "argv=!EMPTY_LIST!"
 SET "argv_key=!_asterisk!ARGV!_asterisk!"
@@ -2170,6 +2174,10 @@ EXIT /B 0
                 CALL :LIST_REST EVAL_rest%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
                 CALL :LIST_FIRST EVAL_value%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
                 CALL :EVAL EVAL_evaluated_value%EVAL_recursion_count% EVAL_value%EVAL_recursion_count% EVAL_env%EVAL_recursion_count%
+                IF "!EVAL_evaluated_value%EVAL_recursion_count%!"=="!NIL!" (
+                    SET "%1=!NIL!"
+                    GOTO :EVAL_EXIT
+                )
                 IF "!EVAL_first_symbol_str%EVAL_recursion_count%!"=="defmacro^!" (
                     CALL :FUNCTION_SET_IS_MACRO EVAL_evaluated_value%EVAL_recursion_count% TRUE
                 )
