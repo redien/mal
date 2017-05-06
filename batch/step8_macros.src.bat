@@ -112,6 +112,15 @@ EXIT /B 0
 EXIT /B 0
 
 :EVAL_AST
+    CALL :SYMBOL? EVAL_AST_is_symbol %2
+    IF "!EVAL_AST_is_symbol!"=="!TRUE!" (
+        CALL :SYMBOL_TO_STR EVAL_AST_symbol_str %2
+        IF NOT "!EVAL_AST_symbol_str:~0,1!"=="!_colon!" (
+            CALL :ENV_GET %1 %3 %2
+            EXIT /B 0
+        )
+    )
+
     CALL :LIST? EVAL_AST_is_list %2
     IF "!EVAL_AST_is_list!"=="!TRUE!" (
         CALL :LIST_MAP %1 %2 :EVAL %3
@@ -128,15 +137,6 @@ EXIT /B 0
     IF "!EVAL_AST_is_hashmap!"=="!TRUE!" (
         CALL :HASHMAP_MAP %1 %2 :EVAL %3
         EXIT /B 0
-    )
-
-    CALL :SYMBOL? EVAL_AST_is_symbol %2
-    IF "!EVAL_AST_is_symbol!"=="!TRUE!" (
-        CALL :SYMBOL_TO_STR EVAL_AST_symbol_str %2
-        IF NOT "!EVAL_AST_symbol_str:~0,1!"=="!_colon!" (
-            CALL :ENV_GET %1 %3 %2
-            EXIT /B 0
-        )
     )
 
     SET "%1=!%2!"
