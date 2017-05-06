@@ -448,8 +448,8 @@ EXIT /B 0
 :MACRO_EXPAND_RECUR
     CALL :IS_MACRO_CALL MACRO_EXPAND_ast_is_macro%MACRO_EXPAND_recursion_count% MACRO_EXPAND_ast%MACRO_EXPAND_recursion_count% MACRO_EXPAND_env%MACRO_EXPAND_recursion_count%
     IF "!MACRO_EXPAND_ast_is_macro%MACRO_EXPAND_recursion_count%!"=="!TRUE!" (
-        CALL :LIST_FIRST MACRO_EXPAND_symbol%MACRO_EXPAND_recursion_count% %2
-        CALL :LIST_REST MACRO_EXPAND_arguments%MACRO_EXPAND_recursion_count% %2
+        CALL :LIST_FIRST MACRO_EXPAND_symbol%MACRO_EXPAND_recursion_count% MACRO_EXPAND_ast%MACRO_EXPAND_recursion_count%
+        CALL :LIST_REST MACRO_EXPAND_arguments%MACRO_EXPAND_recursion_count% MACRO_EXPAND_ast%MACRO_EXPAND_recursion_count%
         CALL :ENV_GET MACRO_EXPAND_function%MACRO_EXPAND_recursion_count% MACRO_EXPAND_env%MACRO_EXPAND_recursion_count% MACRO_EXPAND_symbol%MACRO_EXPAND_recursion_count%
         CALL :PREPARE_FUNCTION_FOR_EVAL MACRO_EXPAND_ast%MACRO_EXPAND_recursion_count% MACRO_EXPAND_env%MACRO_EXPAND_recursion_count% MACRO_EXPAND_function%MACRO_EXPAND_recursion_count% MACRO_EXPAND_arguments%MACRO_EXPAND_recursion_count%
         CALL :EVAL MACRO_EXPAND_ast%MACRO_EXPAND_recursion_count% MACRO_EXPAND_ast%MACRO_EXPAND_recursion_count% MACRO_EXPAND_env%MACRO_EXPAND_recursion_count%
