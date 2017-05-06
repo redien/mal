@@ -589,11 +589,16 @@ EXIT /B 0
 :_HASHMAP_INDEX_OF_KEY
     SET "_HASHMAP_INDEX_OF_KEY_id=!%2:~1,8191!"
     SET "%1=!NIL!"
-    CALL :VECTOR_LENGTH _HASHMAP_INDEX_OF_KEY_length _hashmap_keys!_HASHMAP_INDEX_OF_KEY_id!
+
+    SET "_HASHMAP_INDEX_OF_KEY_vector_id=!_hashmap_keys%_HASHMAP_INDEX_OF_KEY_id%:~1,8191!"
+    SET "_HASHMAP_INDEX_OF_KEY_length=!_vector_length_%_HASHMAP_INDEX_OF_KEY_vector_id%!"
+
     SET /a "_HASHMAP_INDEX_OF_KEY_length-=1"
     FOR /L %%G IN (0, 1, !_HASHMAP_INDEX_OF_KEY_length!) DO (
         SET "_HASHMAP_INDEX_OF_KEY_index=%%G"
-        CALL :VECTOR_GET _HASHMAP_INDEX_OF_KEY_key _hashmap_keys!_HASHMAP_INDEX_OF_KEY_id! _HASHMAP_INDEX_OF_KEY_index
+
+        SET "_HASHMAP_INDEX_OF_KEY_key=!_vector_%_HASHMAP_INDEX_OF_KEY_vector_id%_%%G!"
+
         IF "!_HASHMAP_INDEX_OF_KEY_key!"=="!%3!" (
             SET "%1=%%G"
         )
