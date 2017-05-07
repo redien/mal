@@ -647,24 +647,30 @@ EXIT /B 0
     CALL :VECTOR_PUSH _hashmap_values!HASHMAP_INSERT_id! %3
 EXIT /B 0
 
-:_HASHMAP_INDEX_OF_KEY
+:HASHMAP_GET_REF
     SET "_HASHMAP_INDEX_OF_KEY_id=!%2:~1,8191!"
     SET "%1=!NIL!"
-    CALL :VECTOR_LENGTH _HASHMAP_INDEX_OF_KEY_length _hashmap_keys!_HASHMAP_INDEX_OF_KEY_id!
+
+    SET "_HASHMAP_INDEX_OF_KEY_vector_id=!_hashmap_keys%_HASHMAP_INDEX_OF_KEY_id%:~1,8191!"
+    SET "_HASHMAP_INDEX_OF_KEY_values_vector_id=!_hashmap_values%_HASHMAP_INDEX_OF_KEY_id%:~1,8191!"
+    SET "_HASHMAP_INDEX_OF_KEY_length=!_vector_length_%_HASHMAP_INDEX_OF_KEY_vector_id%!"
+
     SET /a "_HASHMAP_INDEX_OF_KEY_length-=1"
     FOR /L %%G IN (0, 1, !_HASHMAP_INDEX_OF_KEY_length!) DO (
         SET "_HASHMAP_INDEX_OF_KEY_index=%%G"
-        CALL :VECTOR_GET _HASHMAP_INDEX_OF_KEY_key _hashmap_keys!_HASHMAP_INDEX_OF_KEY_id! _HASHMAP_INDEX_OF_KEY_index
+
+        SET "_HASHMAP_INDEX_OF_KEY_key=!_vector_%_HASHMAP_INDEX_OF_KEY_vector_id%_%%G!"
+
         IF "!_HASHMAP_INDEX_OF_KEY_key!"=="!%3!" (
-            SET "%1=%%G"
+            SET "%1=_vector_%_HASHMAP_INDEX_OF_KEY_values_vector_id%_%%G"
         )
     )
 EXIT /B 0
 
 :HASHMAP_HAS_KEY?
     SET "HASHMAP_GET_id=!%2:~1,8191!"
-    CALL :_HASHMAP_INDEX_OF_KEY HASHMAP_GET_key_index %2 %3
-    IF "!HASHMAP_GET_key_index!"=="!NIL!" (
+    CALL :HASHMAP_GET_REF HASHMAP_GET_ref %2 %3
+    IF "!HASHMAP_GET_ref!"=="!NIL!" (
         SET "%1=!FALSE!"
         EXIT /B 0
     )
@@ -674,13 +680,13 @@ EXIT /B 0
 
 :HASHMAP_GET
     SET "HASHMAP_GET_id=!%2:~1,8191!"
-    CALL :_HASHMAP_INDEX_OF_KEY HASHMAP_GET_key_index %2 %3
-    IF "!HASHMAP_GET_key_index!"=="!NIL!" (
+    CALL :HASHMAP_GET_REF HASHMAP_GET_ref %2 %3
+    IF "!HASHMAP_GET_ref!"=="!NIL!" (
         SET "%1=!NIL!"
         EXIT /B 0
     )
 
-    CALL :VECTOR_GET %1 _hashmap_values!HASHMAP_GET_id! HASHMAP_GET_key_index
+    SET "%1=!%HASHMAP_GET_ref%!"
 EXIT /B 0
 
 :HASHMAP_KEYS
@@ -1484,11 +1490,12 @@ EXIT /B 0
     SET "ENV_GET_id=!%2:~1,8191!"
     CALL :SYMBOL_TO_STR ENV_GET_key %3
 
-    CALL :HASHMAP_HAS_KEY? ENV_GET_has_key _env_data!ENV_GET_id! ENV_GET_key
-    IF "!ENV_GET_has_key!"=="!FALSE!" (
+:ENV_GET_RECUR
+    CALL :HASHMAP_GET_REF ENV_GET_ref _env_data!ENV_GET_id! ENV_GET_key
+    IF "!ENV_GET_ref!"=="!NIL!" (
         IF NOT "!_env_outer%ENV_GET_id%!"=="!NIL!" (
-            CALL :ENV_GET %1 _env_outer!ENV_GET_id! %3
-            EXIT /B 0
+            SET "ENV_GET_id=!_env_outer%ENV_GET_id%:~1,8191!"
+            GOTO :ENV_GET_RECUR
         )
 
         SET "ENV_GET_error=Not defined: !ENV_GET_key!"
@@ -1496,7 +1503,7 @@ EXIT /B 0
         EXIT /B 0
     )
 
-    CALL :HASHMAP_GET %1 _env_data!ENV_GET_id! ENV_GET_key
+    SET "%1=!%ENV_GET_ref%!"
 EXIT /B 0
 
 :ARGS_OR_ERROR
@@ -2040,8 +2047,6 @@ CALL :DEFINE_FUN REPL_env _name :MAL_ATOM_DEREF
 SET "_name=reset^!"
 CALL :DEFINE_FUN REPL_env _name :MAL_ATOM_RESET
 
-SET "_script=(defmacro^! testing (fn* (x) x))"
-CALL :REP _ _script REPL_env
 SET "_script=(def^! not (fn* (a) (if a false true)))"
 CALL :REP _ _script REPL_env
 SET "_script=(def^! load-file (fn* (f) (eval (read-string (str ^"(do ^" (slurp f) ^")^")))))"
@@ -2095,6 +2100,15 @@ EXIT /B 0
 EXIT /B 0
 
 :EVAL_AST
+    CALL :SYMBOL? EVAL_AST_is_symbol %2
+    IF "!EVAL_AST_is_symbol!"=="!TRUE!" (
+        CALL :SYMBOL_TO_STR EVAL_AST_symbol_str %2
+        IF NOT "!EVAL_AST_symbol_str:~0,1!"=="!_colon!" (
+            CALL :ENV_GET %1 %3 %2
+            EXIT /B 0
+        )
+    )
+
     CALL :LIST? EVAL_AST_is_list %2
     IF "!EVAL_AST_is_list!"=="!TRUE!" (
         CALL :LIST_MAP %1 %2 :EVAL %3
@@ -2111,15 +2125,6 @@ EXIT /B 0
     IF "!EVAL_AST_is_hashmap!"=="!TRUE!" (
         CALL :HASHMAP_MAP %1 %2 :EVAL %3
         EXIT /B 0
-    )
-
-    CALL :SYMBOL? EVAL_AST_is_symbol %2
-    IF "!EVAL_AST_is_symbol!"=="!TRUE!" (
-        CALL :SYMBOL_TO_STR EVAL_AST_symbol_str %2
-        IF NOT "!EVAL_AST_symbol_str:~0,1!"=="!_colon!" (
-            CALL :ENV_GET %1 %3 %2
-            EXIT /B 0
-        )
     )
 
     SET "%1=!%2!"
@@ -2209,8 +2214,8 @@ EXIT /B 0
 
             IF "!EVAL_first_symbol_str%EVAL_recursion_count%!"=="quasiquote" (
                 CALL :LIST_FIRST EVAL_expression%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
-                CALL :QUASIQUOTE EVAL_ast%EVAL_recursion_count% EVAL_expression%EVAL_recursion_count%
-                GOTO :EVAL_RECUR
+                CALL :QUASIQUOTE %1 EVAL_expression%EVAL_recursion_count% EVAL_env%EVAL_recursion_count%
+                GOTO :EVAL_EXIT
             )
 
             IF "!EVAL_first_symbol_str%EVAL_recursion_count%!"=="macroexpand" (
@@ -2349,10 +2354,7 @@ EXIT /B 0
 
     CALL :IS_PAIR QUASIQUOTE_is_pair%QUASIQUOTE_recursion_count% QUASIQUOTE_ast%QUASIQUOTE_recursion_count%
     IF "!QUASIQUOTE_is_pair%QUASIQUOTE_recursion_count%!"=="!FALSE!" (
-        SET "QUASIQUOTE_symbol_str%QUASIQUOTE_recursion_count%=quote"
-        CALL :SYMBOL_NEW QUASIQUOTE_symbol%QUASIQUOTE_recursion_count% QUASIQUOTE_symbol_str%QUASIQUOTE_recursion_count%
-        CALL :LIST_CONS QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_ast%QUASIQUOTE_recursion_count% EMPTY_LIST
-        CALL :LIST_CONS %1 QUASIQUOTE_symbol%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count%
+        SET "%1=!QUASIQUOTE_ast%QUASIQUOTE_recursion_count%!"
         GOTO :QUASIQUOTE_EXIT
     )
 
@@ -2364,7 +2366,7 @@ EXIT /B 0
         CALL :SYMBOL_TO_STR QUASIQUOTE_first_str%QUASIQUOTE_recursion_count% QUASIQUOTE_first0%QUASIQUOTE_recursion_count%
         IF "!QUASIQUOTE_first_str%QUASIQUOTE_recursion_count%!"=="unquote" (
             CALL :LIST_FIRST QUASIQUOTE_second0%QUASIQUOTE_recursion_count% QUASIQUOTE_rest0%QUASIQUOTE_recursion_count%
-            SET "%1=!QUASIQUOTE_second0%QUASIQUOTE_recursion_count%!"
+            CALL :EVAL %1 QUASIQUOTE_second0%QUASIQUOTE_recursion_count% %3
             GOTO :QUASIQUOTE_EXIT
         )
     )
@@ -2382,24 +2384,18 @@ EXIT /B 0
                 CALL :LIST_REST QUASIQUOTE_rest1%QUASIQUOTE_recursion_count% QUASIQUOTE_first0%QUASIQUOTE_recursion_count%
                 CALL :LIST_FIRST QUASIQUOTE_second1%QUASIQUOTE_recursion_count% QUASIQUOTE_rest1%QUASIQUOTE_recursion_count%
 
-                CALL :QUASIQUOTE QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_rest0%QUASIQUOTE_recursion_count%
+                CALL :QUASIQUOTE QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_rest0%QUASIQUOTE_recursion_count% %3
+                CALL :EVAL QUASIQUOTE_concat%QUASIQUOTE_recursion_count% QUASIQUOTE_second1%QUASIQUOTE_recursion_count% %3
 
-                CALL :LIST_CONS QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count% EMPTY_LIST
-                CALL :LIST_CONS QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_second1%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count%
-                CALL :LIST_CONS %1 QUASIQUOTE_symbol%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count%
-
+                CALL :LIST_CONCAT %1 QUASIQUOTE_concat%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count%
                 GOTO :QUASIQUOTE_EXIT
             )
         )
     )
 
-    SET "QUASIQUOTE_symbol_str%QUASIQUOTE_recursion_count%=cons"
-    CALL :SYMBOL_NEW QUASIQUOTE_symbol%QUASIQUOTE_recursion_count% QUASIQUOTE_symbol_str%QUASIQUOTE_recursion_count%
-    CALL :QUASIQUOTE QUASIQUOTE_result_first%QUASIQUOTE_recursion_count% QUASIQUOTE_first0%QUASIQUOTE_recursion_count%
-    CALL :QUASIQUOTE QUASIQUOTE_result_rest%QUASIQUOTE_recursion_count% QUASIQUOTE_rest0%QUASIQUOTE_recursion_count%
-    CALL :LIST_CONS QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_result_rest%QUASIQUOTE_recursion_count% EMPTY_LIST
-    CALL :LIST_CONS QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_result_first%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count%
-    CALL :LIST_CONS %1 QUASIQUOTE_symbol%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count%
+    CALL :QUASIQUOTE QUASIQUOTE_result_first%QUASIQUOTE_recursion_count% QUASIQUOTE_first0%QUASIQUOTE_recursion_count% %3
+    CALL :QUASIQUOTE QUASIQUOTE_result_rest%QUASIQUOTE_recursion_count% QUASIQUOTE_rest0%QUASIQUOTE_recursion_count% %3
+    CALL :LIST_CONS %1 QUASIQUOTE_result_first%QUASIQUOTE_recursion_count% QUASIQUOTE_result_rest%QUASIQUOTE_recursion_count%
 
 :QUASIQUOTE_EXIT
     SET /A "QUASIQUOTE_recursion_count-=1"

@@ -226,8 +226,8 @@ EXIT /B 0
 
             IF "!EVAL_first_symbol_str%EVAL_recursion_count%!"=="quasiquote" (
                 CALL :LIST_FIRST EVAL_expression%EVAL_recursion_count% EVAL_rest%EVAL_recursion_count%
-                CALL :QUASIQUOTE EVAL_ast%EVAL_recursion_count% EVAL_expression%EVAL_recursion_count%
-                GOTO :EVAL_RECUR
+                CALL :QUASIQUOTE %1 EVAL_expression%EVAL_recursion_count% EVAL_env%EVAL_recursion_count%
+                GOTO :EVAL_EXIT
             )
 
             IF "!EVAL_first_symbol_str%EVAL_recursion_count%!"=="macroexpand" (
@@ -366,10 +366,7 @@ EXIT /B 0
 
     CALL :IS_PAIR QUASIQUOTE_is_pair%QUASIQUOTE_recursion_count% QUASIQUOTE_ast%QUASIQUOTE_recursion_count%
     IF "!QUASIQUOTE_is_pair%QUASIQUOTE_recursion_count%!"=="!FALSE!" (
-        SET "QUASIQUOTE_symbol_str%QUASIQUOTE_recursion_count%=quote"
-        CALL :SYMBOL_NEW QUASIQUOTE_symbol%QUASIQUOTE_recursion_count% QUASIQUOTE_symbol_str%QUASIQUOTE_recursion_count%
-        CALL :LIST_CONS QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_ast%QUASIQUOTE_recursion_count% EMPTY_LIST
-        CALL :LIST_CONS %1 QUASIQUOTE_symbol%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count%
+        SET "%1=!QUASIQUOTE_ast%QUASIQUOTE_recursion_count%!"
         GOTO :QUASIQUOTE_EXIT
     )
 
@@ -381,7 +378,7 @@ EXIT /B 0
         CALL :SYMBOL_TO_STR QUASIQUOTE_first_str%QUASIQUOTE_recursion_count% QUASIQUOTE_first0%QUASIQUOTE_recursion_count%
         IF "!QUASIQUOTE_first_str%QUASIQUOTE_recursion_count%!"=="unquote" (
             CALL :LIST_FIRST QUASIQUOTE_second0%QUASIQUOTE_recursion_count% QUASIQUOTE_rest0%QUASIQUOTE_recursion_count%
-            SET "%1=!QUASIQUOTE_second0%QUASIQUOTE_recursion_count%!"
+            CALL :EVAL %1 QUASIQUOTE_second0%QUASIQUOTE_recursion_count% %3
             GOTO :QUASIQUOTE_EXIT
         )
     )
@@ -399,24 +396,18 @@ EXIT /B 0
                 CALL :LIST_REST QUASIQUOTE_rest1%QUASIQUOTE_recursion_count% QUASIQUOTE_first0%QUASIQUOTE_recursion_count%
                 CALL :LIST_FIRST QUASIQUOTE_second1%QUASIQUOTE_recursion_count% QUASIQUOTE_rest1%QUASIQUOTE_recursion_count%
 
-                CALL :QUASIQUOTE QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_rest0%QUASIQUOTE_recursion_count%
+                CALL :QUASIQUOTE QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_rest0%QUASIQUOTE_recursion_count% %3
+                CALL :EVAL QUASIQUOTE_concat%QUASIQUOTE_recursion_count% QUASIQUOTE_second1%QUASIQUOTE_recursion_count% %3
 
-                CALL :LIST_CONS QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count% EMPTY_LIST
-                CALL :LIST_CONS QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_second1%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count%
-                CALL :LIST_CONS %1 QUASIQUOTE_symbol%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count%
-
+                CALL :LIST_CONCAT %1 QUASIQUOTE_concat%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count%
                 GOTO :QUASIQUOTE_EXIT
             )
         )
     )
 
-    SET "QUASIQUOTE_symbol_str%QUASIQUOTE_recursion_count%=cons"
-    CALL :SYMBOL_NEW QUASIQUOTE_symbol%QUASIQUOTE_recursion_count% QUASIQUOTE_symbol_str%QUASIQUOTE_recursion_count%
-    CALL :QUASIQUOTE QUASIQUOTE_result_first%QUASIQUOTE_recursion_count% QUASIQUOTE_first0%QUASIQUOTE_recursion_count%
-    CALL :QUASIQUOTE QUASIQUOTE_result_rest%QUASIQUOTE_recursion_count% QUASIQUOTE_rest0%QUASIQUOTE_recursion_count%
-    CALL :LIST_CONS QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_result_rest%QUASIQUOTE_recursion_count% EMPTY_LIST
-    CALL :LIST_CONS QUASIQUOTE_result%QUASIQUOTE_recursion_count% QUASIQUOTE_result_first%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count%
-    CALL :LIST_CONS %1 QUASIQUOTE_symbol%QUASIQUOTE_recursion_count% QUASIQUOTE_result%QUASIQUOTE_recursion_count%
+    CALL :QUASIQUOTE QUASIQUOTE_result_first%QUASIQUOTE_recursion_count% QUASIQUOTE_first0%QUASIQUOTE_recursion_count% %3
+    CALL :QUASIQUOTE QUASIQUOTE_result_rest%QUASIQUOTE_recursion_count% QUASIQUOTE_rest0%QUASIQUOTE_recursion_count% %3
+    CALL :LIST_CONS %1 QUASIQUOTE_result_first%QUASIQUOTE_recursion_count% QUASIQUOTE_result_rest%QUASIQUOTE_recursion_count%
 
 :QUASIQUOTE_EXIT
     SET /A "QUASIQUOTE_recursion_count-=1"
