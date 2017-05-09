@@ -30,25 +30,23 @@ EXIT /B 0
 
 :REST
     IF "!%2!"=="!NIL!" (
-        SET "%1=!%2!"
+        SET "%1=!EMPTY_LIST!"
         EXIT /B 0
     )
 
-    CALL :EMPTY? REST_is_empty %2
-    IF "!REST_is_empty!"=="!TRUE!" (
-        SET "%1=!%2!"
-        EXIT /B 0
-    )
+    SET "REST_list=!%2!"
 
-    CALL :VECTOR? REST_is_vector %2
+    CALL :VECTOR? REST_is_vector REST_list
     IF "!REST_is_vector!"=="!TRUE!" (
-        SET "REST_first_index=1"
-        SET "REST_last_index=0"
-        CALL :VECTOR_LENGTH REST_last_index %2
-        CALL :VECTOR_SLICE %1 %2 REST_first_index REST_last_index
-    ) ELSE (
-        CALL :LIST_REST %1 %2
+        CALL :VECTOR_TO_LIST REST_list REST_list
     )
+
+    IF "!REST_list!"=="!EMPTY_LIST!" (
+        SET "%1=!EMPTY_LIST!"
+        EXIT /B 0
+    )
+
+    CALL :LIST_REST %1 REST_list
 EXIT /B 0
 
 :EMPTY?
