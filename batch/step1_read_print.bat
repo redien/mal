@@ -4,7 +4,7 @@ SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
 set "sp=0"
 set "pop=set /a ^"sp-=1^""
 set pops=set ^"
-set pope=^=^^!stack^!sp^!^^!^"
+set pope=^=^^!stack^!sp^!^^!^" ^& set ^/a ^"sp-=1^"
 
 goto :start
 
@@ -13,6 +13,7 @@ goto :start
     set "stack0=abc"
     %pops%var%pope%
     echo .!var!.
+    echo !sp!
 EXIT /B 0
 
 :start
