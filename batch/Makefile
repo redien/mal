@@ -1,4 +1,4 @@
-SOURCES_BASE = src/stack.bat src/types.bat src/reader.bat src/printer.bat
+SOURCES_BASE = src/runtime.bat src/types.bat src/reader.bat src/printer.bat
 SOURCES_LISP = src/env.bat src/core.bat
 SOURCES = $(SOURCES_BASE) $(SOURCES_LISP)
 
