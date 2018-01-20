@@ -1,4 +1,6 @@
 
+:start
+
 :REPL
 	SET /p "input=user> "
 	ECHO %input%

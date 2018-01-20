@@ -1,4 +1,4 @@
-SOURCES_BASE = src/types.bat src/reader.bat src/printer.bat
+SOURCES_BASE = src/stack.bat src/types.bat src/reader.bat src/printer.bat
 SOURCES_LISP = src/env.bat src/core.bat
 SOURCES = $(SOURCES_BASE) $(SOURCES_LISP)
 
@@ -11,6 +11,9 @@ mal.bat: $(SOURCES) src/stepA_mal.bat
 	cat $+ > $@
 
 step0_repl.bat: $(SOURCES) src/step0_repl.bat
+	cat $+ > $@
+
+step1_read_print.bat: $(SOURCES) src/step1_read_print.bat
 	cat $+ > $@
 
 clean:
