@@ -1,8 +1,11 @@
 
 :read_str
-    set "stack0=abc"
+    set "test=abc"
+    set "test2=123"
+    %pushs%test%pushe%
+    %pushs%test2%pushe%
     %pops%var%pope%
-    echo .!var!.
-    echo !sp!
+    %pops%var2%pope%
+    echo !var!!var2!
 EXIT /B 0
 

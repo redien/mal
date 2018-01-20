@@ -2,18 +2,22 @@
 SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
 
 set "sp=0"
-set "pop=set /a ^"sp-=1^""
 set pops=set ^"
 set pope=^=^^!stack^!sp^!^^!^" ^& set ^/a ^"sp-=1^"
+set pushs=set ^/a ^"sp+=1^" ^& set ^"stack^!sp^!^=^^!
+set pushe=^^!^"
 
 goto :start
 
 
 :read_str
-    set "stack0=abc"
+    set "test=abc"
+    set "test2=123"
+    %pushs%test%pushe%
+    %pushs%test2%pushe%
     %pops%var%pope%
-    echo .!var!.
-    echo !sp!
+    %pops%var2%pope%
+    echo !var!!var2!
 EXIT /B 0
 
 :start
