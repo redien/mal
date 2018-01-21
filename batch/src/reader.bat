@@ -1,14 +1,12 @@
 
-:read_str
-    set "test=abc"
-    set "test2=123"
-    %pushs%test%pushe%
-    echo !stack1!
-    %pushs%test2%pushe%
-    echo !stack2!
-    %pops%var%pope%
-    %pops%var2%pope%
-    echo !%var%!
-    echo !%var2%!
-EXIT /B 0
+:_trim
+    set trimmed=%*
+exit /b 0
+
+:read_str :: String s
+    %pops%return_label%pope%
+    %pops%s%pope%
+    call :_trim !%s%!
+    %pushs%trimmed%pushe%
+goto !%return_label%!
 
